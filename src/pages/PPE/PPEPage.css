@@ -1,0 +1,358 @@
+/* ─────────────────────────────────────────────────────────────
+   PPEPage.css
+   Styles for the PPE Inventory page.
+   We use plain CSS — no external libraries needed.
+   Every class name starts with "ppe-" so styles never
+   accidentally affect other pages.
+───────────────────────────────────────────────────────────── */
+
+/* ── Page wrapper ── */
+.ppe-page {
+  padding: 24px;
+  font-family: Arial, sans-serif;
+  color: #111111;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* ── Page header row: title on left, button on right ── */
+.ppe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ppe-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a5276;
+  margin: 0;
+}
+
+/* ── Primary action button ── */
+.ppe-btn-primary {
+  background-color: #1a5276;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ppe-btn-primary:hover {
+  background-color: #154360;
+}
+
+/* ── Secondary button (Cancel, close) ── */
+.ppe-btn-secondary {
+  background-color: #ffffff;
+  color: #555555;
+  border: 1px solid #cccccc;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ppe-btn-secondary:hover {
+  background-color: #f0f0f0;
+}
+
+/* ── Summary cards row ── */
+.ppe-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.ppe-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.ppe-card-label {
+  font-size: 12px;
+  color: #666666;
+  margin-bottom: 6px;
+}
+
+.ppe-card-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111111;
+}
+
+/* Card value colour variants */
+.ppe-card-value.amber { color: #854f0b; }
+.ppe-card-value.red   { color: #a32d2d; }
+.ppe-card-value.green { color: #3b6d11; }
+
+/* ── Table container ── */
+.ppe-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── Table ── */
+.ppe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* Table header */
+.ppe-table th {
+  text-align: left;
+  padding: 12px 14px;
+  background-color: #1a5276;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Table rows */
+.ppe-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* Remove bottom border from last row */
+.ppe-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Row colour highlights ── */
+/* Normal row — no highlight */
+.row-normal {
+  background-color: #ffffff;
+}
+
+/* Low stock row — amber background */
+.row-low {
+  background-color: #fdebd0;
+}
+
+/* Out of stock row — red background */
+.row-out {
+  background-color: #fadbd8;
+}
+
+/* Alternating colour for normal rows */
+.row-normal:nth-child(even) {
+  background-color: #f8faff;
+}
+
+/* ── Status badges ── */
+.ppe-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-ok  { background: #27ae60; color: #ffffff; }
+.badge-low { background: #e67e22; color: #ffffff; }
+.badge-out { background: #c0392b; color: #ffffff; }
+
+/* ── Small action buttons inside table ── */
+.ppe-btn-sm {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  background: #ffffff;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.ppe-btn-sm:hover {
+  background-color: #f0f0f0;
+}
+
+/* ── Legend below the table ── */
+.ppe-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #666666;
+}
+
+.ppe-legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ── Modal overlay (dark background behind the form) ── */
+.ppe-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* ── Modal box ── */
+.ppe-modal {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 28px 32px;
+  width: 460px;
+  max-width: 95%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.ppe-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a5276;
+  margin-bottom: 20px;
+}
+
+/* ── Form fields inside the modal ── */
+.ppe-form-group {
+  margin-bottom: 14px;
+}
+
+.ppe-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555555;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+/* The red asterisk on required fields */
+.required {
+  color: #a32d2d;
+  margin-left: 2px;
+}
+
+.ppe-form-input,
+.ppe-form-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111111;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.ppe-form-input:focus,
+.ppe-form-select:focus {
+  outline: none;
+  border-color: #1a5276;
+  box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.15);
+}
+
+/* Read-only calculated field */
+.ppe-form-readonly {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #666666;
+  background-color: #f5f5f5;
+  box-sizing: border-box;
+  font-style: italic;
+}
+
+/* ── Error message under a field ── */
+.ppe-field-error {
+  color: #a32d2d;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* ── Modal button row ── */
+.ppe-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+/* ── Success notification banner ── */
+.ppe-success-banner {
+  background-color: #eaf3de;
+  border: 1px solid #3b6d11;
+  color: #3b6d11;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── Responsive: stack cards on small screens ── */
+@media (max-width: 768px) {
+  .ppe-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ppe-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ── Two buttons side by side in the header ── */
+.ppe-header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Fix dark mode dropdown issue ── */
+.ppe-form-input,
+.ppe-form-select {
+  background-color: #ffffff;
+  color-scheme: light;
+}
+
+/* ── Search bar ── */
+.ppe-search-wrap {
+  margin-bottom: 16px;
+}
+
+.ppe-search-input {
+  width: 100%;
+  max-width: 340px;
+  padding: 9px 14px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  color: #111111;
+  background-color: #ffffff;
+  color-scheme: light;
+  box-sizing: border-box;
+}
+
+.ppe-search-input:focus {
+  outline: none;
+  border-color: #1a5276;
+  box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.15);
+}
