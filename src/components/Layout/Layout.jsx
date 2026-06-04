@@ -9,6 +9,7 @@
 
 import Sidebar from "./Sidebar";
 import "./Layout.css";
+import React from "react";
 
 function Layout({ activePage, onNavigate, children }) {
   return (
@@ -21,7 +22,7 @@ function Layout({ activePage, onNavigate, children }) {
       {/* "children" means whatever page is passed between
           the Layout tags in App.jsx */}
       <main className="layout-content">
-        {children}
+        {React.cloneElement(children, { onNavigate })}
       </main>
 
     </div>

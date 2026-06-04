@@ -1,0 +1,287 @@
+/* ─────────────────────────────────────────────────────────────
+   DashboardPage.css
+   Styles for the EHSS home dashboard.
+───────────────────────────────────────────────────────────── */
+
+.dash-page {
+  padding: 28px;
+  font-family: Arial, sans-serif;
+  color: #111111;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.dash-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a5276;
+  margin: 0 0 4px 0;
+}
+
+.dash-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.dash-date {
+  font-size: 12px;
+  color: #888;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* ── KPI cards row ── */
+.dash-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.dash-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.dash-card.card-warn   { border-left: 4px solid #e67e22; }
+.dash-card.card-danger { border-left: 4px solid #c0392b; }
+
+.dash-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.dash-card-label {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-card-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.dash-card-value.amber { color: #e67e22; }
+.dash-card-value.red   { color: #c0392b; }
+.dash-card-value.green { color: #27ae60; }
+
+.dash-card-sub {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ── Two column layout ── */
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── Panel (chart, alerts, calendar) ── */
+.dash-panel {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.dash-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a5276;
+  margin-bottom: 14px;
+}
+
+.dash-panel-note {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* ── Bar chart ── */
+.chart-wrap {
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  height: 110px;
+  padding: 0 4px;
+}
+
+.chart-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+}
+
+.chart-bar-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  flex: 1;
+  width: 100%;
+  justify-content: center;
+}
+
+.chart-bar {
+  width: 14px;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  transition: height 0.3s ease;
+}
+
+.chart-bar.trifr { background: #2471a3; }
+.chart-bar.ltifr { background: #c0392b; }
+
+.chart-label {
+  font-size: 11px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #888;
+  margin-top: 8px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.trifr-dot { background: #2471a3; }
+.ltifr-dot { background: #c0392b; }
+
+/* ── Alert list ── */
+.dash-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-alert-item {
+  padding: 10px 12px;
+  border-radius: 7px;
+  border-left: 3px solid transparent;
+}
+
+.alert-expired  { background: #fdf3f3; border-left-color: #c0392b; }
+.alert-expiring { background: #fef9f0; border-left-color: #e67e22; }
+
+.dash-alert-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.dash-alert-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #888;
+}
+
+/* ── Compliance badges ── */
+.comp-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.comp-badge.valid    { background: #27ae60; color: #fff; }
+.comp-badge.expiring { background: #e67e22; color: #fff; }
+.comp-badge.expired  { background: #c0392b; color: #fff; }
+
+/* ── Calendar list ── */
+.dash-calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-cal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dash-cal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1a5276;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.dash-cal-name {
+  font-size: 13px;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.dash-cal-meta {
+  font-size: 11px;
+  color: #888;
+}
+
+/* ── Empty state ── */
+.dash-empty {
+  font-size: 13px;
+  color: #27ae60;
+  padding: 12px 0;
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dash-cards    { grid-template-columns: repeat(2, 1fr); }
+  .dash-two-col  { grid-template-columns: 1fr; }
+}
