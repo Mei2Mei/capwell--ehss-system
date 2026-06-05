@@ -12,7 +12,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import { complianceItems as initialItems } from "./complianceData";
+import { complianceItems as initialItems } from "../../data/ComplianceData";
 import "./CompliancePage.css";
 
 // ── Status calculation ────────────────────────────────────────
@@ -447,7 +447,7 @@ function CompliancePage() {
                   name="expert_organisation"
                   value={form.expert_organisation}
                   onChange={handleFormChange}
-                  placeholder="e.g. Nairobi City County"
+                  placeholder="e.g. Kiambu County"
                 />
               </div>
 
