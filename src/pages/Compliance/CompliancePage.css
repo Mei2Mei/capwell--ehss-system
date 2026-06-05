@@ -178,9 +178,9 @@
 .comp-table tr:last-child td { border-bottom: none; }
 
 /* Row highlights */
-.row-expiring { background: #fef9f0; }
-.row-expired  { background: #fdf3f3; }
-.row-pending  { background: #fafafa; }
+.row-expiring { background: #fdebd0; }
+.row-expired  { background: #fadbd8 }
+.row-pending {background: #f1f3f5;}
 
 .comp-req-name { font-weight: 500; max-width: 200px; }
 .comp-ref      { font-family: monospace; font-size: 11px; color: #555; }

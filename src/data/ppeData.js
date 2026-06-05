@@ -16,6 +16,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 3,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 18,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 3,
@@ -32,6 +34,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 12,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 4,
@@ -40,6 +43,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 8,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 5,
@@ -48,6 +52,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 0,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 6,
@@ -56,6 +61,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 20,
     current_stock: 5,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 7,
@@ -64,6 +70,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 15,
     current_stock: 22,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 8,
@@ -72,6 +79,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 15,
     current_stock: 14,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 9,
@@ -80,6 +88,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 10,
     current_stock: 9,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 10,
@@ -88,6 +97,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 20,
     current_stock: 35,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 11,
@@ -96,6 +106,7 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 8,
     current_stock: 0,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
   {
     id: 12,
@@ -104,5 +115,6 @@ export const ppeItems = [
     unit_of_measure: "pcs",
     reorder_level: 8,
     current_stock: 11,
+    reserved_stock: 0,   // NEW - reserved stock for pending orders
   },
 ];

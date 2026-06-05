@@ -12,24 +12,22 @@ import "./Sidebar.css";
 // - label: what the user sees
 // - icon: an emoji used as a simple icon
 function Sidebar({ activePage, onNavigate }) {
-
   // This is the full list of navigation items.
   // Later when we add more pages we just add them here.
   const navItems = [
-    { id: "dashboard",    label: "Dashboard",        icon: "🏠" },
-    { id: "safety",       label: "Safety metrics",   icon: "🛡️" },
-    { id: "costs",        label: "Dept. costs",      icon: "🧾" },
-    { id: "compliance",   label: "Compliance",       icon: "✅" },
-    { id: "calendar",     label: "EHSS calendar",    icon: "📅" },
-    { id: "equipment",    label: "Lifting equipment",icon: "🏗️" },
-    { id: "ppe",          label: "PPE inventory",    icon: "🦺" },
-    { id: "sustainability",label: "Sustainability",  icon: "🌿" },
-    { id: "reports",      label: "Reports",          icon: "📊" },
+    { id: "dashboard", label: "Dashboard", icon: "🏠" },
+    { id: "safety", label: "Safety metrics", icon: "🛡️" },
+    { id: "costs", label: "Dept. costs", icon: "🧾" },
+    { id: "compliance", label: "Compliance", icon: "✅" },
+    { id: "calendar", label: "EHSS calendar", icon: "📅" },
+    { id: "equipment", label: "Lifting equipment", icon: "🏗️" },
+    { id: "ppe", label: "PPE inventory", icon: "🦺" },
+    { id: "sustainability", label: "Sustainability", icon: "🌿" },
+    { id: "reports", label: "Reports", icon: "📊" },
   ];
 
   return (
     <div className="sidebar">
-
       {/* System logo / name at the top of sidebar */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🛡️</div>
@@ -41,7 +39,7 @@ function Sidebar({ activePage, onNavigate }) {
 
       {/* Navigation links */}
       <nav className="sidebar-nav">
-        {navItems.map(item => (
+        {navItems.map((item) => (
           <button
             key={item.id}
             // Add "active" class to the currently selected page
@@ -57,15 +55,14 @@ function Sidebar({ activePage, onNavigate }) {
       {/* User info at the bottom of sidebar */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
-          <div className="sidebar-user-avatar">JW</div>
+          <div className="sidebar-user-avatar">L</div>
           <div className="sidebar-user-info">
-            <div className="sidebar-user-name">Jane Wambua</div>
+            <div className="sidebar-user-name">Linda</div>
             <div className="sidebar-user-role">EHSS Officer</div>
           </div>
         </div>
         <button className="sidebar-logout">Logout</button>
       </div>
-
     </div>
   );
 }

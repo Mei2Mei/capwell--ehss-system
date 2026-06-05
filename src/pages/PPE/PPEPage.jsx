@@ -33,6 +33,9 @@ function getStatusBadge(s) {
     return { text: "Low stock", className: "ppe-badge badge-low" };
   return { text: "OK", className: "ppe-badge badge-ok" };
 }
+function getAvailableStock(item) {
+  return item.current_stock - (item.reserved_stock || 0);
+}
 
 // Format a date string nicely e.g. 2026-01-15 -> 15 Jan 2026
 function formatDate(dateStr) {
@@ -50,6 +53,7 @@ function formatDate(dateStr) {
 function PPEPage() {
   console.log("PPEPage loaded");
   const canViewStock = () => true; // replace with real permission check later
+  const canApprove = () => true; // replace with: role === "ehss_officer" when login is added
 
   const [items, setItems] = useState(initialItems);
 
@@ -200,7 +204,7 @@ function PPEPage() {
       quantity: qty,
       date: txForm.date,
       notes: txForm.notes,
-      recorded_by: "Jane Wambua", // will come from logged-in user later
+      recorded_by: "Linda", // will come from logged-in user later
     };
     setTransactions([...transactions, newTx]);
 
@@ -293,7 +297,22 @@ function PPEPage() {
   }
 
   function handleRequestSave() {
-    if (!requestForm.item_id || !requestForm.quantity) return;
+    if (!requestForm.item_id) {
+      showBanner("Please select a PPE item.");
+      return;
+    }
+    if (!requestForm.quantity || Number(requestForm.quantity) <= 0) {
+      showBanner("Please enter a valid quantity.");
+      return;
+    }
+    if (!requestForm.worker_name.trim()) {
+      showBanner("Please enter the worker name.");
+      return;
+    }
+    if (!requestForm.department.trim()) {
+      showBanner("Please enter the department.");
+      return;
+    }
 
     const newRequest = {
       id: Date.now(),
@@ -322,35 +341,131 @@ function PPEPage() {
   }
 
   function handleApproveRequest(requestId) {
+    const request = requests.find((r) => r.id === requestId);
+    if (!request) return;
+
+    // NEW SAFETY CHECK
+    if (request.status !== "pending") {
+      showBanner("Only pending requests can be approved.");
+      return;
+    }
+
+    const qty = Number(request.quantity);
+    const itemId = request.item_id;
+
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          const available = item.current_stock - (item.reserved_stock || 0);
+
+          // ❌ SAFETY CHECK (NEW)
+          if (qty > available) {
+            showBanner(`Not enough available stock. Available: ${available}`);
+            return item;
+          }
+
+          return {
+            ...item,
+            reserved_stock: (item.reserved_stock || 0) + qty,
+          };
+        }
+        return item;
+      }),
+    );
+
     setRequests(
-      requests.map((request) =>
-        request.id === requestId ? { ...request, status: "approved" } : request,
+      requests.map((req) =>
+        req.id === requestId ? { ...req, status: "approved" } : req,
       ),
     );
 
-    showBanner("Request approved.");
+    showBanner("Request approved and stock reserved.");
   }
 
   function handleRejectRequest(requestId) {
+    const request = requests.find((r) => r.id === requestId);
+    if (!request) return;
+
+    const qty = Number(request.quantity);
+    const itemId = request.item_id;
+
+    // release reservation if it exists
+    setItems((items) =>
+      items.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            reserved_stock: Math.max((item.reserved_stock || 0) - qty, 0),
+          };
+        }
+        return item;
+      }),
+    );
+
     setRequests(
       requests.map((request) =>
         request.id === requestId ? { ...request, status: "rejected" } : request,
       ),
     );
 
-    showBanner("Request rejected.");
+    showBanner("Request rejected and reservation released.");
   }
 
   function handleFulfillRequest(requestId) {
-    setRequests(
-      requests.map((request) =>
-        request.id === requestId
-          ? { ...request, status: "fulfilled" }
-          : request,
+    const request = requests.find((r) => r.id === requestId);
+    if (!request) return;
+
+    if (request.status !== "approved") {
+      showBanner("Only approved requests can be fulfilled.");
+      return;
+    }
+
+    const itemId = request.item_id;
+    const qty = Number(request.quantity);
+
+    // 1. Deduct from reserved stock AND actual stock
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          const reserved = item.reserved_stock || 0;
+
+          return {
+            ...item,
+            current_stock: Math.max(item.current_stock - qty, 0),
+            reserved_stock: Math.max(reserved - qty, 0),
+          };
+        }
+        return item;
+      }),
+    );
+
+    // 2. Add transaction record
+    const autoTx = {
+      id: Date.now(),
+      ppe_item_id: itemId,
+      transaction_type: "issued",
+      quantity: qty,
+      date: new Date().toISOString(),
+      notes: `Fulfilled from approved request #${requestId}`,
+      recorded_by: "System (Fulfillment)",
+    };
+
+    setTransactions((prev) => [...prev, autoTx]);
+
+    // 3. Mark request as fulfilled
+    setRequests((prev) =>
+      prev.map((req) =>
+        req.id === requestId
+          ? {
+              ...req,
+              status: "fulfilled",
+              fulfilled_date: new Date().toISOString(),
+            }
+          : req,
       ),
     );
 
-    showBanner("Request fulfilled.");
+    showBanner("Request fulfilled. Stock and reservations updated.");
   }
 
   // ── Reorder level inline edit ─────────────────────────────
@@ -406,14 +521,14 @@ function PPEPage() {
 
       {/* Header */}
       <div className="ppe-header">
-        <button
-          className="ppe-btn-secondary"
-          onClick={() => setModalType("request")}
-        >
-          + Create PPE Request
-        </button>
         <h1 className="ppe-title">PPE Inventory</h1>
         <div className="ppe-header-buttons">
+          <button
+            className="ppe-btn-secondary"
+            onClick={() => setModalType("request")}
+          >
+            + Create PPE Request
+          </button>
           <button
             className="ppe-btn-secondary"
             onClick={() => {
@@ -476,6 +591,7 @@ function PPEPage() {
               <th>Size</th>
               <th>Unit</th>
               {canViewStock() && <th>Current stock</th>}
+              <th>Reserved</th>
               <th>Reorder level</th>
               <th>Status</th>
               <th>Action</th>
@@ -509,9 +625,14 @@ function PPEPage() {
                     <td>{item.size_spec}</td>
                     <td>{item.unit_of_measure}</td>
                     {canViewStock() && (
-                      <td>
-                        <strong>{item.current_stock}</strong>
-                      </td>
+                      <>
+                        <td>
+                          <strong>
+                            {item.current_stock - (item.reserved_stock || 0)}
+                          </strong>
+                        </td>
+                        <td>{item.reserved_stock || 0}</td>
+                      </>
                     )}
                     <td>
                       {/* Inline reorder level editing */}
@@ -776,7 +897,17 @@ function PPEPage() {
                     <td>{request.requested_by}</td>
 
                     <td>
-                      <span className="ppe-badge badge-low">
+                      <span
+                        className={`ppe-badge ${
+                          request.status === "fulfilled"
+                            ? "badge-ok"
+                            : request.status === "approved"
+                              ? "badge-expiring"
+                              : request.status === "rejected"
+                                ? "badge-out"
+                                : "badge-low"
+                        }`}
+                      >
                         {request.status}
                       </span>
                     </td>
@@ -784,12 +915,14 @@ function PPEPage() {
                     <td>
                       {request.status === "pending" && (
                         <>
-                          <button
-                            className="ppe-btn-sm"
-                            onClick={() => handleApproveRequest(request.id)}
-                          >
-                            Approve
-                          </button>
+                          {canApprove() && (
+                            <button
+                              className="ppe-btn-sm"
+                              onClick={() => handleApproveRequest(request.id)}
+                            >
+                              Approve
+                            </button>
+                          )}
 
                           <button
                             className="ppe-btn-sm"
@@ -798,16 +931,38 @@ function PPEPage() {
                           >
                             Reject
                           </button>
+
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "#888",
+                              marginTop: "4px",
+                            }}
+                          >
+                            Must be approved before fulfillment
+                          </div>
                         </>
                       )}
 
                       {request.status === "approved" && (
-                        <button
-                          className="ppe-btn-sm"
-                          onClick={() => handleFulfillRequest(request.id)}
-                        >
-                          Fulfill
-                        </button>
+                        <>
+                          <button
+                            className="ppe-btn-sm"
+                            onClick={() => handleFulfillRequest(request.id)}
+                          >
+                            Fulfill
+                          </button>
+
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "#888",
+                              marginTop: "4px",
+                            }}
+                          >
+                            Ready to issue stock
+                          </div>
+                        </>
                       )}
 
                       {request.status === "fulfilled" && (

@@ -22,18 +22,18 @@ function getStatus(item) {
   // No reference number means data is incomplete — Pending
   if (!item.reference_number || !item.date_of_expiry) return "pending";
 
-  const today    = new Date();
-  const expiry   = new Date(item.date_of_expiry);
+  const today = new Date();
+  const expiry = new Date(item.date_of_expiry);
   const daysLeft = Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
 
-  if (daysLeft < 0)   return "expired";      // past expiry date
-  if (daysLeft <= 30) return "expiring";     // within 30 days
-  return "valid";                            // more than 30 days away
+  if (daysLeft < 0) return "expired"; // past expiry date
+  if (daysLeft <= 60) return "expiring"; // within 60 days
+  return "valid"; // more than 60 days away
 }
 
 function getDaysLeft(item) {
   if (!item.date_of_expiry) return null;
-  const today  = new Date();
+  const today = new Date();
   const expiry = new Date(item.date_of_expiry);
   return Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
 }
@@ -41,15 +41,31 @@ function getDaysLeft(item) {
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 // Status badge config — text, CSS class, and row class
 const statusConfig = {
-  valid:    { text: "Valid",          badgeCls: "badge-valid",    rowCls: ""              },
-  expiring: { text: "Expiring soon",  badgeCls: "badge-expiring", rowCls: "row-expiring"  },
-  expired:  { text: "Expired",        badgeCls: "badge-expired",  rowCls: "row-expired"   },
-  pending:  { text: "Pending",        badgeCls: "badge-pending",  rowCls: "row-pending"   },
+  valid: { text: "Valid", badgeCls: "badge-valid", rowCls: "" },
+  expiring: {
+    text: "Expiring soon",
+    badgeCls: "badge-expiring",
+    rowCls: "row-expiring",
+  },
+  expired: {
+    text: "Expired",
+    badgeCls: "badge-expired",
+    rowCls: "row-expired",
+  },
+  pending: {
+    text: "Pending",
+    badgeCls: "badge-pending",
+    rowCls: "row-pending",
+  },
 };
 
 // ── Empty form template ───────────────────────────────────────
@@ -66,33 +82,35 @@ const emptyForm = {
 
 // ── Main component ────────────────────────────────────────────
 function CompliancePage() {
-
-  const [items, setItems]         = useState(initialItems);
+  const [items, setItems] = useState(initialItems);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [modalType, setModalType] = useState(null); // null | "add" | "edit"
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm]           = useState(emptyForm);
-  const [errors, setErrors]       = useState({});
+  const [form, setForm] = useState(emptyForm);
+  const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   // ── Summary counts ────────────────────────────────────────
   const counts = {
-    all:      items.length,
-    valid:    items.filter(i => getStatus(i) === "valid").length,
-    expiring: items.filter(i => getStatus(i) === "expiring").length,
-    expired:  items.filter(i => getStatus(i) === "expired").length,
-    pending:  items.filter(i => getStatus(i) === "pending").length,
+    all: items.length,
+    valid: items.filter((i) => getStatus(i) === "valid").length,
+    expiring: items.filter((i) => getStatus(i) === "expiring").length,
+    expired: items.filter((i) => getStatus(i) === "expired").length,
+    pending: items.filter((i) => getStatus(i) === "pending").length,
   };
 
   // ── Filtered items ────────────────────────────────────────
   const filteredItems = items
-    .filter(i => activeTab === "all" || getStatus(i) === activeTab)
-    .filter(i =>
-      i.requirement.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      i.expert_organisation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      i.reference_number.toLowerCase().includes(searchTerm.toLowerCase())
+    .filter((i) => activeTab === "all" || getStatus(i) === activeTab)
+    .filter(
+      (i) =>
+        i.requirement.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        i.expert_organisation
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        i.reference_number.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   // ── Success banner ────────────────────────────────────────
@@ -110,9 +128,12 @@ function CompliancePage() {
 
   function validateForm() {
     const e = {};
-    if (!form.requirement.trim())         e.requirement = "Requirement name is required.";
-    if (!form.requirement_reference.trim()) e.requirement_reference = "Legal reference is required.";
-    if (!form.validity_period)            e.validity_period = "Validity period is required.";
+    if (!form.requirement.trim())
+      e.requirement = "Requirement name is required.";
+    if (!form.requirement_reference.trim())
+      e.requirement_reference = "Legal reference is required.";
+    if (!form.validity_period)
+      e.validity_period = "Validity period is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -126,14 +147,14 @@ function CompliancePage() {
 
   function openEdit(item) {
     setForm({
-      requirement:           item.requirement,
-      expert_organisation:   item.expert_organisation,
-      reference_number:      item.reference_number,
+      requirement: item.requirement,
+      expert_organisation: item.expert_organisation,
+      reference_number: item.reference_number,
       requirement_reference: item.requirement_reference,
-      date_of_issuance:      item.date_of_issuance,
-      validity_period:       item.validity_period,
-      date_of_expiry:        item.date_of_expiry,
-      remarks:               item.remarks,
+      date_of_issuance: item.date_of_issuance,
+      validity_period: item.validity_period,
+      date_of_expiry: item.date_of_expiry,
+      remarks: item.remarks,
     });
     setErrors({});
     setEditingId(item.id);
@@ -146,14 +167,12 @@ function CompliancePage() {
     if (modalType === "add") {
       const newItem = {
         ...form,
-        id: Math.max(...items.map(i => i.id)) + 1,
+        id: Math.max(...items.map((i) => i.id)) + 1,
       };
       setItems([...items, newItem]);
       showBanner("Compliance item added successfully.");
     } else {
-      setItems(items.map(i =>
-        i.id === editingId ? { ...i, ...form } : i
-      ));
+      setItems(items.map((i) => (i.id === editingId ? { ...i, ...form } : i)));
       showBanner("Compliance item updated successfully.");
     }
 
@@ -173,7 +192,6 @@ function CompliancePage() {
   // ── JSX ───────────────────────────────────────────────────
   return (
     <div className="comp-page">
-
       {/* Success banner */}
       {showSuccess && (
         <div className="comp-success-banner">✓ {successMessage}</div>
@@ -183,30 +201,55 @@ function CompliancePage() {
       <div className="comp-header">
         <div>
           <h1 className="comp-title">Compliance matrix</h1>
-          <p className="comp-subtitle">Status is calculated automatically from expiry dates — never entered manually.</p>
+          <p className="comp-subtitle">
+            Status is calculated automatically from expiry dates — never entered
+            manually.
+          </p>
         </div>
-        <button className="comp-btn-primary" onClick={openAdd}>+ Add item</button>
+        <button className="comp-btn-primary" onClick={openAdd}>
+          + Add item
+        </button>
       </div>
 
       {/* Summary cards */}
       <div className="comp-cards">
-        <div className="comp-card" onClick={() => setActiveTab("all")} style={{ cursor: "pointer" }}>
+        <div
+          className="comp-card"
+          onClick={() => setActiveTab("all")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="comp-card-label">Total</div>
           <div className="comp-card-value">{counts.all}</div>
         </div>
-        <div className="comp-card card-valid" onClick={() => setActiveTab("valid")} style={{ cursor: "pointer" }}>
+        <div
+          className="comp-card card-valid"
+          onClick={() => setActiveTab("valid")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="comp-card-label">Valid</div>
           <div className="comp-card-value green">{counts.valid}</div>
         </div>
-        <div className="comp-card card-expiring" onClick={() => setActiveTab("expiring")} style={{ cursor: "pointer" }}>
+        <div
+          className="comp-card card-expiring"
+          onClick={() => setActiveTab("expiring")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="comp-card-label">Expiring soon</div>
           <div className="comp-card-value amber">{counts.expiring}</div>
         </div>
-        <div className="comp-card card-expired" onClick={() => setActiveTab("expired")} style={{ cursor: "pointer" }}>
+        <div
+          className="comp-card card-expired"
+          onClick={() => setActiveTab("expired")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="comp-card-label">Expired</div>
           <div className="comp-card-value red">{counts.expired}</div>
         </div>
-        <div className="comp-card card-pending" onClick={() => setActiveTab("pending")} style={{ cursor: "pointer" }}>
+        <div
+          className="comp-card card-pending"
+          onClick={() => setActiveTab("pending")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="comp-card-label">Pending</div>
           <div className="comp-card-value grey">{counts.pending}</div>
         </div>
@@ -216,17 +259,21 @@ function CompliancePage() {
       <div className="comp-filter-row">
         {/* Status tabs */}
         <div className="comp-tabs">
-          {["all","valid","expiring","expired","pending"].map(tab => (
+          {["all", "valid", "expiring", "expired", "pending"].map((tab) => (
             <button
               key={tab}
               className={`comp-tab ${activeTab === tab ? "active" : ""}`}
               onClick={() => setActiveTab(tab)}
             >
-              {tab === "all" ? `All (${counts.all})`
-                : tab === "valid"    ? `Valid (${counts.valid})`
-                : tab === "expiring" ? `Expiring (${counts.expiring})`
-                : tab === "expired"  ? `Expired (${counts.expired})`
-                : `Pending (${counts.pending})`}
+              {tab === "all"
+                ? `All (${counts.all})`
+                : tab === "valid"
+                  ? `Valid (${counts.valid})`
+                  : tab === "expiring"
+                    ? `Expiring (${counts.expiring})`
+                    : tab === "expired"
+                      ? `Expired (${counts.expired})`
+                      : `Pending (${counts.pending})`}
             </button>
           ))}
         </div>
@@ -262,14 +309,22 @@ function CompliancePage() {
           <tbody>
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan="11" style={{ textAlign: "center", padding: "32px", color: "#888", fontStyle: "italic" }}>
+                <td
+                  colSpan="11"
+                  style={{
+                    textAlign: "center",
+                    padding: "32px",
+                    color: "#888",
+                    fontStyle: "italic",
+                  }}
+                >
                   No compliance items match the current filter.
                 </td>
               </tr>
             ) : (
               filteredItems.map((item, index) => {
-                const status   = getStatus(item);
-                const config   = statusConfig[status];
+                const status = getStatus(item);
+                const config = statusConfig[status];
                 const daysLeft = getDaysLeft(item);
                 return (
                   <tr key={item.id} className={config.rowCls}>
@@ -281,9 +336,11 @@ function CompliancePage() {
                     <td>{formatDate(item.date_of_expiry)}</td>
                     <td>{item.validity_period}</td>
                     <td>
-                      {daysLeft === null ? "—"
-                        : daysLeft < 0  ? `${Math.abs(daysLeft)}d overdue`
-                        : `${daysLeft}d`}
+                      {daysLeft === null
+                        ? "—"
+                        : daysLeft < 0
+                          ? `${Math.abs(daysLeft)}d overdue`
+                          : `${daysLeft}d`}
                     </td>
                     <td>
                       <span className={`comp-badge ${config.badgeCls}`}>
@@ -292,7 +349,10 @@ function CompliancePage() {
                     </td>
                     <td className="comp-remarks">{item.remarks || "—"}</td>
                     <td>
-                      <button className="comp-btn-sm" onClick={() => openEdit(item)}>
+                      <button
+                        className="comp-btn-sm"
+                        onClick={() => openEdit(item)}
+                      >
                         ✎ Edit
                       </button>
                     </td>
@@ -306,10 +366,39 @@ function CompliancePage() {
 
       {/* Legend */}
       <div className="comp-legend">
-        <span><span className="comp-badge badge-valid" style={{fontSize:"10px"}}>Valid</span> More than 30 days to expiry</span>
-        <span><span className="comp-badge badge-expiring" style={{fontSize:"10px"}}>Expiring soon</span> Within 30 days</span>
-        <span><span className="comp-badge badge-expired" style={{fontSize:"10px"}}>Expired</span> Past expiry date</span>
-        <span><span className="comp-badge badge-pending" style={{fontSize:"10px"}}>Pending</span> No reference number entered yet</span>
+        <span>
+          <span className="comp-badge badge-valid" style={{ fontSize: "10px" }}>
+            Valid
+          </span>{" "}
+          More than 60 days to expiry
+        </span>
+        <span>
+          <span
+            className="comp-badge badge-expiring"
+            style={{ fontSize: "10px" }}
+          >
+            Expiring soon
+          </span>{" "}
+          Within 60 days
+        </span>
+        <span>
+          <span
+            className="comp-badge badge-expired"
+            style={{ fontSize: "10px" }}
+          >
+            Expired
+          </span>{" "}
+          Past expiry date
+        </span>
+        <span>
+          <span
+            className="comp-badge badge-pending"
+            style={{ fontSize: "10px" }}
+          >
+            Pending
+          </span>{" "}
+          No reference number entered yet
+        </span>
       </div>
 
       {/* ── ADD / EDIT MODAL ── */}
@@ -317,75 +406,151 @@ function CompliancePage() {
         <div className="comp-modal-overlay">
           <div className="comp-modal">
             <h2 className="comp-modal-title">
-              {modalType === "add" ? "Add compliance item" : "✎ Edit compliance item"}
+              {modalType === "add"
+                ? "Add compliance item"
+                : "✎ Edit compliance item"}
             </h2>
 
             {/* Auto status preview */}
             {form.reference_number && form.date_of_expiry && (
               <div className="comp-status-preview">
-                Auto-calculated status: {" "}
-                <span className={`comp-badge ${statusConfig[getStatus(form)].badgeCls}`}>
+                Auto-calculated status:{" "}
+                <span
+                  className={`comp-badge ${statusConfig[getStatus(form)].badgeCls}`}
+                >
                   {statusConfig[getStatus(form)].text}
                 </span>
               </div>
             )}
 
             <div className="comp-form-grid">
-
               <div className="comp-form-group full">
-                <label className="comp-form-label">Requirement name <span className="required">*</span></label>
-                <input className="comp-form-input" name="requirement" value={form.requirement} onChange={handleFormChange} placeholder="e.g. Business licence — Unit 4" />
-                {errors.requirement && <div className="comp-field-error">{errors.requirement}</div>}
+                <label className="comp-form-label">
+                  Requirement name <span className="required">*</span>
+                </label>
+                <input
+                  className="comp-form-input"
+                  name="requirement"
+                  value={form.requirement}
+                  onChange={handleFormChange}
+                  placeholder="e.g. Business licence — Unit 4"
+                />
+                {errors.requirement && (
+                  <div className="comp-field-error">{errors.requirement}</div>
+                )}
               </div>
 
               <div className="comp-form-group">
                 <label className="comp-form-label">Expert / organisation</label>
-                <input className="comp-form-input" name="expert_organisation" value={form.expert_organisation} onChange={handleFormChange} placeholder="e.g. Nairobi City County" />
+                <input
+                  className="comp-form-input"
+                  name="expert_organisation"
+                  value={form.expert_organisation}
+                  onChange={handleFormChange}
+                  placeholder="e.g. Nairobi City County"
+                />
               </div>
 
               <div className="comp-form-group">
                 <label className="comp-form-label">Reference number</label>
-                <input className="comp-form-input" name="reference_number" value={form.reference_number} onChange={handleFormChange} placeholder="e.g. 2026/SD/B9957554" />
-                <div style={{fontSize:"11px",color:"#888",marginTop:"3px"}}>Leave blank if not yet issued — status will show as Pending.</div>
+                <input
+                  className="comp-form-input"
+                  name="reference_number"
+                  value={form.reference_number}
+                  onChange={handleFormChange}
+                  placeholder="e.g. 2026/SD/B9957554"
+                />
+                <div
+                  style={{ fontSize: "11px", color: "#888", marginTop: "3px" }}
+                >
+                  Leave blank if not yet issued — status will show as Pending.
+                </div>
               </div>
 
               <div className="comp-form-group full">
-                <label className="comp-form-label">Legal / requirement reference <span className="required">*</span></label>
-                <input className="comp-form-input" name="requirement_reference" value={form.requirement_reference} onChange={handleFormChange} placeholder="e.g. County laws, OSHA 2007, EMCA 1999" />
-                {errors.requirement_reference && <div className="comp-field-error">{errors.requirement_reference}</div>}
+                <label className="comp-form-label">
+                  Legal / requirement reference{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  className="comp-form-input"
+                  name="requirement_reference"
+                  value={form.requirement_reference}
+                  onChange={handleFormChange}
+                  placeholder="e.g. County laws, OSHA 2007, EMCA 1999"
+                />
+                {errors.requirement_reference && (
+                  <div className="comp-field-error">
+                    {errors.requirement_reference}
+                  </div>
+                )}
               </div>
 
               <div className="comp-form-group">
                 <label className="comp-form-label">Date of issuance</label>
-                <input className="comp-form-input" type="date" name="date_of_issuance" value={form.date_of_issuance} onChange={handleFormChange} />
+                <input
+                  className="comp-form-input"
+                  type="date"
+                  name="date_of_issuance"
+                  value={form.date_of_issuance}
+                  onChange={handleFormChange}
+                />
               </div>
 
               <div className="comp-form-group">
-                <label className="comp-form-label">Validity period <span className="required">*</span></label>
-                <select className="comp-form-select" name="validity_period" value={form.validity_period} onChange={handleFormChange}>
+                <label className="comp-form-label">
+                  Validity period <span className="required">*</span>
+                </label>
+                <select
+                  className="comp-form-select"
+                  name="validity_period"
+                  value={form.validity_period}
+                  onChange={handleFormChange}
+                >
                   <option value="Annual">Annual</option>
                   <option value="2 years">2 years</option>
                   <option value="5 years">5 years</option>
                   <option value="Permanent">Permanent</option>
                 </select>
-                {errors.validity_period && <div className="comp-field-error">{errors.validity_period}</div>}
+                {errors.validity_period && (
+                  <div className="comp-field-error">
+                    {errors.validity_period}
+                  </div>
+                )}
               </div>
 
               <div className="comp-form-group">
                 <label className="comp-form-label">Date of expiry</label>
-                <input className="comp-form-input" type="date" name="date_of_expiry" value={form.date_of_expiry} onChange={handleFormChange} />
-                <div style={{fontSize:"11px",color:"#888",marginTop:"3px"}}>Status updates automatically based on this date.</div>
+                <input
+                  className="comp-form-input"
+                  type="date"
+                  name="date_of_expiry"
+                  value={form.date_of_expiry}
+                  onChange={handleFormChange}
+                />
+                <div
+                  style={{ fontSize: "11px", color: "#888", marginTop: "3px" }}
+                >
+                  Status updates automatically based on this date.
+                </div>
               </div>
 
               <div className="comp-form-group full">
                 <label className="comp-form-label">Remarks</label>
-                <input className="comp-form-input" name="remarks" value={form.remarks} onChange={handleFormChange} placeholder="Optional notes" />
+                <input
+                  className="comp-form-input"
+                  name="remarks"
+                  value={form.remarks}
+                  onChange={handleFormChange}
+                  placeholder="Optional notes"
+                />
               </div>
-
             </div>
 
             <div className="comp-modal-buttons">
-              <button className="comp-btn-secondary" onClick={handleCloseModal}>Cancel</button>
+              <button className="comp-btn-secondary" onClick={handleCloseModal}>
+                Cancel
+              </button>
               <button className="comp-btn-primary" onClick={handleSave}>
                 {modalType === "add" ? "Add item" : "Save changes"}
               </button>
@@ -393,7 +558,6 @@ function CompliancePage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
