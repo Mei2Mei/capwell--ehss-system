@@ -1297,51 +1297,46 @@ function PPEPage() {
           </div>
         </div>
       )}
-    </div>
-  );
 
-  {
-    /* ── REJECT REQUEST MODAL── */
-  }
-
-  {
-    rejectModal && (
-      <div className="ppe-modal-overlay">
-        <div className="ppe-modal" style={{ maxWidth: "400px" }}>
-          <h2 className="ppe-modal-title" style={{ color: "#c0392b" }}>
-            Reject request
-          </h2>
-          <div className="ppe-form-group">
-            <label className="ppe-form-label">
-              Reason for rejection <span className="required">*</span>
-            </label>
-            <input
-              className="ppe-form-input"
-              type="text"
-              placeholder="e.g. Item not available in requested size"
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
-          </div>
-          <div className="ppe-modal-buttons">
-            <button
-              className="ppe-btn-secondary"
-              onClick={() => setRejectModal(null)}
-            >
-              Cancel
-            </button>
-            <button
-              className="ppe-btn-primary"
-              style={{ background: "#c0392b", borderColor: "#c0392b" }}
-              onClick={confirmReject}
-            >
-              Confirm rejection
-            </button>
+      {/* ── REJECT REQUEST MODAL── */}
+      {rejectModal && (
+        <div className="ppe-modal-overlay">
+          <div className="ppe-modal" style={{ maxWidth: "400px" }}>
+            <h2 className="ppe-modal-title" style={{ color: "#c0392b" }}>
+              Reject request
+            </h2>
+            <div className="ppe-form-group">
+              <label className="ppe-form-label">
+                Reason for rejection <span className="required">*</span>
+              </label>
+              <input
+                className="ppe-form-input"
+                type="text"
+                placeholder="e.g. Item not available in requested size"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </div>
+            <div className="ppe-modal-buttons">
+              <button
+                className="ppe-btn-secondary"
+                onClick={() => setRejectModal(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="ppe-btn-primary"
+                style={{ background: "#c0392b", borderColor: "#c0392b" }}
+                onClick={confirmReject}
+              >
+                Confirm rejection
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
 
 export default PPEPage;

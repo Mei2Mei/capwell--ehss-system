@@ -583,13 +583,9 @@ function CompliancePage() {
           </div>
         </div>
       )}
-    </div>
-  );
 
-  {
-    // ── DELETE CONFIRMATION MODAL ── }
-    {
-      deleteModal && (
+      {/* ── DELETE CONFIRMATION MODAL ── */}
+      {deleteModal && (
         <div className="comp-modal-overlay">
           <div className="comp-modal" style={{ maxWidth: "420px" }}>
             <h2 className="comp-modal-title" style={{ color: "#c0392b" }}>
@@ -630,9 +626,9 @@ function CompliancePage() {
             </div>
           </div>
         </div>
-      );
-    }
-  }
+      )}
+    </div>
+  );
 }
 
 export default CompliancePage;
