@@ -1,0 +1,272 @@
+/* ─────────────────────────────────────────────
+   EquipmentPage.css — Unified EHSS Theme
+──────────────────────────────────────────── */
+
+.equipment-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a5276;
+  margin: 0;
+}
+
+/* CARDS */
+.card-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  flex: 1;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  color: #0f172a;
+}
+
+.card.blue {
+  background: #e0f2fe;
+}
+
+.card.green {
+  background: #dcfce7;
+}
+
+.card.orange {
+  background: #ffedd5;
+}
+
+/* SEARCH */
+.search-box {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* FORM */
+.equipment-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.equipment-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.equipment-form-group.full {
+  grid-column: span 2;
+}
+
+.equipment-form-label {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.equipment-form-input,
+.equipment-form-select {
+   padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.equipment-form-input:focus,
+.equipment-form-select:focus {
+  outline: none;
+  border-color: #1a5276;
+  box-shadow: 0 0 0 2px rgba(26,82,118,0.15);
+}
+
+.equipment-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.equipment-btn-primary {
+  background: #1a5276;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.equipment-btn-secondary {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.required {
+  color: #c0392b;
+}
+
+.form-grid button {
+  grid-column: span 3;
+  padding: 10px;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* TABLE */
+.equipment-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* Table header */
+.equipment-table th {
+  text-align: left;
+  padding: 12px 14px;
+  background-color: #1a5276;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Table rows */
+.equipment-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+/* STATUS BADGES */
+.status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status.available {
+  background: #27ae60; color: #ffffff; 
+}
+
+.status.in\ use {
+  background: #2563eb; color: #ffffff;
+}
+
+.status.maintenance {
+  background: #f59e0b; color: #ffffff;
+}
+
+.equipment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.equipment-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 28px 32px;
+  width: 620px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.equipment-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a5276;
+  margin-bottom: 16px;
+}
+
+.modal input,
+.modal select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* ── Primary action button ── */
+.add-btn {
+  background: #1a5276;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.add-btn:hover {
+  background: #154360;
+}
+
+/* ── Secondary button (Cancel, close) ── */
+.modal-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a5276;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.cancel-btn {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background: rgb(26, 82, 118);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: rgb(20, 65, 95);
+}
