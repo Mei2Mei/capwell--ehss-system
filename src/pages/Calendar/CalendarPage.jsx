@@ -1,224 +1,559 @@
-import React, { useState } from "react";
+// ─────────────────────────────────────────────────────────────
+// CalendarPage.jsx — EHSS Calendar Module
+// - Status tabs and filters
+// - Overdue detection
+// - Add and edit activities
+// - Inline status update
+// ─────────────────────────────────────────────────────────────
+
+import { useState } from "react";
+import { calendarActivities as initialActivities } from "../../data/calendarData";
 import "./CalendarPage.css";
-import { initialActivities, statusColors } from "../../data/CalendarData";
 
-const CalendarPage = () => {
+// ── Helpers ───────────────────────────────────────────────────
+function formatMonth(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
+
+function isOverdue(activity) {
+  if (activity.status !== "scheduled") return false;
+  const today = new Date();
+  const scheduled = new Date(activity.scheduled_month);
+  return scheduled < new Date(today.getFullYear(), today.getMonth(), 1);
+}
+
+function friendlyCategory(cat) {
+  switch (cat) {
+    case "statutory_requirement":
+      return "Statutory";
+    case "industry_best_practice":
+      return "Best practice";
+    case "behaviour_based_safety":
+      return "BBS";
+    default:
+      return cat;
+  }
+}
+
+function getCategoryClass(cat) {
+  switch (cat) {
+    case "statutory_requirement":
+      return "badge-statutory";
+    case "industry_best_practice":
+      return "badge-practice";
+    case "behaviour_based_safety":
+      return "badge-bbs";
+    default:
+      return "badge-other";
+  }
+}
+
+function getStatusClass(status, overdue) {
+  if (overdue) return "badge-overdue";
+  if (status === "completed") return "badge-completed";
+  if (status === "not_conducted") return "badge-notconducted";
+  if (status === "rescheduled") return "badge-rescheduled";
+  return "badge-scheduled";
+}
+
+function getStatusText(status, overdue) {
+  if (overdue) return "Overdue";
+  switch (status) {
+    case "completed":
+      return "Completed";
+    case "not_conducted":
+      return "Not conducted";
+    case "rescheduled":
+      return "Rescheduled";
+    default:
+      return "Scheduled";
+  }
+}
+
+const emptyForm = {
+  activity_name: "",
+  category: "",
+  target_audience: "",
+  internal_external: "internal",
+  scheduled_month: "",
+  status: "scheduled",
+  notes: "",
+};
+
+function CalendarPage() {
   const [activities, setActivities] = useState(initialActivities);
-  const [view, setView] = useState("table");
-  const [showModal, setShowModal] = useState(false);
-  const [newActivity, setNewActivity] = useState({
-    activity_name: "",
-    category: "statutory_requirement",
-    target_audience: "",
-    internal_external: "internal",
-    scheduled_month: "",
-    status: "scheduled",
-    notes: "",
-  });
+  const [activeTab, setActiveTab] = useState("all");
+  const [catFilter, setCatFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [modalType, setModalType] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(emptyForm);
+  const [errors, setErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const getStatus = (item) => {
-    const today = new Date();
-    const scheduled = new Date(item.scheduled_month);
-
-    if (item.status === "completed") return "completed";
-    if (item.status === "rescheduled") return "rescheduled";
-    if (item.status === "not_conducted") return "not_conducted";
-
-    if (today > scheduled && item.status === "scheduled") {
-      return "overdue";
-    }
-
-    return "scheduled";
+  // ── Counts for tabs ───────────────────────────────────────
+  const counts = {
+    all: activities.length,
+    scheduled: activities.filter(
+      (a) => a.status === "scheduled" && !isOverdue(a),
+    ).length,
+    overdue: activities.filter((a) => isOverdue(a)).length,
+    completed: activities.filter((a) => a.status === "completed").length,
+    not_conducted: activities.filter((a) => a.status === "not_conducted")
+      .length,
+    rescheduled: activities.filter((a) => a.status === "rescheduled").length,
   };
 
-  const updateStatus = (id, newStatus) => {
-    setActivities((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
+  // ── Filtered list ─────────────────────────────────────────
+  const filtered = activities
+    .filter((a) => {
+      if (activeTab === "overdue") return isOverdue(a);
+      if (activeTab === "scheduled")
+        return a.status === "scheduled" && !isOverdue(a);
+      if (activeTab === "all") return true;
+      return a.status === activeTab;
+    })
+    .filter((a) => catFilter === "all" || a.category === catFilter)
+    .filter(
+      (a) =>
+        a.activity_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.target_audience.toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  };
+
+  // ── Helpers ───────────────────────────────────────────────
+  function showBanner(msg) {
+    setSuccessMessage(msg);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 4000);
+  }
+
+  function handleFormChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
+  }
+
+  function validate() {
+    const e = {};
+    if (!form.activity_name.trim())
+      e.activity_name = "Activity name is required.";
+    if (!form.category) e.category = "Please select a category.";
+    if (!form.target_audience.trim())
+      e.target_audience = "Target audience is required.";
+    if (!form.scheduled_month) e.scheduled_month = "Please select a month.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function openAdd() {
+    setForm(emptyForm);
+    setErrors({});
+    setEditingId(null);
+    setModalType("form");
+  }
+
+  function openEdit(activity) {
+    setForm({
+      activity_name: activity.activity_name,
+      category: activity.category,
+      target_audience: activity.target_audience,
+      internal_external: activity.internal_external,
+      scheduled_month: activity.scheduled_month,
+      status: activity.status,
+      notes: activity.notes,
+    });
+    setErrors({});
+    setEditingId(activity.id);
+    setModalType("form");
+  }
+
+  function handleSave() {
+    if (!validate()) return;
+    if (modalType === "form" && editingId === null) {
+      const newActivity = {
+        ...form,
+        id: Date.now(),
+        scheduled_month: form.scheduled_month + "-01",
+      };
+      setActivities([...activities, newActivity]);
+      showBanner("Activity added successfully.");
+    } else {
+      setActivities(
+        activities.map((a) =>
+          a.id === editingId
+            ? {
+                ...a,
+                ...form,
+                scheduled_month:
+                  form.scheduled_month.length === 7
+                    ? form.scheduled_month + "-01"
+                    : form.scheduled_month,
+              }
+            : a,
+        ),
+      );
+      showBanner("Activity updated successfully.");
+    }
+    setModalType(null);
+    setEditingId(null);
+    setForm(emptyForm);
+    setErrors({});
+  }
+
+  // Inline status change directly in the table
+  function handleInlineStatus(id, newStatus) {
+    setActivities(
+      activities.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
+    );
+    showBanner("Status updated.");
+  }
 
   return (
-    <div className="calendar-page">
-      <div className="header">
-        <h2>EHSS Calendar 2026</h2>
+    <div className="cal-page">
+      {showSuccess && (
+        <div className="cal-success-banner">✓ {successMessage}</div>
+      )}
 
-        <button onClick={() => setView(view === "table" ? "grid" : "table")}>
-          Toggle View
+      {/* Header */}
+      <div className="cal-header">
+        <div>
+          <h1 className="cal-title">EHSS Calendar 2026</h1>
+          <p className="cal-subtitle">
+            Activities past their scheduled month with status "Scheduled" are
+            automatically flagged as overdue.
+          </p>
+        </div>
+        <button className="cal-btn-primary" onClick={openAdd}>
+          + Add activity
         </button>
-
-        <button onClick={() => setShowModal(true)}>+ Add Activity</button>
       </div>
 
-      <div className="kpi-row">
-        <div className="kpi">
-          Total
-          <br />
-          <b>{activities.length}</b>
+      {/* Summary cards */}
+      <div className="cal-cards">
+        <div className="cal-card">
+          <div className="cal-card-label">Total</div>
+          <div className="cal-card-value">{counts.all}</div>
         </div>
-
-        <div className="kpi">
-          Scheduled
-          <br />
-          <b>{activities.filter((a) => a.status === "scheduled").length}</b>
+        <div className="cal-card card-completed">
+          <div className="cal-card-label">Completed</div>
+          <div className="cal-card-value green">{counts.completed}</div>
         </div>
-
-        <div className="kpi">
-          Completed
-          <br />
-          <b>{activities.filter((a) => a.status === "completed").length}</b>
+        <div className="cal-card card-overdue">
+          <div className="cal-card-label">Overdue</div>
+          <div className="cal-card-value red">{counts.overdue}</div>
         </div>
-
-        <div className="kpi danger">
-          Overdue
-          <br />
-          <b>{activities.filter((a) => getStatus(a) === "overdue").length}</b>
+        <div className="cal-card">
+          <div className="cal-card-label">Scheduled</div>
+          <div className="cal-card-value">{counts.scheduled}</div>
+        </div>
+        <div className="cal-card">
+          <div className="cal-card-label">Not conducted</div>
+          <div className="cal-card-value amber">{counts.not_conducted}</div>
         </div>
       </div>
-      <div className="filter-bar">
-        <select>
-          <option>All Categories</option>
-          <option>statutory_requirement</option>
-          <option>industry_best_practice</option>
-          <option>behaviour_based_safety</option>
-        </select>
 
-        <select>
-          <option>All Status</option>
-          <option>scheduled</option>
-          <option>completed</option>
-          <option>overdue</option>
-        </select>
-
-        <input placeholder="Search audience..." />
+      {/* Filter row */}
+      <div className="cal-filter-row">
+        <div className="cal-tabs">
+          {[
+            { key: "all", label: `All (${counts.all})` },
+            { key: "scheduled", label: `Scheduled (${counts.scheduled})` },
+            { key: "overdue", label: `Overdue (${counts.overdue})` },
+            { key: "completed", label: `Completed (${counts.completed})` },
+            {
+              key: "not_conducted",
+              label: `Not conducted (${counts.not_conducted})`,
+            },
+            {
+              key: "rescheduled",
+              label: `Rescheduled (${counts.rescheduled})`,
+            },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              className={`cal-tab ${activeTab === tab.key ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="cal-filter-right">
+          <select
+            className="cal-select"
+            value={catFilter}
+            onChange={(e) => setCatFilter(e.target.value)}
+          >
+            <option value="all">All categories</option>
+            <option value="statutory_requirement">Statutory</option>
+            <option value="industry_best_practice">Best practice</option>
+            <option value="behaviour_based_safety">BBS</option>
+          </select>
+          <input
+            className="cal-search"
+            type="text"
+            placeholder="Search activity or audience..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* TABLE VIEW */}
-      {view === "table" && (
-        <table className="calendar-table">
+      {/* Table */}
+      <div className="cal-table-wrap">
+        <table className="cal-table">
           <thead>
             <tr>
-              <th>SN</th>
+              <th>#</th>
               <th>Activity</th>
               <th>Category</th>
-              <th>Audience</th>
+              <th>Target audience</th>
               <th>Type</th>
               <th>Month</th>
               <th>Status</th>
+              <th>Notes</th>
+              <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {activities.map((item, index) => {
-              const status = getStatus(item);
-
-              return (
-                <tr
-                  key={item.id}
-                  className={status === "overdue" ? "overdue-row" : ""}
+            {filtered.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="9"
+                  style={{
+                    textAlign: "center",
+                    padding: "32px",
+                    color: "#888",
+                    fontStyle: "italic",
+                  }}
                 >
-                  <td>{index + 1}</td>
-                  <td>{item.activity_name}</td>
-                  <td>{item.category}</td>
-                  <td>{item.target_audience}</td>
-                  <td>{item.internal_external}</td>
-                  <td>{item.scheduled_month}</td>
-
-                  <td>
-                    <select
-                      value={item.status}
-                      onChange={(e) => updateStatus(item.id, e.target.value)}
-                      className={`status-select ${status}`}
-                    >
-                      <option value="scheduled">Scheduled</option>
-                      <option value="completed">Completed</option>
-                      <option value="rescheduled">Rescheduled</option>
-                      <option value="not_conducted">Not conducted</option>
-                    </select>
-                  </td>
-                </tr>
-              );
-            })}
+                  No activities match the current filter.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((a, i) => {
+                const overdue = isOverdue(a);
+                return (
+                  <tr
+                    key={a.id}
+                    className={
+                      overdue
+                        ? "row-overdue"
+                        : a.status === "completed"
+                          ? "row-completed"
+                          : ""
+                    }
+                  >
+                    <td>{i + 1}</td>
+                    <td className="cal-activity-name">{a.activity_name}</td>
+                    <td>
+                      <span
+                        className={`cal-badge ${getCategoryClass(a.category)}`}
+                      >
+                        {friendlyCategory(a.category)}
+                      </span>
+                    </td>
+                    <td>{a.target_audience}</td>
+                    <td>
+                      {a.internal_external === "internal"
+                        ? "Internal"
+                        : "External"}
+                    </td>
+                    <td>{formatMonth(a.scheduled_month)}</td>
+                    <td>
+                      <span
+                        className={`cal-badge ${getStatusClass(a.status, overdue)}`}
+                      >
+                        {getStatusText(a.status, overdue)}
+                      </span>
+                    </td>
+                    <td className="cal-notes">{a.notes || "—"}</td>
+                    <td>
+                      {/* Inline status dropdown */}
+                      <select
+                        className="cal-inline-select"
+                        value={a.status}
+                        onChange={(e) =>
+                          handleInlineStatus(a.id, e.target.value)
+                        }
+                      >
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                        <option value="rescheduled">Rescheduled</option>
+                        <option value="not_conducted">Not conducted</option>
+                      </select>{" "}
+                      <button
+                        className="cal-btn-sm"
+                        onClick={() => openEdit(a)}
+                      >
+                        ✎ Edit
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
-      )}
+      </div>
 
-      {/* GRID VIEW */}
-      {view === "grid" && (
-        <div className="grid">
-          {Array.from({ length: 12 }).map((_, i) => {
-            const count = activities.filter(
-              (a) => new Date(a.scheduled_month).getMonth() === i,
-            ).length;
+      {/* Modal */}
+      {modalType === "form" && (
+        <div className="cal-modal-overlay">
+          <div className="cal-modal">
+            <h2 className="cal-modal-title">
+              {editingId ? "✎ Edit activity" : "Add activity"}
+            </h2>
 
-            return (
-              <div key={i} className="month-card">
-                <h3>Month {i + 1}</h3>
-                <p>{count} activities</p>
+            <div className="cal-form-grid">
+              <div className="cal-form-group full">
+                <label className="cal-form-label">
+                  Activity name <span className="required">*</span>
+                </label>
+                <input
+                  className="cal-form-input"
+                  type="text"
+                  name="activity_name"
+                  value={form.activity_name}
+                  onChange={handleFormChange}
+                  placeholder="e.g. Fire drill"
+                />
+                {errors.activity_name && (
+                  <div className="cal-field-error">{errors.activity_name}</div>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* MODAL FOR ADDING ACTIVITY */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Add Activity</h3>
+              <div className="cal-form-group">
+                <label className="cal-form-label">
+                  Category <span className="required">*</span>
+                </label>
+                <select
+                  className="cal-form-select"
+                  name="category"
+                  value={form.category}
+                  onChange={handleFormChange}
+                >
+                  <option value="">Select category...</option>
+                  <option value="statutory_requirement">
+                    Statutory requirement
+                  </option>
+                  <option value="industry_best_practice">
+                    Industry best practice
+                  </option>
+                  <option value="behaviour_based_safety">
+                    Behaviour based safety
+                  </option>
+                </select>
+                {errors.category && (
+                  <div className="cal-field-error">{errors.category}</div>
+                )}
+              </div>
 
-            <input
-              placeholder="Activity name"
-              value={newActivity.activity_name}
-              onChange={(e) =>
-                setNewActivity({
-                  ...newActivity,
-                  activity_name: e.target.value,
-                })
-              }
-            />
+              <div className="cal-form-group">
+                <label className="cal-form-label">
+                  Target audience <span className="required">*</span>
+                </label>
+                <input
+                  className="cal-form-input"
+                  type="text"
+                  name="target_audience"
+                  value={form.target_audience}
+                  onChange={handleFormChange}
+                  placeholder="e.g. All staff"
+                />
+                {errors.target_audience && (
+                  <div className="cal-field-error">
+                    {errors.target_audience}
+                  </div>
+                )}
+              </div>
 
-            <input
-              placeholder="Target audience"
-              value={newActivity.target_audience}
-              onChange={(e) =>
-                setNewActivity({
-                  ...newActivity,
-                  target_audience: e.target.value,
-                })
-              }
-            />
+              <div className="cal-form-group">
+                <label className="cal-form-label">Internal / External</label>
+                <select
+                  className="cal-form-select"
+                  name="internal_external"
+                  value={form.internal_external}
+                  onChange={handleFormChange}
+                >
+                  <option value="internal">Internal</option>
+                  <option value="external">External</option>
+                </select>
+              </div>
 
-            <input
-              type="date"
-              value={newActivity.scheduled_month}
-              onChange={(e) =>
-                setNewActivity({
-                  ...newActivity,
-                  scheduled_month: e.target.value,
-                })
-              }
-            />
+              <div className="cal-form-group">
+                <label className="cal-form-label">
+                  Scheduled month <span className="required">*</span>
+                </label>
+                <input
+                  className="cal-form-input"
+                  type="month"
+                  name="scheduled_month"
+                  value={
+                    form.scheduled_month
+                      ? form.scheduled_month.substring(0, 7)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setForm({ ...form, scheduled_month: e.target.value })
+                  }
+                />
+                {errors.scheduled_month && (
+                  <div className="cal-field-error">
+                    {errors.scheduled_month}
+                  </div>
+                )}
+              </div>
 
-            <div className="modal-actions">
+              <div className="cal-form-group">
+                <label className="cal-form-label">Status</label>
+                <select
+                  className="cal-form-select"
+                  name="status"
+                  value={form.status}
+                  onChange={handleFormChange}
+                >
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="rescheduled">Rescheduled</option>
+                  <option value="not_conducted">Not conducted</option>
+                </select>
+              </div>
+
+              <div className="cal-form-group full">
+                <label className="cal-form-label">Notes (optional)</label>
+                <input
+                  className="cal-form-input"
+                  type="text"
+                  name="notes"
+                  value={form.notes}
+                  onChange={handleFormChange}
+                  placeholder="Optional notes"
+                />
+              </div>
+            </div>
+
+            <div className="cal-modal-buttons">
               <button
+                className="cal-btn-secondary"
                 onClick={() => {
-                  setActivities([
-                    ...activities,
-                    { id: Date.now(), ...newActivity },
-                  ]);
-                  setShowModal(false);
+                  setModalType(null);
+                  setErrors({});
                 }}
               >
-                Save
+                Cancel
               </button>
-
-              <button onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="cal-btn-primary" onClick={handleSave}>
+                {editingId ? "Save changes" : "Add activity"}
+              </button>
             </div>
           </div>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default CalendarPage;

@@ -138,12 +138,12 @@
 
 /* Low stock row — amber background */
 .row-low {
-  background-color: #fdebd0;
+  background-color: #f5cba7;
 }
 
 /* Out of stock row — red background */
 .row-out {
-  background-color: #fadbd8;
+  background-color: #f1948a;
 }
 
 /* Alternating colour for normal rows */

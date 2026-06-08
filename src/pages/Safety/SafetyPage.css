@@ -110,7 +110,7 @@
   color: #222;
 }
 .safety-table tr:last-child td { border-bottom: none; }
-.row-incident { background: #fef9f0; }
+.row-incident { background: #f9e4b7; }
 .calc-alert { color: #c0392b; font-weight: 600; }
 .calc-ok    { color: #27ae60; }
 .safety-legend {
