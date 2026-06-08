@@ -5,6 +5,16 @@ import { initialActivities, statusColors } from "../../data/CalendarData";
 const CalendarPage = () => {
   const [activities, setActivities] = useState(initialActivities);
   const [view, setView] = useState("table");
+  const [showModal, setShowModal] = useState(false);
+  const [newActivity, setNewActivity] = useState({
+    activity_name: "",
+    category: "statutory_requirement",
+    target_audience: "",
+    internal_external: "internal",
+    scheduled_month: "",
+    status: "scheduled",
+    notes: "",
+  });
 
   const getStatus = (item) => {
     const today = new Date();
@@ -35,6 +45,8 @@ const CalendarPage = () => {
         <button onClick={() => setView(view === "table" ? "grid" : "table")}>
           Toggle View
         </button>
+
+        <button onClick={() => setShowModal(true)}>+ Add Activity</button>
       </div>
 
       <div className="kpi-row">
@@ -145,6 +157,64 @@ const CalendarPage = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* MODAL FOR ADDING ACTIVITY */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add Activity</h3>
+
+            <input
+              placeholder="Activity name"
+              value={newActivity.activity_name}
+              onChange={(e) =>
+                setNewActivity({
+                  ...newActivity,
+                  activity_name: e.target.value,
+                })
+              }
+            />
+
+            <input
+              placeholder="Target audience"
+              value={newActivity.target_audience}
+              onChange={(e) =>
+                setNewActivity({
+                  ...newActivity,
+                  target_audience: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="date"
+              value={newActivity.scheduled_month}
+              onChange={(e) =>
+                setNewActivity({
+                  ...newActivity,
+                  scheduled_month: e.target.value,
+                })
+              }
+            />
+
+            <div className="modal-actions">
+              <button
+                onClick={() => {
+                  setActivities([
+                    ...activities,
+                    { id: Date.now(), ...newActivity },
+                  ]);
+                  setShowModal(false);
+                }}
+              >
+                Save
+              </button>
+
+              <button onClick={() => setShowModal(false)}>Cancel</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
