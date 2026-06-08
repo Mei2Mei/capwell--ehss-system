@@ -90,6 +90,8 @@ function CompliancePage() {
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   // ── Summary counts ────────────────────────────────────────
@@ -187,6 +189,22 @@ function CompliancePage() {
     setEditingId(null);
     setForm(emptyForm);
     setErrors({});
+  }
+
+  function handleDeleteOpen(item) {
+    setDeleteReason("");
+    setDeleteModal(item);
+  }
+
+  function handleDeleteConfirm() {
+    if (!deleteReason.trim()) {
+      showBanner("Please enter a reason for deletion.");
+      return;
+    }
+    setItems(items.filter((i) => i.id !== deleteModal.id));
+    setDeleteModal(null);
+    setDeleteReason("");
+    showBanner(`"${deleteModal.requirement}" deleted successfully.`);
   }
 
   // ── JSX ───────────────────────────────────────────────────
@@ -354,6 +372,13 @@ function CompliancePage() {
                         onClick={() => openEdit(item)}
                       >
                         ✎ Edit
+                      </button>{" "}
+                      <button
+                        className="comp-btn-sm"
+                        style={{ color: "#c0392b", borderColor: "#c0392b" }}
+                        onClick={() => handleDeleteOpen(item)}
+                      >
+                        🗑 Delete
                       </button>
                     </td>
                   </tr>
@@ -560,6 +585,54 @@ function CompliancePage() {
       )}
     </div>
   );
+
+  {
+    // ── DELETE CONFIRMATION MODAL ── }
+    {
+      deleteModal && (
+        <div className="comp-modal-overlay">
+          <div className="comp-modal" style={{ maxWidth: "420px" }}>
+            <h2 className="comp-modal-title" style={{ color: "#c0392b" }}>
+              Delete compliance item
+            </h2>
+            <p
+              style={{ fontSize: "13px", color: "#444", marginBottom: "12px" }}
+            >
+              You are about to delete:{" "}
+              <strong>{deleteModal.requirement}</strong>
+            </p>
+            <div className="comp-form-group full">
+              <label className="comp-form-label">
+                Reason for deletion <span className="required">*</span>
+              </label>
+              <input
+                className="comp-form-input"
+                type="text"
+                placeholder="e.g. Licence replaced by new reference number"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+              />
+            </div>
+            <div className="comp-modal-buttons">
+              <button
+                className="comp-btn-secondary"
+                onClick={() => setDeleteModal(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="comp-btn-primary"
+                style={{ background: "#c0392b", borderColor: "#c0392b" }}
+                onClick={handleDeleteConfirm}
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
 }
 
 export default CompliancePage;

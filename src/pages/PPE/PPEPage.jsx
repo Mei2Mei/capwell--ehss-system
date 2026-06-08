@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import { ppeItems as initialItems } from "../../data/ppeData";
+import { ppeItems as initialItems } from "../../data/PPEData";
 import "./PPEPage.css";
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -92,6 +92,8 @@ function PPEPage() {
   // Reorder level inline edit
   // Stores { itemId, value } when editing, null when not
   const [editingReorder, setEditingReorder] = useState(null);
+  const [rejectModal, setRejectModal] = useState(null); // stores request id being rejected
+  const [rejectReason, setRejectReason] = useState("");
 
   const [errors, setErrors] = useState({});
 
@@ -383,13 +385,19 @@ function PPEPage() {
   }
 
   function handleRejectRequest(requestId) {
-    const request = requests.find((r) => r.id === requestId);
-    if (!request) return;
+    setRejectReason("");
+    setRejectModal(requestId);
+  }
 
+  function confirmReject() {
+    if (!rejectReason.trim()) {
+      showBanner("Please enter a reason for rejection.");
+      return;
+    }
+    const request = requests.find((r) => r.id === rejectModal);
+    if (!request) return;
     const qty = Number(request.quantity);
     const itemId = request.item_id;
-
-    // release reservation if it exists
     setItems((items) =>
       items.map((item) => {
         if (item.id === itemId) {
@@ -401,14 +409,16 @@ function PPEPage() {
         return item;
       }),
     );
-
     setRequests(
-      requests.map((request) =>
-        request.id === requestId ? { ...request, status: "rejected" } : request,
+      requests.map((r) =>
+        r.id === rejectModal
+          ? { ...r, status: "rejected", reject_reason: rejectReason }
+          : r,
       ),
     );
-
-    showBanner("Request rejected and reservation released.");
+    setRejectModal(null);
+    setRejectReason("");
+    showBanner("Request rejected.");
   }
 
   function handleFulfillRequest(requestId) {
@@ -969,7 +979,22 @@ function PPEPage() {
                         <span>✓ Completed</span>
                       )}
 
-                      {request.status === "rejected" && <span>✕ Rejected</span>}
+                      {request.status === "rejected" && (
+                        <div>
+                          <span style={{ color: "#c0392b" }}>✕ Rejected</span>
+                          {request.reject_reason && (
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#888",
+                                marginTop: "3px",
+                              }}
+                            >
+                              Reason: {request.reject_reason}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -1274,6 +1299,49 @@ function PPEPage() {
       )}
     </div>
   );
+
+  {
+    /* ── REJECT REQUEST MODAL── */
+  }
+
+  {
+    rejectModal && (
+      <div className="ppe-modal-overlay">
+        <div className="ppe-modal" style={{ maxWidth: "400px" }}>
+          <h2 className="ppe-modal-title" style={{ color: "#c0392b" }}>
+            Reject request
+          </h2>
+          <div className="ppe-form-group">
+            <label className="ppe-form-label">
+              Reason for rejection <span className="required">*</span>
+            </label>
+            <input
+              className="ppe-form-input"
+              type="text"
+              placeholder="e.g. Item not available in requested size"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+          </div>
+          <div className="ppe-modal-buttons">
+            <button
+              className="ppe-btn-secondary"
+              onClick={() => setRejectModal(null)}
+            >
+              Cancel
+            </button>
+            <button
+              className="ppe-btn-primary"
+              style={{ background: "#c0392b", borderColor: "#c0392b" }}
+              onClick={confirmReject}
+            >
+              Confirm rejection
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default PPEPage;

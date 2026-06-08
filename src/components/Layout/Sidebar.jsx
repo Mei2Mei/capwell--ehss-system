@@ -55,7 +55,7 @@ function Sidebar({ activePage, onNavigate }) {
       {/* User info at the bottom of sidebar */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
-          <div className="sidebar-user-avatar">L</div>
+          <div className="sidebar-user-avatar">LN</div>
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">Linda</div>
             <div className="sidebar-user-role">EHSS Officer</div>
