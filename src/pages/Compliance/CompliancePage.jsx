@@ -197,14 +197,24 @@ function CompliancePage() {
   }
 
   function handleDeleteConfirm() {
+    // 1. BLOCK IF NO REASON
     if (!deleteReason.trim()) {
       showBanner("Please enter a reason for deletion.");
       return;
     }
+
+    // 2. SAFETY CHECK (optional but good)
+    if (!deleteModal) return;
+
+    // 3. DELETE ITEM
     setItems(items.filter((i) => i.id !== deleteModal.id));
+
+    // 4. SUCCESS MESSAGE
+    showBanner(`"${deleteModal.requirement}" deleted successfully.`);
+
+    // 5. RESET STATE
     setDeleteModal(null);
     setDeleteReason("");
-    showBanner(`"${deleteModal.requirement}" deleted successfully.`);
   }
 
   // ── JSX ───────────────────────────────────────────────────
@@ -601,6 +611,16 @@ function CompliancePage() {
               <label className="comp-form-label">
                 Reason for deletion <span className="required">*</span>
               </label>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#c0392b",
+                  marginBottom: "10px",
+                }}
+              >
+                ⚠ You must provide a reason before deleting this compliance
+                record.
+              </p>
               <input
                 className="comp-form-input"
                 type="text"

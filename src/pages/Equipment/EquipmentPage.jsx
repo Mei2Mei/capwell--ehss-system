@@ -38,6 +38,15 @@ export default function EquipmentPage() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
 
+  const counts = {
+    all: equipment.length,
+    certified: equipment.filter((e) => getEquipmentStatus(e) === "certified")
+      .length,
+    due: equipment.filter((e) => getEquipmentStatus(e) === "due").length,
+    overdue: equipment.filter((e) => getEquipmentStatus(e) === "overdue")
+      .length,
+  };
+
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -209,10 +218,10 @@ export default function EquipmentPage() {
         {/* LEFT: FILTER TABS */}
         <div className="equipment-tabs">
           {[
-            { key: "all", label: "ALL" },
-            { key: "certified", label: "CERTIFIED" },
-            { key: "due", label: "DUE SOON" },
-            { key: "overdue", label: "OVERDUE" },
+            { key: "all", label: `ALL (${counts.all})` },
+            { key: "certified", label: `CERTIFIED (${counts.certified})` },
+            { key: "due", label: `DUE SOON (${counts.due})` },
+            { key: "overdue", label: `OVERDUE (${counts.overdue})` },
           ].map((tab) => (
             <button
               key={tab.key}
