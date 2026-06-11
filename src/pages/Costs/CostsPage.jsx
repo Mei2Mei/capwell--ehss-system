@@ -78,6 +78,9 @@ function CostsPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -127,7 +130,9 @@ function CostsPage() {
     if (!form.cost_type) e.cost_type = "Please select a cost type.";
     // PO number uniqueness check
     const dup = records.find(
-      (r) => r.po_number.toLowerCase() === form.po_number.toLowerCase(),
+      (r) =>
+        r.po_number.toLowerCase() === form.po_number.toLowerCase() &&
+        r.id !== editingId,
     );
     if (dup)
       e.po_number = "This PO number already exists. PO numbers must be unique.";
@@ -135,8 +140,81 @@ function CostsPage() {
     return Object.keys(e).length === 0;
   }
 
+  function handleEdit(record) {
+    setEditingId(record.id);
+
+    setForm({
+      item_description: record.item_description,
+      date: record.date,
+      po_number: record.po_number,
+      cost_excl_vat: record.cost_excl_vat,
+      cost_type: record.cost_type,
+      refundable: record.refundable,
+      budget_status: record.budget_status,
+    });
+
+    setErrors({});
+    setShowModal(true);
+  }
+
+  function handleDeleteOpen(record) {
+    setDeleteReason("");
+    setDeleteModal(record);
+  }
+
+  function handleDeleteConfirm() {
+    if (!deleteReason.trim()) {
+      setErrors({ deleteReason: "Deletion reason is required." });
+      return;
+    }
+
+    // OPTIONAL: log deletion reason (important for audit trail later)
+    const deletedRecord = records.find((r) => r.id === deleteModal.id);
+
+    console.log("DELETED COST RECORD:", {
+      record: deletedRecord,
+      reason: deleteReason,
+      deletedAt: new Date().toISOString(),
+    });
+
+    setRecords(records.filter((r) => r.id !== deleteModal.id));
+
+    setDeleteModal(null);
+    setDeleteReason("");
+    setErrors({});
+
+    showBanner("Cost record deleted successfully.");
+  }
+
   function handleSave() {
     if (!validate()) return;
+
+    if (editingId) {
+      setRecords(
+        records.map((r) =>
+          r.id === editingId
+            ? {
+                ...r,
+                item_description: form.item_description.trim(),
+                date: form.date,
+                po_number: form.po_number.trim().toUpperCase(),
+                cost_excl_vat: Number(form.cost_excl_vat),
+                cost_type: form.cost_type,
+                refundable: form.refundable,
+                budget_status: form.budget_status,
+                year: new Date(form.date).getFullYear(),
+              }
+            : r,
+        ),
+      );
+
+      setEditingId(null);
+      setShowModal(false);
+
+      showBanner("Cost record updated successfully.");
+
+      return;
+    }
     const newRecord = {
       id: Date.now(),
       year: new Date(form.date).getFullYear(),
@@ -266,13 +344,14 @@ function CostsPage() {
               <th>Cost type</th>
               <th>Refundable</th>
               <th>Budget status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan="8"
+                  colSpan="9"
                   style={{
                     textAlign: "center",
                     padding: "32px",
@@ -320,6 +399,21 @@ function CostsPage() {
                         ? "In budget"
                         : "Outside budget"}
                     </span>
+                  </td>
+                  <td>
+                    <button
+                      className="costs-btn-sm costs-edit-btn"
+                      onClick={() => handleEdit(r)}
+                    >
+                      ✎ Edit
+                    </button>
+
+                    <button
+                      className="costs-btn-sm costs-delete-btn"
+                      onClick={() => handleDeleteOpen(r)}
+                    >
+                      🗑 Delete
+                    </button>
                   </td>
                 </tr>
               ))
@@ -481,6 +575,58 @@ function CostsPage() {
               </button>
               <button className="costs-btn-primary" onClick={handleSave}>
                 Save record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*DELETE CONFIRMATION MODAL*/}
+      {deleteModal && (
+        <div className="costs-modal-overlay">
+          <div className="costs-modal">
+            <h2 className="costs-modal-title">Delete cost record</h2>
+
+            <p
+              style={{ fontSize: "13px", marginBottom: "12px", color: "#555" }}
+            >
+              You are deleting: <strong>{deleteModal.item_description}</strong>
+            </p>
+
+            <label className="costs-form-label">
+              Reason for deletion <span className="required">*</span>
+            </label>
+
+            <textarea
+              className="costs-form-input"
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Explain why this record is being deleted..."
+              rows="4"
+            />
+
+            {errors.deleteReason && (
+              <div className="costs-field-error">{errors.deleteReason}</div>
+            )}
+
+            <div className="costs-modal-buttons">
+              <button
+                className="costs-btn-secondary"
+                onClick={() => {
+                  setDeleteModal(null);
+                  setDeleteReason("");
+                  setErrors({});
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="costs-btn-primary"
+                onClick={handleDeleteConfirm}
+                style={{ background: "#c0392b" }}
+              >
+                Delete
               </button>
             </div>
           </div>

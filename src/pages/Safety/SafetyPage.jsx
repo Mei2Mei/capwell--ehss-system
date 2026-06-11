@@ -78,6 +78,9 @@ function SafetyPage() {
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
 
   // ── Live calculated preview while filling form ────────────
   const liveWorkedHours = form.staff_numbers
@@ -152,14 +155,14 @@ function SafetyPage() {
 
   function handleSave() {
     if (!validate()) return;
+
     const workedHours = calcWorkedHours(Number(form.staff_numbers));
     const mti = Number(form.medical_treatment_incidents) || 0;
     const lti = Number(form.lost_time_incidents) || 0;
     const fat = Number(form.fatalities) || 0;
     const days = Number(form.days_away_from_work) || 0;
 
-    const newRecord = {
-      id: Date.now(),
+    const recordPayload = {
       period: form.period,
       staff_numbers: Number(form.staff_numbers),
       worked_hours: workedHours,
@@ -178,17 +181,83 @@ function SafetyPage() {
       severity_rate: calcSeverity(days, workedHours),
     };
 
-    setRecords(
-      [...records, newRecord].sort(
-        (a, b) => new Date(a.period) - new Date(b.period),
-      ),
-    );
+    if (editingId) {
+      setRecords(
+        records.map((r) =>
+          r.id === editingId ? { ...r, ...recordPayload } : r,
+        ),
+      );
+
+      setEditingId(null);
+      showBanner("Safety record updated successfully.");
+    } else {
+      const newRecord = {
+        id: Date.now(),
+        ...recordPayload,
+      };
+
+      setRecords(
+        [...records, newRecord].sort(
+          (a, b) => new Date(a.period) - new Date(b.period),
+        ),
+      );
+
+      showBanner("Safety record added successfully.");
+    }
+
     setShowModal(false);
     setForm(emptyForm);
     setErrors({});
-    showBanner(
-      "Monthly safety record added. TRIFR, LTIFR and Severity rate calculated automatically.",
-    );
+  }
+
+  function handleEdit(record) {
+    setEditingId(record.id);
+
+    setForm({
+      period: record.period,
+      staff_numbers: record.staff_numbers,
+      fatalities: record.fatalities,
+      medical_treatment_incidents: record.medical_treatment_incidents,
+      lost_time_incidents: record.lost_time_incidents,
+      days_away_from_work: record.days_away_from_work,
+      hse_training_hours: record.hse_training_hours,
+      first_aid_cases: record.first_aid_cases,
+      near_misses: record.near_misses,
+      accident_investigations: record.accident_investigations,
+      hse_meetings: record.hse_meetings,
+      hse_inspections: record.hse_inspections,
+    });
+
+    setErrors({});
+    setShowModal(true);
+  }
+
+  function handleDeleteOpen(record) {
+    setDeleteReason("");
+    setDeleteModal(record);
+  }
+
+  function handleDeleteConfirm() {
+    if (!deleteReason.trim()) {
+      setErrors({ deleteReason: "Deletion reason is required." });
+      return;
+    }
+
+    const deletedRecord = records.find((r) => r.id === deleteModal.id);
+
+    console.log("DELETED SAFETY RECORD:", {
+      record: deletedRecord,
+      reason: deleteReason,
+      deletedAt: new Date().toISOString(),
+    });
+
+    setRecords(records.filter((r) => r.id !== deleteModal.id));
+
+    setDeleteModal(null);
+    setDeleteReason("");
+    setErrors({});
+
+    showBanner("Safety record deleted successfully.");
   }
 
   return (
@@ -267,6 +336,7 @@ function SafetyPage() {
               <th>TRIFR</th>
               <th>LTIFR</th>
               <th>Severity rate</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -295,6 +365,23 @@ function SafetyPage() {
                 </td>
                 <td className={r.severity_rate > 0 ? "calc-alert" : "calc-ok"}>
                   {r.severity_rate.toFixed(2)}
+                </td>
+                <td>
+                  <button
+                    className="safety-btn-sm safety-edit-btn"
+                    onClick={() => handleEdit(r)}
+                    type="button"
+                  >
+                    ✎ Edit
+                  </button>
+
+                  <button
+                    className="safety-btn-sm safety-delete-btn"
+                    onClick={() => handleDeleteOpen(r)}
+                    type="button"
+                  >
+                    🗑 Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -569,6 +656,59 @@ function SafetyPage() {
               </button>
               <button className="safety-btn-primary" onClick={handleSave}>
                 Save record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*DELETE CONFIRMATION MODAL*/}
+      {deleteModal && (
+        <div className="safety-modal-overlay">
+          <div className="safety-modal">
+            <h2 className="safety-modal-title">Delete safety record</h2>
+
+            <p
+              style={{ fontSize: "13px", marginBottom: "10px", color: "#555" }}
+            >
+              You are deleting:{" "}
+              <strong>{formatMonth(deleteModal.period)}</strong>
+            </p>
+
+            <label className="safety-form-label">
+              Reason for deletion <span className="required">*</span>
+            </label>
+
+            <textarea
+              className="safety-form-input"
+              rows="4"
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Explain why this safety record is being deleted..."
+            />
+
+            {errors.deleteReason && (
+              <div className="safety-field-error">{errors.deleteReason}</div>
+            )}
+
+            <div className="safety-modal-buttons">
+              <button
+                className="safety-btn-secondary"
+                onClick={() => {
+                  setDeleteModal(null);
+                  setDeleteReason("");
+                  setErrors({});
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="safety-btn-primary"
+                style={{ background: "#c0392b" }}
+                onClick={handleDeleteConfirm}
+              >
+                Delete
               </button>
             </div>
           </div>

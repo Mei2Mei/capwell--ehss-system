@@ -12,9 +12,9 @@ function getInspectionStatus(nextInspection) {
   const today = new Date();
   const due = new Date(nextInspection);
   const daysLeft = Math.floor((due - today) / (1000 * 60 * 60 * 24));
-  if (daysLeft < 0) return { text: "Overdue", cls: "status-red" };
-  if (daysLeft <= 60) return { text: "Due soon", cls: "status-amber" };
-  return { text: "Certified", cls: "status-green" };
+  if (daysLeft < 0) return { text: "Overdue", cls: "red" };
+  if (daysLeft <= 60) return { text: "Due soon", cls: "amber" };
+  return { text: "Certified", cls: "green" };
 }
 
 const getEquipmentStatus = (item) => {
@@ -251,6 +251,7 @@ export default function EquipmentPage() {
             <th>#</th>
             <th>Name</th>
             <th>Category</th>
+            <th>Location</th>
             <th>Capacity</th>
             <th>Status</th>
             <th>Last Inspection</th>
@@ -269,16 +270,21 @@ export default function EquipmentPage() {
                 <td>{e.id}</td>
                 <td>{e.name}</td>
                 <td>{e.category}</td>
+                <td>{e.location}</td>
                 <td>{e.capacity}</td>
                 <td>
-                  <span className={`status ${e.status.toLowerCase()}`}>
+                  <span
+                    className={`equipment-status ${e.status
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                  >
                     {e.status}
                   </span>
                 </td>
                 <td>{e.lastInspection}</td>
                 <td>{e.nextInspection}</td>
                 <td>
-                  <span className={`status ${inspection.cls}`}>
+                  <span className={`equipment-status ${inspection.cls}`}>
                     {inspection.text}
                   </span>
                 </td>
