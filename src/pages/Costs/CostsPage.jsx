@@ -124,18 +124,21 @@ function CostsPage() {
     if (!form.item_description.trim())
       e.item_description = "Item description is required.";
     if (!form.date) e.date = "Date is required.";
-    if (!form.po_number.trim()) e.po_number = "PO number is required.";
     if (!form.cost_excl_vat || Number(form.cost_excl_vat) <= 0)
       e.cost_excl_vat = "Cost must be a positive number.";
     if (!form.cost_type) e.cost_type = "Please select a cost type.";
     // PO number uniqueness check
-    const dup = records.find(
-      (r) =>
-        r.po_number.toLowerCase() === form.po_number.toLowerCase() &&
-        r.id !== editingId,
-    );
-    if (dup)
-      e.po_number = "This PO number already exists. PO numbers must be unique.";
+    if (form.po_number.trim()) {
+      const dup = records.find(
+        (r) =>
+          r.po_number?.toLowerCase() === form.po_number.toLowerCase() &&
+          r.id !== editingId,
+      );
+
+      if (dup)
+        e.po_number =
+          "This PO number already exists. PO numbers must be unique.";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -473,16 +476,14 @@ function CostsPage() {
               </div>
 
               <div className="costs-form-group">
-                <label className="costs-form-label">
-                  PO number <span className="required">*</span>
-                </label>
+                <label className="costs-form-label">PO number</label>
                 <input
                   className="costs-form-input"
                   type="text"
                   name="po_number"
                   value={form.po_number}
                   onChange={handleFormChange}
-                  placeholder="e.g. PO19364"
+                  placeholder="Optional e.g. PO19364"
                 />
                 {errors.po_number && (
                   <div className="costs-field-error">{errors.po_number}</div>
@@ -526,7 +527,12 @@ function CostsPage() {
                   <option value="staff_welfare">Staff welfare</option>
                   <option value="ppe_provision">PPE provision</option>
                   <option value="waste_management">Waste management</option>
-                  <option value="training">Training</option>
+                  <option value="training_best_practice">
+                    Training-Best practice
+                  </option>
+                  <option value="training_standard_requirement">
+                    Training-Standard Requirement
+                  </option>
                   <option value="improvement_initiative">
                     Improvement initiative
                   </option>

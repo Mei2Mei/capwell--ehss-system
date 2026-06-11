@@ -191,16 +191,17 @@
   font-size: 11px;
   font-weight: 500;
   color: #fff;
+  white-space: nowrap;
 }
 
 .equipment-status.available { background: #27ae60; }
 .equipment-status.in-use { background: #2563eb; }
 .equipment-status.maintenance { background: #f59e0b; }
 
-.equipment-status.green { background: #27ae60; }
-.equipment-status.amber { background: #e67e22; }
-.equipment-status.red { background: #c0392b; }
-.equipment-status.grey { background: #95a5a6; }
+.equipment-status.green { background: #27ae60; color: #fff;}
+.equipment-status.amber { background: #e67e22; color: #fff;}
+.equipment-status.red { background: #c0392b; color: #fff;}
+.equipment-status.grey { background: #95a5a6; color: #fff;}
 
 /*MODAL */
 .equipment-modal-overlay {

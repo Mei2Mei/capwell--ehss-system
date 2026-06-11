@@ -24,6 +24,7 @@ function Sidebar({ activePage, onNavigate }) {
     { id: "ppe", label: "PPE inventory", icon: "🦺" },
     { id: "sustainability", label: "Sustainability", icon: "🌿" },
     { id: "reports", label: "Reports", icon: "📊" },
+    { id: "action-tracker", label: "Action Tracker", icon: "📌" },
   ];
 
   return (

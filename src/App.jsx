@@ -14,34 +14,46 @@ import { useState } from "react";
 import Layout from "./components/Layout/Layout";
 
 // Import all pages
-import DashboardPage    from "./pages/Dashboard/DashboardPage";
-import SafetyPage       from "./pages/Safety/SafetyPage";
-import CostsPage        from "./pages/Costs/CostsPage";
-import CompliancePage   from "./pages/Compliance/CompliancePage";
-import CalendarPage     from "./pages/Calendar/CalendarPage";
-import EquipmentPage    from "./pages/Equipment/EquipmentPage";
-import PPEPage          from "./pages/PPE/PPEPage.jsx";
+import DashboardPage from "./pages/Dashboard/DashboardPage";
+import SafetyPage from "./pages/Safety/SafetyPage";
+import CostsPage from "./pages/Costs/CostsPage";
+import CompliancePage from "./pages/Compliance/CompliancePage";
+import CalendarPage from "./pages/Calendar/CalendarPage";
+import EquipmentPage from "./pages/Equipment/EquipmentPage";
+import PPEPage from "./pages/PPE/PPEPage.jsx";
 import SustainabilityPage from "./pages/Sustainability/SustainabilityPage";
-import ReportsPage      from "./pages/Reports/ReportsPage";
+import ReportsPage from "./pages/Reports/ReportsPage";
+import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
 
 function App() {
-
   // Track which page is active — starts on dashboard
   const [activePage, setActivePage] = useState("dashboard");
 
   // Returns the correct page component based on activePage
   function renderPage() {
     switch (activePage) {
-      case "dashboard":     return <DashboardPage />;
-      case "safety":        return <SafetyPage />;
-      case "costs":         return <CostsPage />;
-      case "compliance":    return <CompliancePage />;
-      case "calendar":      return <CalendarPage />;
-      case "equipment":     return <EquipmentPage />;
-      case "ppe":           return <PPEPage />;
-      case "sustainability":return <SustainabilityPage />;
-      case "reports":       return <ReportsPage />;
-      default:              return <DashboardPage />;
+      case "dashboard":
+        return <DashboardPage />;
+      case "safety":
+        return <SafetyPage />;
+      case "costs":
+        return <CostsPage />;
+      case "compliance":
+        return <CompliancePage />;
+      case "calendar":
+        return <CalendarPage />;
+      case "equipment":
+        return <EquipmentPage />;
+      case "ppe":
+        return <PPEPage />;
+      case "sustainability":
+        return <SustainabilityPage />;
+      case "reports":
+        return <ReportsPage />;
+      case "action-tracker":
+        return <ActionTrackerPage />;
+      default:
+        return <DashboardPage />;
     }
   }
 

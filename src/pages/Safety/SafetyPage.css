@@ -93,11 +93,11 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  min-width: 1100px;
+  
 }
 .safety-table th {
   text-align: left;
-  padding: 11px 12px;
+  padding: 8px 8px;
   background: #1a5276;
   color: #fff;
   font-weight: 500;
@@ -105,7 +105,7 @@
   white-space: nowrap;
 }
 .safety-table td {
-  padding: 10px 12px;
+  padding: 8px 8px;
   border-bottom: 1px solid #f0f0f0;
   color: #222;
 }

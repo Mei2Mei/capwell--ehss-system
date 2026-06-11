@@ -12,7 +12,7 @@ import { safetyRecords as initialRecords } from "../../data/safetyData";
 import "./SafetyPage.css";
 
 // ── Calculations ──────────────────────────────────────────────
-// All three use 1,000,000 as multiplier — confirmed by Linda
+// All three use 1,000,000 as multiplier
 function calcTRIFR(mti, lti, fatalities, workedHours) {
   if (!workedHours) return 0;
   return ((mti + lti + fatalities) * 1000000) / workedHours;

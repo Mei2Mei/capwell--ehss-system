@@ -37,6 +37,8 @@ export default function EquipmentPage() {
   const [editingId, setEditingId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const counts = {
     all: equipment.length,
@@ -129,19 +131,22 @@ export default function EquipmentPage() {
   };
 
   const handleDeleteOpen = (item) => {
+    setSelectedAction(item);
     setDeleteReason("");
     setDeleteModal(item);
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteReason.trim()) {
-      alert("Please enter a reason for deletion.");
+      setDeleteError("Deletion reason is required.");
       return;
     }
 
     setEquipment(equipment.filter((item) => item.id !== deleteModal.id));
 
-    setDeleteModal(null);
+    setShowDeleteModal(null);
+    setDeleteError("");
+    setSelectedAction(null);
     setDeleteReason("");
   };
 
@@ -451,8 +456,16 @@ export default function EquipmentPage() {
                 type="text"
                 placeholder="e.g. Equipment retired, duplicate entry, sold..."
                 value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
+                onChange={(e) => {
+                  setDeleteReason(e.target.value);
+                  setDeleteError("");
+                }}
+                placeholder="Reason for deletion..."
               />
+
+              {deleteError && (
+                <div className="comp-field-error">{deleteError}</div>
+              )}
             </div>
 
             <div className="equipment-modal-buttons">
@@ -461,6 +474,7 @@ export default function EquipmentPage() {
                 onClick={() => {
                   setDeleteModal(null);
                   setDeleteReason("");
+                  setDeleteError("");
                 }}
               >
                 Cancel
