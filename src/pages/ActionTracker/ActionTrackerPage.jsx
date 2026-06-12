@@ -2,7 +2,7 @@
 // ActionTrackerPage.jsx — Action Tracker Management
 // ─────────────────────────────────────────────
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -48,6 +48,7 @@ export default function ActionTracker() {
   };
 
   const [formData, setFormData] = useState(emptyForm);
+  const PROGRESS_OPTIONS = [0, 25, 50, 75, 100];
 
   // edit buffer (IMPORTANT FIX)
   const [editBuffer, setEditBuffer] = useState(null);
@@ -55,40 +56,39 @@ export default function ActionTracker() {
   // ─────────────────────────────
   // FILTERED DATA
   // ─────────────────────────────
-  const filteredActions = useMemo(() => {
-    return actions.filter((item) => {
-      const matchesSearch =
-        item.concern.toLowerCase().includes(search.toLowerCase()) ||
-        item.action.toLowerCase().includes(search.toLowerCase());
+  const filteredActions = actions.filter((item) => {
+    const matchesSearch =
+      item.concern.toLowerCase().includes(search.toLowerCase()) ||
+      item.action.toLowerCase().includes(search.toLowerCase());
 
-      const matchesFilter = filter === "All" ? true : item.status === filter;
+    const matchesFilter = filter === "All" ? true : item.status === filter;
 
-      return matchesSearch && matchesFilter;
-    });
-  }, [actions, search, filter]);
+    return matchesSearch && matchesFilter;
+  });
 
   // ─────────────────────────────
   // STATS
   // ─────────────────────────────
-  const stats = useMemo(() => {
-    const total = actions.length;
-    const completed = actions.filter((a) => a.status === "Completed").length;
-    const inProgress = actions.filter((a) => a.status === "In Progress").length;
-    const pending = actions.filter((a) => a.status === "Pending").length;
+  const total = actions.length;
+  const completed = actions.filter((a) => a.status === "Completed").length;
+  const inProgress = actions.filter((a) => a.status === "In Progress").length;
+  const pending = actions.filter((a) => a.status === "Pending").length;
 
-    return { total, completed, inProgress, pending };
-  }, [actions]);
+  const stats = {
+    total,
+    completed,
+    inProgress,
+    pending,
+  };
 
   const completionRate =
     stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
 
-  const statusPieData = useMemo(() => {
-    return [
-      { name: "Completed", value: stats.completed },
-      { name: "In Progress", value: stats.inProgress },
-      { name: "Not Started", value: stats.pending },
-    ];
-  }, [stats]);
+  const statusPieData = [
+    { name: "Completed", value: stats.completed },
+    { name: "In Progress", value: stats.inProgress },
+    { name: "Not Started", value: stats.pending },
+  ];
 
   // ─────────────────────────────
   // HELPERS
@@ -329,34 +329,78 @@ export default function ActionTracker() {
             <h2 className="ehss-modal-title">Add Action</h2>
 
             <div className="ehss-form-grid">
-              <div className="ehss-form-group">
+              <div className="ehss-form-group full">
                 <label className="ehss-form-label">Concern</label>
-
                 <input
                   className="ehss-form-input"
                   value={formData.concern}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      concern: e.target.value,
-                    })
+                    setFormData({ ...formData, concern: e.target.value })
                   }
                 />
               </div>
-
+              <div className="ehss-form-group full">
+                <label className="ehss-form-label">Action</label>
+                <input
+                  className="ehss-form-input"
+                  value={formData.action}
+                  onChange={(e) =>
+                    setFormData({ ...formData, action: e.target.value })
+                  }
+                />
+              </div>
               <div className="ehss-form-group">
                 <label className="ehss-form-label">Responsible</label>
-
                 <input
                   className="ehss-form-input"
                   value={formData.responsible}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      responsible: e.target.value,
-                    })
+                    setFormData({ ...formData, responsible: e.target.value })
                   }
                 />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">Date Raised</label>
+                <input
+                  className="ehss-form-input"
+                  type="date"
+                  value={formData.dateRaised}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dateRaised: e.target.value })
+                  }
+                />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">Target Date</label>
+                <input
+                  className="ehss-form-input"
+                  type="date"
+                  value={formData.targetDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, targetDate: e.target.value })
+                  }
+                />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">
+                  Progress: {formData.progress}%
+                </label>
+                <select
+                  className="ehss-form-input"
+                  value={formData.progress}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      progress: Number(e.target.value),
+                    })
+                  }
+                >
+                  {PROGRESS_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}%
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -383,24 +427,28 @@ export default function ActionTracker() {
             <h2 className="ehss-modal-title">Edit Action</h2>
 
             <div className="ehss-form-grid">
-              <div className="ehss-form-group">
+              <div className="ehss-form-group full">
                 <label className="ehss-form-label">Concern</label>
-
                 <input
                   className="ehss-form-input"
                   value={editBuffer.concern}
                   onChange={(e) =>
-                    setEditBuffer({
-                      ...editBuffer,
-                      concern: e.target.value,
-                    })
+                    setEditBuffer({ ...editBuffer, concern: e.target.value })
                   }
                 />
               </div>
-
+              <div className="ehss-form-group full">
+                <label className="ehss-form-label">Action</label>
+                <input
+                  className="ehss-form-input"
+                  value={editBuffer.action}
+                  onChange={(e) =>
+                    setEditBuffer({ ...editBuffer, action: e.target.value })
+                  }
+                />
+              </div>
               <div className="ehss-form-group">
                 <label className="ehss-form-label">Responsible</label>
-
                 <input
                   className="ehss-form-input"
                   value={editBuffer.responsible}
@@ -411,6 +459,49 @@ export default function ActionTracker() {
                     })
                   }
                 />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">Date Raised</label>
+                <input
+                  className="ehss-form-input"
+                  type="date"
+                  value={editBuffer.dateRaised}
+                  onChange={(e) =>
+                    setEditBuffer({ ...editBuffer, dateRaised: e.target.value })
+                  }
+                />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">Target Date</label>
+                <input
+                  className="ehss-form-input"
+                  type="date"
+                  value={editBuffer.targetDate}
+                  onChange={(e) =>
+                    setEditBuffer({ ...editBuffer, targetDate: e.target.value })
+                  }
+                />
+              </div>
+              <div className="ehss-form-group">
+                <label className="ehss-form-label">
+                  Progress: {editBuffer.progress}%
+                </label>
+                <select
+                  className="ehss-form-input"
+                  value={editBuffer.progress}
+                  onChange={(e) =>
+                    setEditBuffer({
+                      ...editBuffer,
+                      progress: Number(e.target.value),
+                    })
+                  }
+                >
+                  {PROGRESS_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}%
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

@@ -11,6 +11,7 @@
 // 5. Compliance expiry alerts
 // ─────────────────────────────────────────────────────────────
 
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -127,6 +128,8 @@ function SafetyBarChart({ data }) {
 
 // ── Main component ────────────────────────────────────────────
 function DashboardPage() {
+  const [alertTab, setAlertTab] = useState("compliance");
+
   // PPE calculations — from real ppeData
   const lowStockItems = ppeItems.filter(
     (i) => i.current_stock <= i.reorder_level && i.current_stock > 0,
@@ -292,78 +295,96 @@ function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Compliance alerts */}
+        {/* Combined alerts panel with tabs */}
         <div className="dash-panel">
-          <div className="dash-panel-title">
-            ⚠️ Compliance & equipment alerts
+          <div className="dash-tabs">
+            <button
+              className={`dash-tab ${alertTab === "compliance" ? "active" : ""}`}
+              onClick={() => setAlertTab("compliance")}
+            >
+              ⚠️ Compliance
+            </button>
+            <button
+              className={`dash-tab ${alertTab === "ppe" ? "active" : ""}`}
+              onClick={() => setAlertTab("ppe")}
+            >
+              🦺 PPE
+            </button>
+            <button
+              className={`dash-tab ${alertTab === "calendar" ? "active" : ""}`}
+              onClick={() => setAlertTab("calendar")}
+            >
+              📅 Upcoming
+            </button>
           </div>
-          <div className="dash-alert-list">
-            {complianceAlerts.map((item, i) => {
-              const badge = getComplianceBadge(item.daysLeft);
-              return (
-                <div
-                  key={i}
-                  className={`dash-alert-item ${item.daysLeft < 0 ? "alert-expired" : "alert-expiring"}`}
-                >
-                  <div className="dash-alert-name">{item.name}</div>
-                  <div className="dash-alert-meta">
-                    <span>Expires {item.expires}</span>
-                    <span className={badge.cls}>{badge.text}</span>
+
+          {alertTab === "compliance" && (
+            <div className="dash-alert-list">
+              {complianceAlerts.map((item, i) => {
+                const badge = getComplianceBadge(item.daysLeft);
+                return (
+                  <div
+                    key={i}
+                    className={`dash-alert-item ${item.daysLeft < 0 ? "alert-expired" : "alert-expiring"}`}
+                  >
+                    <div className="dash-alert-name">{item.name}</div>
+                    <div className="dash-alert-meta">
+                      <span>Expires {item.expires}</span>
+                      <span className={badge.cls}>{badge.text}</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        {/* Upcoming calendar */}
-        <div className="dash-panel">
-          <div className="dash-panel-title">📅 Upcoming activities</div>
-          <div className="dash-calendar-list">
-            {calendarActivities.map((act, i) => (
-              <div key={i} className="dash-cal-item">
-                <div className="dash-cal-dot"></div>
-                <div className="dash-cal-body">
-                  <div className="dash-cal-name">{act.name}</div>
-                  <div className="dash-cal-meta">
-                    {act.month} · {act.category}
+                );
+              })}
+            </div>
+          )}
+
+          {alertTab === "ppe" &&
+            (ppeLowCount === 0 ? (
+              <div className="dash-empty">
+                ✓ All PPE items are well stocked.
+              </div>
+            ) : (
+              <div className="dash-alert-list">
+                {outOfStockItems.map((item) => (
+                  <div key={item.id} className="dash-alert-item alert-expired">
+                    <div className="dash-alert-name">
+                      {item.item_name} — {item.size_spec}
+                    </div>
+                    <div className="dash-alert-meta">
+                      <span>
+                        Stock: {item.current_stock} {item.unit_of_measure}
+                      </span>
+                      <span className="comp-badge expired">Out of stock</span>
+                    </div>
                   </div>
-                </div>
+                ))}
+                {lowStockItems.map((item) => (
+                  <div key={item.id} className="dash-alert-item alert-expiring">
+                    <div className="dash-alert-name">
+                      {item.item_name} — {item.size_spec}
+                    </div>
+                    <div className="dash-alert-meta">
+                      <span>
+                        Stock: {item.current_stock} · Reorder at:{" "}
+                        {item.reorder_level}
+                      </span>
+                      <span className="comp-badge expiring">Low stock</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
-          </div>
-        </div>
 
-        {/* PPE alerts */}
-        <div className="dash-panel">
-          <div className="dash-panel-title">🦺 PPE stock alerts</div>
-          {ppeLowCount === 0 ? (
-            <div className="dash-empty">✓ All PPE items are well stocked.</div>
-          ) : (
-            <div className="dash-alert-list">
-              {outOfStockItems.map((item) => (
-                <div key={item.id} className="dash-alert-item alert-expired">
-                  <div className="dash-alert-name">
-                    {item.item_name} — {item.size_spec}
-                  </div>
-                  <div className="dash-alert-meta">
-                    <span>
-                      Stock: {item.current_stock} {item.unit_of_measure}
-                    </span>
-                    <span className="comp-badge expired">Out of stock</span>
-                  </div>
-                </div>
-              ))}
-              {lowStockItems.map((item) => (
-                <div key={item.id} className="dash-alert-item alert-expiring">
-                  <div className="dash-alert-name">
-                    {item.item_name} — {item.size_spec}
-                  </div>
-                  <div className="dash-alert-meta">
-                    <span>
-                      Stock: {item.current_stock} · Reorder at:{" "}
-                      {item.reorder_level}
-                    </span>
-                    <span className="comp-badge expiring">Low stock</span>
+          {alertTab === "calendar" && (
+            <div className="dash-calendar-list">
+              {calendarActivities.map((act, i) => (
+                <div key={i} className="dash-cal-item">
+                  <div className="dash-cal-dot"></div>
+                  <div className="dash-cal-body">
+                    <div className="dash-cal-name">{act.name}</div>
+                    <div className="dash-cal-meta">
+                      {act.month} · {act.category}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -8,6 +8,20 @@ import {
   emissionFactors,
 } from "../../data/sustainabilityData";
 import "./ReportsPage.css";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { actiontrackerData } from "../../data/ActionTrackerData";
 
 function formatKES(n) {
   return `KES ${Number(n).toLocaleString()}`;
@@ -18,6 +32,16 @@ function formatMonth(d) {
     year: "numeric",
   });
 }
+
+const PIE_COLORS = ["#2ecc71", "#f39c12", "#e74c3c"];
+const COST_PIE_COLORS = [
+  "#1a5276",
+  "#27ae60",
+  "#e67e22",
+  "#8e44ad",
+  "#c0392b",
+  "#16a085",
+];
 
 function calcScope1(r) {
   return (
@@ -56,6 +80,24 @@ export default function ReportsPage() {
   const outsideBudget = costRecords
     .filter((r) => r.budget_status === "outside_budget")
     .reduce((s, r) => s + r.cost_excl_vat, 0);
+  const costByMonth = [
+    {
+      month: "Jan",
+      statutory: 710000,
+      staff_welfare: 359395,
+      ppe: 0,
+      improvement: 0,
+    },
+    { month: "Feb", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
+    { month: "Mar", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
+    { month: "Apr", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
+  ];
+  const COST_COLORS = {
+    statutory: "#1a5276",
+    staff_welfare: "#27ae60",
+    ppe: "#e67e22",
+    improvement: "#8e44ad",
+  };
   const totalIncidents = safetyRecords.reduce(
     (s, r) => s + r.medical_treatment_incidents + r.lost_time_incidents,
     0,
@@ -113,6 +155,7 @@ export default function ReportsPage() {
             <option value="ppe">PPE Stock Report</option>
             <option value="ppe_trend">PPE Fast-Moving Items</option>
             <option value="sustainability">Sustainability Report</option>
+            <option value="action_tracker">Action Tracker Report</option>
           </select>
         </div>
         {reportType === "ppe_trend" && (
@@ -226,6 +269,39 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
+              <div style={{ height: 220, marginTop: "10px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={safetyRecords.map((r) => {
+                      const wh = r.worked_hours;
+                      return {
+                        month: formatMonth(r.period),
+                        TRIFR: wh
+                          ? +(
+                              ((r.medical_treatment_incidents +
+                                r.lost_time_incidents +
+                                r.fatalities) *
+                                1000000) /
+                              wh
+                            ).toFixed(2)
+                          : 0,
+                        LTIFR: wh
+                          ? +((r.lost_time_incidents * 1000000) / wh).toFixed(2)
+                          : 0,
+                      };
+                    })}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="TRIFR" fill="#c0392b" />
+                    <Bar dataKey="LTIFR" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Cost summary
               </div>
@@ -250,6 +326,36 @@ export default function ReportsPage() {
                     {formatKES(outsideBudget)}
                   </div>
                 </div>
+              </div>
+
+              <div style={{ height: 220, marginBottom: "14px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={Object.entries(
+                        costRecords.reduce((acc, r) => {
+                          acc[r.cost_type] =
+                            (acc[r.cost_type] || 0) + r.cost_excl_vat;
+                          return acc;
+                        }, {}),
+                      ).map(([name, value]) => ({ name, value }))}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={({ name, value }) =>
+                        `${name}: ${formatKES(value)}`
+                      }
+                    >
+                      {COST_PIE_COLORS.map((c, i) => (
+                        <Cell key={i} fill={c} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v) => formatKES(v)} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
@@ -427,6 +533,56 @@ export default function ReportsPage() {
                   </tr>
                 </tbody>
               </table>
+              {/* Cost per month bar chart */}
+              <div className="dash-panel" style={{ marginBottom: "16px" }}>
+                <div className="dash-panel-title">
+                  📊 Cost per month by type (KES)
+                </div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={costByMonth}
+                    margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    {/* X-axis = MONTHS */}
+                    <XAxis dataKey="month" />
+
+                    {/* Y-axis = AMOUNT */}
+                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+
+                    <Tooltip
+                      formatter={(v) => `KES ${Number(v).toLocaleString()}`}
+                    />
+                    <Legend />
+
+                    <Bar
+                      dataKey="statutory"
+                      name="Statutory"
+                      stackId="a"
+                      fill={COST_COLORS.statutory}
+                    />
+                    <Bar
+                      dataKey="staff_welfare"
+                      name="Staff welfare"
+                      stackId="a"
+                      fill={COST_COLORS.staff_welfare}
+                    />
+                    <Bar
+                      dataKey="ppe"
+                      name="PPE provision"
+                      stackId="a"
+                      fill={COST_COLORS.ppe}
+                    />
+                    <Bar
+                      dataKey="improvement"
+                      name="Improvement"
+                      stackId="a"
+                      fill={COST_COLORS.improvement}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </>
           )}
 
@@ -523,6 +679,21 @@ export default function ReportsPage() {
                   ))}
                 </tbody>
               </table>
+
+              <div style={{ height: 220, marginTop: "10px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={ppeMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="stock" name="Stock level" fill="#1a5276" />
+                    <Bar dataKey="restocked" name="Restocked" fill="#27ae60" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
               <p style={{ fontSize: "11px", color: "#888", marginTop: "8px" }}>
                 Note: Monthly trend connects to full transaction history once
                 the PPE module's transaction log is shared system-wide.
@@ -574,6 +745,151 @@ export default function ReportsPage() {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+
+              <div style={{ height: 220, marginTop: "10px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sustainabilityRecords.map((r) => ({
+                      month: formatMonth(r.period),
+                      Scope1: +calcScope1(r).toFixed(2),
+                      Scope2: +calcScope2(r).toFixed(2),
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Scope1" fill="#c0392b" />
+                    <Bar dataKey="Scope2" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {reportType === "action_tracker" && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">Action Tracker Report</div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total</div>
+                  <div className="rep-card-value">
+                    {actiontrackerData.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Completed</div>
+                  <div className="rep-card-value green">
+                    {
+                      actiontrackerData.filter((a) => a.status === "Completed")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">In Progress</div>
+                  <div className="rep-card-value amber">
+                    {
+                      actiontrackerData.filter(
+                        (a) => a.status === "In Progress",
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Pending</div>
+                  <div className="rep-card-value red">
+                    {
+                      actiontrackerData.filter((a) => a.status === "Pending")
+                        .length
+                    }
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: 220, marginBottom: "14px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        {
+                          name: "Completed",
+                          value: actiontrackerData.filter(
+                            (a) => a.status === "Completed",
+                          ).length,
+                        },
+                        {
+                          name: "In Progress",
+                          value: actiontrackerData.filter(
+                            (a) => a.status === "In Progress",
+                          ).length,
+                        },
+                        {
+                          name: "Pending",
+                          value: actiontrackerData.filter(
+                            (a) => a.status === "Pending",
+                          ).length,
+                        },
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {PIE_COLORS.map((c, i) => (
+                        <Cell key={i} fill={c} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Concern</th>
+                    <th>Action</th>
+                    <th>Responsible</th>
+                    <th>Target Date</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {actiontrackerData.map((a, i) => (
+                    <tr key={i}>
+                      <td>{a.concern}</td>
+                      <td>{a.action}</td>
+                      <td>{a.responsible}</td>
+                      <td>{a.targetDate}</td>
+                      <td>{a.progress}%</td>
+                      <td>
+                        <span
+                          className={`rep-badge ${a.status === "Completed" ? "badge-valid" : a.status === "In Progress" ? "badge-expiring" : "badge-expired"}`}
+                        >
+                          {a.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </>

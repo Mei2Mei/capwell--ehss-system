@@ -23,8 +23,8 @@ function Sidebar({ activePage, onNavigate }) {
     { id: "equipment", label: "Lifting equipment", icon: "🏗️" },
     { id: "ppe", label: "PPE inventory", icon: "🦺" },
     { id: "sustainability", label: "Sustainability", icon: "🌿" },
-    { id: "reports", label: "Reports", icon: "📊" },
     { id: "action-tracker", label: "Action Tracker", icon: "📌" },
+    { id: "reports", label: "Reports", icon: "📊" },
   ];
 
   return (

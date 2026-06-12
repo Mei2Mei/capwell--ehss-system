@@ -236,11 +236,11 @@ export default function SustainabilityPage() {
       {/* Summary cards */}
       <div className="sust-cards">
         <div className="sust-card">
-          <div className="sust-card-label">Scope 1 YTD (tCO₂e)</div>
+          <div className="sust-card-label">Scope 1 YTD (kgCO₂e)</div>
           <div className="sust-card-value amber">{totalScope1}</div>
         </div>
         <div className="sust-card">
-          <div className="sust-card-label">Scope 2 YTD (tCO₂e)</div>
+          <div className="sust-card-label">Scope 2 YTD (kgCO₂e)</div>
           <div className="sust-card-value amber">{totalScope2}</div>
         </div>
         <div className="sust-card">
@@ -448,7 +448,7 @@ export default function SustainabilityPage() {
           <div className="sust-two-col">
             <div className="sust-panel">
               <div className="sust-panel-title">
-                🌿 Scope 1 sources breakdown (tCO₂e)
+                🌿 Scope 1 sources breakdown (kgCO₂e)
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -472,7 +472,7 @@ export default function SustainabilityPage() {
             </div>
             <div className="sust-panel">
               <div className="sust-panel-title">
-                🌿 Monthly emissions — Scope 1 vs Scope 2 (tCO₂e)
+                🌿 Monthly emissions — Scope 1 vs Scope 2 (kgCO₂e)
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={emissionsChartData}>
@@ -503,10 +503,10 @@ export default function SustainabilityPage() {
               <thead>
                 <tr>
                   <th>Month</th>
-                  <th>Petrol (tCO₂e)</th>
-                  <th>Diesel (tCO₂e)</th>
-                  <th>Firewood (tCO₂e)</th>
-                  <th>LPG (tCO₂e)</th>
+                  <th>Petrol (kgCO₂e)</th>
+                  <th>Diesel (kgCO₂e)</th>
+                  <th>Firewood (kgCO₂e)</th>
+                  <th>LPG (kgCO₂e)</th>
                   <th>Scope 1 total</th>
                   <th>Scope 2 (elec)</th>
                   <th>Total</th>
@@ -564,12 +564,12 @@ export default function SustainabilityPage() {
               <div className="sust-calc-preview">
                 {liveScope1 && (
                   <span>
-                    Scope 1 (calculated): <strong>{liveScope1} tCO₂e</strong>
+                    Scope 1 (calculated): <strong>{liveScope1} kgCO₂e</strong>
                   </span>
                 )}
                 {liveScope2 && (
                   <span>
-                    Scope 2 (calculated): <strong>{liveScope2} tCO₂e</strong>
+                    Scope 2 (calculated): <strong>{liveScope2} kgCO₂e</strong>
                   </span>
                 )}
               </div>
@@ -747,7 +747,7 @@ export default function SustainabilityPage() {
                 </label>
                 <div className="sust-form-readonly">
                   {liveScope1
-                    ? `${liveScope1} tCO₂e`
+                    ? `${liveScope1} kgCO₂e`
                     : "Enter fuel values above to calculate"}
                 </div>
               </div>
@@ -757,7 +757,7 @@ export default function SustainabilityPage() {
                 </label>
                 <div className="sust-form-readonly">
                   {liveScope2
-                    ? `${liveScope2} tCO₂e`
+                    ? `${liveScope2} kgCO₂e`
                     : "Enter electricity value above to calculate"}
                 </div>
               </div>
