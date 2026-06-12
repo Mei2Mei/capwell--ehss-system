@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import { calendarActivities as initialActivities } from "../../data/calendarData";
+import { calendarActivities as initialActivities } from "../../data/CalendarData";
 import "./CalendarPage.css";
 
 // ── Helpers ───────────────────────────────────────────────────

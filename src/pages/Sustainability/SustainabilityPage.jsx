@@ -18,7 +18,7 @@ import {
 import {
   sustainabilityRecords as initialRecords,
   emissionFactors,
-} from "../../data/sustainabilityData";
+} from "../../data/SustainabilityData";
 import "./SustainabilityPage.css";
 
 // ── Calculations ──────────────────────────────────────────────
