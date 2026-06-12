@@ -1,152 +1,89 @@
 import { useState } from "react";
+import { safetyRecords } from "../../data/safetyData";
+import { costRecords } from "../../data/costsData";
+import { complianceItems } from "../../data/complianceData";
+import { ppeItems } from "../../data/ppeData";
+import {
+  sustainabilityRecords,
+  emissionFactors,
+} from "../../data/sustainabilityData";
 import "./ReportsPage.css";
-
-const safetyData = [
-  {
-    month: "Jan 2026",
-    staff: 569,
-    hours: 109248,
-    mti: 0,
-    lti: 0,
-    days: 0,
-    training: 2,
-    inspections: 3,
-    trifr: 0,
-    ltifr: 0,
-    severity: 0,
-  },
-  {
-    month: "Feb 2026",
-    staff: 576,
-    hours: 110592,
-    mti: 1,
-    lti: 1,
-    days: 14,
-    training: 7,
-    inspections: 5,
-    trifr: 18.08,
-    ltifr: 9.04,
-    severity: 126.59,
-  },
-  {
-    month: "Mar 2026",
-    staff: 586,
-    hours: 112512,
-    mti: 0,
-    lti: 0,
-    days: 0,
-    training: 64,
-    inspections: 7,
-    trifr: 0,
-    ltifr: 0,
-    severity: 0,
-  },
-  {
-    month: "Apr 2026",
-    staff: 563,
-    hours: 108096,
-    mti: 0,
-    lti: 0,
-    days: 0,
-    training: 2,
-    inspections: 4,
-    trifr: 0,
-    ltifr: 0,
-    severity: 0,
-  },
-];
-
-const costsData = [
-  {
-    item: "Disposal of hazardous waste",
-    po: "PO18983",
-    date: "12 Jan 2026",
-    cost: 125000,
-    type: "Statutory requirement",
-  },
-  {
-    item: "Whitewash multi purpose soap",
-    po: "PO18984",
-    date: "12 Jan 2026",
-    cost: 314136,
-    type: "Staff welfare",
-  },
-  {
-    item: "Statutory inspections",
-    po: "PO18986",
-    date: "12 Jan 2026",
-    cost: 220000,
-    type: "Statutory requirement",
-  },
-  {
-    item: "Statutory inspection — retort",
-    po: "PO18985",
-    date: "12 Jan 2026",
-    cost: 10000,
-    type: "Statutory requirement",
-  },
-  {
-    item: "PVC gloves, leather gloves",
-    po: "PO19363",
-    date: "29 Jan 2026",
-    cost: 47500,
-    type: "Staff welfare",
-  },
-  {
-    item: "Farmer's hats",
-    po: "PO19362",
-    date: "29 Jan 2026",
-    cost: 45259,
-    type: "Staff welfare",
-  },
-  {
-    item: "NEMA renewal — EIA licence",
-    po: "PO19364",
-    date: "31 Jan 2026",
-    cost: 355000,
-    type: "Statutory requirement",
-  },
-];
-
-const complianceAlerts = [
-  { name: "NEMA EIA licence", expires: "28 Jun 2026", status: "Expiring soon" },
-  {
-    name: "Fire safety certificate",
-    expires: "01 Apr 2026",
-    status: "Expired",
-  },
-  {
-    name: "Lift inspection — Unit 2",
-    expires: "15 Jun 2026",
-    status: "Expiring soon",
-  },
-];
-
-const ppeLowStock = [
-  { item: "N/Blue Reflectors Overall", size: "XXXL", stock: 3, reorder: 10 },
-  { item: "N/Blue Reflectors Overall", size: "L", stock: 8, reorder: 10 },
-  { item: "N/Blue Reflectors Overall", size: "M", stock: 0, reorder: 10 },
-  { item: "Farmer's Hats", size: "One size", stock: 5, reorder: 20 },
-  { item: "Beige Scrub", size: "XL", stock: 0, reorder: 8 },
-];
 
 function formatKES(n) {
   return `KES ${Number(n).toLocaleString()}`;
 }
+function formatMonth(d) {
+  return new Date(d).toLocaleDateString("en-GB", {
+    month: "short",
+    year: "numeric",
+  });
+}
 
-function ReportsPage() {
+function calcScope1(r) {
+  return (
+    r.petrol_litres * emissionFactors.petrol +
+    r.diesel_litres * emissionFactors.diesel +
+    r.firewood_tonnes * emissionFactors.firewood +
+    r.lpg_kg * emissionFactors.lpg
+  );
+}
+function calcScope2(r) {
+  return r.electricity_kwh * emissionFactors.electricity;
+}
+
+function getCompStatus(item) {
+  if (!item.reference_number || !item.date_of_expiry) return "Pending";
+  const days = Math.floor(
+    (new Date(item.date_of_expiry) - new Date()) / (1000 * 60 * 60 * 24),
+  );
+  if (days < 0) return "Expired";
+  if (days <= 60) return "Expiring soon";
+  return "Valid";
+}
+
+export default function ReportsPage() {
   const [reportType, setReportType] = useState("monthly_summary");
   const [generated, setGenerated] = useState(false);
+  const [selectedPPE, setSelectedPPE] = useState(ppeItems[0]?.id || "");
 
-  const totalCost = costsData.reduce((s, r) => s + r.cost, 0);
-  const statutory = costsData
-    .filter((r) => r.type === "Statutory requirement")
-    .reduce((s, r) => s + r.cost, 0);
-  const welfare = costsData
-    .filter((r) => r.type === "Staff welfare")
-    .reduce((s, r) => s + r.cost, 0);
-  const totalIncidents = safetyData.reduce((s, r) => s + r.mti + r.lti, 0);
-  const totalTraining = safetyData.reduce((s, r) => s + r.training, 0);
+  const totalCost = costRecords.reduce((s, r) => s + r.cost_excl_vat, 0);
+  const statutory = costRecords
+    .filter((r) => r.cost_type === "statutory_requirement")
+    .reduce((s, r) => s + r.cost_excl_vat, 0);
+  const welfare = costRecords
+    .filter((r) => r.cost_type === "staff_welfare")
+    .reduce((s, r) => s + r.cost_excl_vat, 0);
+  const outsideBudget = costRecords
+    .filter((r) => r.budget_status === "outside_budget")
+    .reduce((s, r) => s + r.cost_excl_vat, 0);
+  const totalIncidents = safetyRecords.reduce(
+    (s, r) => s + r.medical_treatment_incidents + r.lost_time_incidents,
+    0,
+  );
+  const totalTraining = safetyRecords.reduce(
+    (s, r) => s + r.hse_training_hours,
+    0,
+  );
+  const complianceWithStatus = complianceItems.map((c) => ({
+    ...c,
+    status: getCompStatus(c),
+  }));
+  const expired = complianceWithStatus.filter((c) => c.status === "Expired");
+  const expiring = complianceWithStatus.filter(
+    (c) => c.status === "Expiring soon",
+  );
+  const lowStock = ppeItems.filter((p) => p.current_stock <= p.reorder_level);
+
+  // PPE fast-moving chart data — for now uses transaction-less sample;
+  // shows current stock per month placeholder until real transaction history connects
+  const selectedItem = ppeItems.find((p) => p.id === Number(selectedPPE));
+  const ppeMonthlyData = ["Jan", "Feb", "Mar", "Apr"].map((m, i) => ({
+    month: m,
+    stock: selectedItem
+      ? Math.max(selectedItem.current_stock + (3 - i) * 5, 0)
+      : 0,
+    restocked: i === 1 ? 20 : 0,
+  }));
 
   return (
     <div className="rep-page">
@@ -154,12 +91,11 @@ function ReportsPage() {
         <div>
           <h1 className="rep-title">Reports</h1>
           <p className="rep-subtitle">
-            Generate and export EHSS summary reports.
+            Reports pull live data directly from each module.
           </p>
         </div>
       </div>
 
-      {/* Report selector */}
       <div className="rep-selector-wrap">
         <div className="rep-form-group">
           <label className="rep-form-label">Report type</label>
@@ -175,17 +111,33 @@ function ReportsPage() {
             <option value="compliance">Compliance Status Report</option>
             <option value="costs">Cost Analysis Report</option>
             <option value="ppe">PPE Stock Report</option>
+            <option value="ppe_trend">PPE Fast-Moving Items</option>
+            <option value="sustainability">Sustainability Report</option>
           </select>
         </div>
+        {reportType === "ppe_trend" && (
+          <div className="rep-form-group">
+            <label className="rep-form-label">Select item</label>
+            <select
+              className="rep-select"
+              value={selectedPPE}
+              onChange={(e) => setSelectedPPE(e.target.value)}
+            >
+              {ppeItems.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.item_name} — {p.size_spec}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <button className="rep-btn-primary" onClick={() => setGenerated(true)}>
           Generate report
         </button>
       </div>
 
-      {/* Report preview */}
       {generated && (
         <div className="rep-preview">
-          {/* ── MONTHLY SUMMARY ── */}
           {reportType === "monthly_summary" && (
             <>
               <div className="rep-preview-header">
@@ -194,18 +146,15 @@ function ReportsPage() {
                     Monthly EHSS Summary Report
                   </div>
                   <div className="rep-preview-meta">
-                    Period: January — April 2026 &nbsp;·&nbsp; Generated:{" "}
-                    {new Date().toLocaleDateString("en-GB")}
+                    Generated: {new Date().toLocaleDateString("en-GB")}
                   </div>
                 </div>
-                <div className="rep-actions">
-                  <button
-                    className="rep-btn-export"
-                    onClick={() => window.print()}
-                  >
-                    🖨 Print / Save as PDF
-                  </button>
-                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
               </div>
 
               <div className="rep-section-title">Safety performance</div>
@@ -219,50 +168,61 @@ function ReportsPage() {
                   <div className="rep-card-value">{totalTraining}</div>
                 </div>
                 <div className="rep-card">
-                  <div className="rep-card-label">TRIFR average</div>
-                  <div className="rep-card-value amber">4.52</div>
+                  <div className="rep-card-label">Records logged</div>
+                  <div className="rep-card-value">{safetyRecords.length}</div>
                 </div>
                 <div className="rep-card">
                   <div className="rep-card-label">Fatalities</div>
                   <div className="rep-card-value green">0</div>
                 </div>
               </div>
-
               <table className="rep-table">
                 <thead>
                   <tr>
                     <th>Month</th>
                     <th>Staff</th>
-                    <th>Hours</th>
                     <th>MTI</th>
                     <th>LTI</th>
-                    <th>Days lost</th>
-                    <th>Training hrs</th>
                     <th>TRIFR</th>
                     <th>LTIFR</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {safetyData.map((r, i) => (
-                    <tr
-                      key={i}
-                      className={r.mti > 0 || r.lti > 0 ? "row-incident" : ""}
-                    >
-                      <td>{r.month}</td>
-                      <td>{r.staff}</td>
-                      <td>{r.hours.toLocaleString()}</td>
-                      <td>{r.mti}</td>
-                      <td>{r.lti}</td>
-                      <td>{r.days}</td>
-                      <td>{r.training}</td>
-                      <td className={r.trifr > 0 ? "calc-alert" : ""}>
-                        {r.trifr.toFixed(2)}
-                      </td>
-                      <td className={r.ltifr > 0 ? "calc-alert" : ""}>
-                        {r.ltifr.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
+                  {safetyRecords.map((r, i) => {
+                    const wh = r.worked_hours;
+                    const trifr = wh
+                      ? ((r.medical_treatment_incidents +
+                          r.lost_time_incidents +
+                          r.fatalities) *
+                          1000000) /
+                        wh
+                      : 0;
+                    const ltifr = wh
+                      ? (r.lost_time_incidents * 1000000) / wh
+                      : 0;
+                    return (
+                      <tr
+                        key={i}
+                        className={
+                          r.medical_treatment_incidents > 0 ||
+                          r.lost_time_incidents > 0
+                            ? "row-incident"
+                            : ""
+                        }
+                      >
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{r.staff_numbers}</td>
+                        <td>{r.medical_treatment_incidents}</td>
+                        <td>{r.lost_time_incidents}</td>
+                        <td className={trifr > 0 ? "calc-alert" : ""}>
+                          {trifr.toFixed(2)}
+                        </td>
+                        <td className={ltifr > 0 ? "calc-alert" : ""}>
+                          {ltifr.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -271,7 +231,7 @@ function ReportsPage() {
               </div>
               <div className="rep-summary-cards">
                 <div className="rep-card">
-                  <div className="rep-card-label">Total YTD</div>
+                  <div className="rep-card-label">Total</div>
                   <div className="rep-card-value">{formatKES(totalCost)}</div>
                 </div>
                 <div className="rep-card">
@@ -284,7 +244,11 @@ function ReportsPage() {
                 </div>
                 <div className="rep-card">
                   <div className="rep-card-label">Outside budget</div>
-                  <div className="rep-card-value green">KES 0</div>
+                  <div
+                    className={`rep-card-value ${outsideBudget > 0 ? "red" : "green"}`}
+                  >
+                    {formatKES(outsideBudget)}
+                  </div>
                 </div>
               </div>
 
@@ -300,10 +264,10 @@ function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {complianceAlerts.map((c, i) => (
+                  {[...expired, ...expiring].map((c, i) => (
                     <tr key={i}>
-                      <td>{c.name}</td>
-                      <td>{c.expires}</td>
+                      <td>{c.requirement}</td>
+                      <td>{c.date_of_expiry || "—"}</td>
                       <td>
                         <span
                           className={`rep-badge ${c.status === "Expired" ? "badge-expired" : "badge-expiring"}`}
@@ -324,23 +288,23 @@ function ReportsPage() {
                   <tr>
                     <th>Item</th>
                     <th>Size</th>
-                    <th>Current stock</th>
-                    <th>Reorder level</th>
+                    <th>Stock</th>
+                    <th>Reorder</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ppeLowStock.map((p, i) => (
+                  {lowStock.map((p, i) => (
                     <tr key={i}>
-                      <td>{p.item}</td>
-                      <td>{p.size}</td>
-                      <td>{p.stock}</td>
-                      <td>{p.reorder}</td>
+                      <td>{p.item_name}</td>
+                      <td>{p.size_spec}</td>
+                      <td>{p.current_stock}</td>
+                      <td>{p.reorder_level}</td>
                       <td>
                         <span
-                          className={`rep-badge ${p.stock === 0 ? "badge-expired" : "badge-expiring"}`}
+                          className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : "badge-expiring"}`}
                         >
-                          {p.stock === 0 ? "Out of stock" : "Low stock"}
+                          {p.current_stock === 0 ? "Out of stock" : "Low stock"}
                         </span>
                       </td>
                     </tr>
@@ -350,7 +314,6 @@ function ReportsPage() {
             </>
           )}
 
-          {/* ── COMPLIANCE REPORT ── */}
           {reportType === "compliance" && (
             <>
               <div className="rep-preview-header">
@@ -373,18 +336,22 @@ function ReportsPage() {
                 <thead>
                   <tr>
                     <th>Requirement</th>
-                    <th>Expiry date</th>
+                    <th>Organisation</th>
+                    <th>Reference</th>
+                    <th>Expiry</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {complianceAlerts.map((c, i) => (
+                  {complianceWithStatus.map((c, i) => (
                     <tr key={i}>
-                      <td>{c.name}</td>
-                      <td>{c.expires}</td>
+                      <td>{c.requirement}</td>
+                      <td>{c.expert_organisation}</td>
+                      <td>{c.reference_number || "—"}</td>
+                      <td>{c.date_of_expiry || "—"}</td>
                       <td>
                         <span
-                          className={`rep-badge ${c.status === "Expired" ? "badge-expired" : "badge-expiring"}`}
+                          className={`rep-badge ${c.status === "Expired" ? "badge-expired" : c.status === "Expiring soon" ? "badge-expiring" : c.status === "Valid" ? "badge-valid" : "badge-pending"}`}
                         >
                           {c.status}
                         </span>
@@ -396,14 +363,11 @@ function ReportsPage() {
             </>
           )}
 
-          {/* ── COSTS REPORT ── */}
           {reportType === "costs" && (
             <>
               <div className="rep-preview-header">
                 <div>
-                  <div className="rep-preview-title">
-                    Cost Analysis Report — 2026
-                  </div>
+                  <div className="rep-preview-title">Cost Analysis Report</div>
                   <div className="rep-preview-meta">
                     Generated: {new Date().toLocaleDateString("en-GB")}
                   </div>
@@ -436,22 +400,24 @@ function ReportsPage() {
                 <thead>
                   <tr>
                     <th>Item</th>
-                    <th>PO number</th>
+                    <th>PO</th>
                     <th>Date</th>
-                    <th>Cost (KES)</th>
+                    <th>Cost</th>
                     <th>Type</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {costsData.map((r, i) => (
+                  {costRecords.map((r, i) => (
                     <tr key={i}>
-                      <td>{r.item}</td>
+                      <td>{r.item_description}</td>
                       <td style={{ fontFamily: "monospace", fontSize: "11px" }}>
-                        {r.po}
+                        {r.po_number}
                       </td>
                       <td>{r.date}</td>
-                      <td style={{ fontWeight: 600 }}>{formatKES(r.cost)}</td>
-                      <td>{r.type}</td>
+                      <td style={{ fontWeight: 600 }}>
+                        {formatKES(r.cost_excl_vat)}
+                      </td>
+                      <td>{r.cost_type}</td>
                     </tr>
                   ))}
                   <tr style={{ background: "#f0f6fc", fontWeight: 600 }}>
@@ -464,7 +430,6 @@ function ReportsPage() {
             </>
           )}
 
-          {/* ── PPE REPORT ── */}
           {reportType === "ppe" && (
             <>
               <div className="rep-preview-header">
@@ -486,27 +451,129 @@ function ReportsPage() {
                   <tr>
                     <th>Item</th>
                     <th>Size</th>
-                    <th>Current stock</th>
-                    <th>Reorder level</th>
+                    <th>Stock</th>
+                    <th>Reorder</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ppeLowStock.map((p, i) => (
+                  {ppeItems.map((p, i) => (
                     <tr key={i}>
-                      <td>{p.item}</td>
-                      <td>{p.size}</td>
-                      <td>{p.stock}</td>
-                      <td>{p.reorder}</td>
+                      <td>{p.item_name}</td>
+                      <td>{p.size_spec}</td>
+                      <td>{p.current_stock}</td>
+                      <td>{p.reorder_level}</td>
                       <td>
                         <span
-                          className={`rep-badge ${p.stock === 0 ? "badge-expired" : "badge-expiring"}`}
+                          className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : p.current_stock <= p.reorder_level ? "badge-expiring" : "badge-valid"}`}
                         >
-                          {p.stock === 0 ? "Out of stock" : "Low stock"}
+                          {p.current_stock === 0
+                            ? "Out of stock"
+                            : p.current_stock <= p.reorder_level
+                              ? "Low stock"
+                              : "OK"}
                         </span>
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {reportType === "ppe_trend" && selectedItem && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">
+                    PPE Fast-Moving Items — {selectedItem.item_name} (
+                    {selectedItem.size_spec})
+                  </div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Stock level</th>
+                    <th>Restocked</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ppeMonthlyData.map((d, i) => (
+                    <tr
+                      key={i}
+                      className={d.restocked > 0 ? "row-incident" : ""}
+                    >
+                      <td>{d.month}</td>
+                      <td>{d.stock}</td>
+                      <td>
+                        {d.restocked > 0 ? `+${d.restocked} received` : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p style={{ fontSize: "11px", color: "#888", marginTop: "8px" }}>
+                Note: Monthly trend connects to full transaction history once
+                the PPE module's transaction log is shared system-wide.
+              </p>
+            </>
+          )}
+
+          {reportType === "sustainability" && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">Sustainability Report</div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Water (m³)</th>
+                    <th>Electricity (kWh)</th>
+                    <th>Scope 1</th>
+                    <th>Scope 2</th>
+                    <th>Total emissions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sustainabilityRecords.map((r, i) => {
+                    const s1 = calcScope1(r),
+                      s2 = calcScope2(r);
+                    return (
+                      <tr key={i}>
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{r.water_consumption_m3}</td>
+                        <td>{r.electricity_kwh.toLocaleString()}</td>
+                        <td>{s1.toFixed(2)}</td>
+                        <td>{s2.toFixed(2)}</td>
+                        <td>
+                          <strong>{(s1 + s2).toFixed(2)}</strong>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </>
@@ -516,5 +583,3 @@ function ReportsPage() {
     </div>
   );
 }
-
-export default ReportsPage;

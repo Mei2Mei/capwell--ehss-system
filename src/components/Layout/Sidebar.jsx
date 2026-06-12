@@ -19,7 +19,7 @@ function Sidebar({ activePage, onNavigate }) {
     { id: "safety", label: "Safety metrics", icon: "🛡️" },
     { id: "costs", label: "Dept. costs", icon: "🧾" },
     { id: "compliance", label: "Compliance", icon: "✅" },
-    { id: "calendar", label: "EHSS calendar", icon: "📅" },
+    { id: "calendar", label: "EHSS Training calendar", icon: "📅" },
     { id: "equipment", label: "Lifting equipment", icon: "🏗️" },
     { id: "ppe", label: "PPE inventory", icon: "🦺" },
     { id: "sustainability", label: "Sustainability", icon: "🌿" },

@@ -3,8 +3,25 @@
 // ─────────────────────────────────────────────
 
 import { useMemo, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { actiontrackerData as initialActions } from "../../data/ActionTrackerData";
 import "./ActionTrackerPage.css";
+
+const COLORS = ["#2ecc71", "#f39c12", "#e74c3c"];
 
 export default function ActionTracker() {
   // ─────────────────────────────
@@ -64,6 +81,14 @@ export default function ActionTracker() {
 
   const completionRate =
     stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
+
+  const statusPieData = useMemo(() => {
+    return [
+      { name: "Completed", value: stats.completed },
+      { name: "In Progress", value: stats.inProgress },
+      { name: "Not Started", value: stats.pending },
+    ];
+  }, [stats]);
 
   // ─────────────────────────────
   // HELPERS
@@ -269,6 +294,32 @@ export default function ActionTracker() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* STATUS PIE CHART */}
+      <div className="ehss-panel" style={{ marginTop: "14px" }}>
+        <div className="ehss-panel-title">📊 Action Status Breakdown</div>
+
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart>
+            <Pie
+              data={statusPieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={90}
+              label={({ name, value }) => `${name}: ${value}`}
+            >
+              {statusPieData.map((_, i) => (
+                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+              ))}
+            </Pie>
+
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
 
       {/* ADD MODAL */}

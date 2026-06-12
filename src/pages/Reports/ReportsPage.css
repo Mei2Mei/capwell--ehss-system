@@ -127,3 +127,6 @@
 .badge-expired  { background: #c0392b; color: #fff; }
 .badge-expiring { background: #e67e22; color: #fff; }
 .rep-actions { display: flex; gap: 8px; }
+
+.badge-valid { background: #27ae60; color: #fff; }
+.badge-pending { background: #95a5a6; color: #fff; }
