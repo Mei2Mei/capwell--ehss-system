@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import { safetyRecords as initialRecords } from "../../data/SafetyData";
+import { safetyRecords as initialRecords } from "../../data/safetyData";
 import "./SafetyPage.css";
 
 // ── Calculations ──────────────────────────────────────────────

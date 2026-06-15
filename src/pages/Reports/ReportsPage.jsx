@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { safetyRecords } from "../../data/SafetyData";
-import { costRecords } from "../../data/CostsData";
+import { safetyRecords } from "../../data/safetyData";
+import { costRecords } from "../../data/costsData";
 import { complianceItems } from "../../data/ComplianceData";
 import { ppeItems } from "../../data/PPEData";
 import {
   sustainabilityRecords,
   emissionFactors,
-} from "../../data/SustainabilityData";
+} from "../../data/sustainabilityData";
 import "./ReportsPage.css";
 import {
   BarChart,
