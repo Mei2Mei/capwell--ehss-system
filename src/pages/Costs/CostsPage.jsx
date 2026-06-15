@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
-import { costRecords as initialRecords } from "../../data/CostsData";
+import { costRecords as initialRecords } from "../../data/costsData";
 import "./CostsPage.css";
 
 // ── Helpers ───────────────────────────────────────────────────
