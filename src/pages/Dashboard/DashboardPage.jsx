@@ -25,7 +25,7 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import { ppeItems } from "../../data/ppeData";
+import { ppeItems } from "../../data/PPEData";
 import "./DashboardPage.css";
 
 // ── Sample data ───────────────────────────────────────────────
