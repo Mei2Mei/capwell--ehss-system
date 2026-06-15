@@ -31,7 +31,7 @@ function friendlyCategory(cat) {
     case "industry_best_practice":
       return "Best practice";
     case "behaviour_based_safety":
-      return "BBS";
+      return "Behaviour Based Safety";
     default:
       return cat;
   }
@@ -289,7 +289,7 @@ function CalendarPage() {
             <option value="all">All categories</option>
             <option value="statutory_requirement">Statutory</option>
             <option value="industry_best_practice">Best practice</option>
-            <option value="behaviour_based_safety">BBS</option>
+            <option value="behaviour_based_safety">Best Based Safety</option>
           </select>
           <input
             className="cal-search"

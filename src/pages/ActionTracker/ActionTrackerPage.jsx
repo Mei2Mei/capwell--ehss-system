@@ -103,8 +103,13 @@ export default function ActionTracker() {
   // HANDLERS
   // ─────────────────────────────
   const handleAdd = () => {
+    const nextId =
+      actions.length > 0
+        ? Math.max(...actions.map((a) => Number(a.id))) + 1
+        : 1;
+
     const newItem = {
-      id: Date.now(),
+      id: nextId,
       ...formData,
       status: getStatusFromProgress(formData.progress),
     };

@@ -33,7 +33,12 @@ function Sidebar({ activePage, onNavigate }) {
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🛡️</div>
         <div className="sidebar-logo-text">
-          <div className="sidebar-logo-title">EHSS</div>
+          <div
+            className="sidebar-logo-title"
+            title="Environment, Health, Safety and Sustainability"
+          >
+            EHSS
+          </div>
           <div className="sidebar-logo-sub">Management System</div>
         </div>
       </div>

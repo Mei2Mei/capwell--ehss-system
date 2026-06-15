@@ -324,8 +324,8 @@ function SafetyPage() {
               <th>Staff</th>
               <th>Hours worked</th>
               <th>Fatalities</th>
-              <th>MTI</th>
-              <th>LTI</th>
+              <th title="Medical Treatment Incident">MTI</th>
+              <th title="Lost Time Incident">LTI</th>
               <th>Days lost</th>
               <th>Training hrs</th>
               <th>First aid</th>
@@ -333,8 +333,9 @@ function SafetyPage() {
               <th>Investigations</th>
               <th>Meetings</th>
               <th>Inspections</th>
-              <th>TRIFR</th>
-              <th>LTIFR</th>
+              <th title="Total Recordable Injury Frequency Rate">TRIFR</th>
+
+              <th title="Lost Time Injury Frequency Rate">LTIFR</th>
               <th>Severity rate</th>
               <th>Actions</th>
             </tr>
