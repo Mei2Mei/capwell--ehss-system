@@ -20,7 +20,7 @@ import CostsPage from "./pages/Costs/CostsPage";
 import CompliancePage from "./pages/Compliance/CompliancePage";
 import CalendarPage from "./pages/Calendar/CalendarPage";
 import EquipmentPage from "./pages/Equipment/EquipmentPage";
-import PPEPage from "./pages/PPE/PPEPage.jsx";
+import PPEPage from "./pages/PPE/PPEPage";
 import SustainabilityPage from "./pages/Sustainability/SustainabilityPage";
 import ReportsPage from "./pages/Reports/ReportsPage";
 import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
