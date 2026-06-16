@@ -144,7 +144,7 @@
 }
 .costs-table tr:last-child td { border-bottom: none; }
 .row-even { background: #f8faff; }
-.row-outside-budget { background: #fdf3f3; }
+.row-outside-budget { background: #f5cba7; }
 .costs-item-desc { max-width: 220px; }
 .costs-po {
   font-family: monospace;

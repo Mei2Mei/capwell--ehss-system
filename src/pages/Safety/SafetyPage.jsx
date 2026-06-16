@@ -7,9 +7,9 @@
 // - Incident rows highlighted
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { safetyRecords as initialRecords } from "../../data/safetyData";
+import { useState, useEffect } from "react";
 import "./SafetyPage.css";
+const API_URL = "http://localhost:5000/api/safety";
 
 // ── Calculations ──────────────────────────────────────────────
 // All three use 1,000,000 as multiplier
@@ -59,20 +59,7 @@ const emptyForm = {
 };
 
 function SafetyPage() {
-  const [records, setRecords] = useState(
-    initialRecords.map((r) => ({
-      ...r,
-      trifr: calcTRIFR(
-        r.medical_treatment_incidents,
-        r.lost_time_incidents,
-        r.fatalities,
-        r.worked_hours,
-      ),
-      ltifr: calcLTIFR(r.lost_time_incidents, r.worked_hours),
-      severity_rate: calcSeverity(r.days_away_from_work, r.worked_hours),
-    })),
-  );
-
+  const [records, setRecords] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
@@ -81,6 +68,28 @@ function SafetyPage() {
   const [editingId, setEditingId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        setRecords(
+          data.map((r) => ({
+            ...r,
+            period: r.period?.split("T")[0],
+            trifr: calcTRIFR(
+              r.medical_treatment_incidents,
+              r.lost_time_incidents,
+              r.fatalities,
+              r.worked_hours,
+            ),
+            ltifr: calcLTIFR(r.lost_time_incidents, r.worked_hours),
+            severity_rate: calcSeverity(r.days_away_from_work, r.worked_hours),
+          })),
+        );
+      })
+      .catch((err) => console.error("Failed to fetch safety records:", err));
+  }, []);
 
   // ── Live calculated preview while filling form ────────────
   const liveWorkedHours = form.staff_numbers
@@ -146,14 +155,16 @@ function SafetyPage() {
       Number(form.lost_time_incidents) === 0
     )
       e.days_away_from_work = "Days away must be 0 when LTI = 0.";
-    // Check duplicate month
-    const dup = records.find((r) => r.period === form.period);
+    // Check duplicate month (excluding the record currently being edited)
+    const dup = records.find(
+      (r) => r.period === form.period && r.id !== editingId,
+    );
     if (dup) e.period = "A record for this month already exists.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validate()) return;
 
     const workedHours = calcWorkedHours(Number(form.staff_numbers));
@@ -176,38 +187,63 @@ function SafetyPage() {
       accident_investigations: Number(form.accident_investigations) || 0,
       hse_meetings: Number(form.hse_meetings) || 0,
       hse_inspections: Number(form.hse_inspections) || 0,
-      trifr: calcTRIFR(mti, lti, fat, workedHours),
-      ltifr: calcLTIFR(lti, workedHours),
-      severity_rate: calcSeverity(days, workedHours),
     };
 
-    if (editingId) {
-      setRecords(
-        records.map((r) =>
-          r.id === editingId ? { ...r, ...recordPayload } : r,
-        ),
-      );
+    try {
+      if (editingId) {
+        const res = await fetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recordPayload),
+        });
+        const updated = await res.json();
 
-      setEditingId(null);
-      showBanner("Safety record updated successfully.");
-    } else {
-      const newRecord = {
-        id: Date.now(),
-        ...recordPayload,
-      };
+        setRecords(
+          records.map((r) =>
+            r.id === editingId
+              ? {
+                  ...updated,
+                  period: updated.period?.split("T")[0],
+                  trifr: calcTRIFR(mti, lti, fat, workedHours),
+                  ltifr: calcLTIFR(lti, workedHours),
+                  severity_rate: calcSeverity(days, workedHours),
+                }
+              : r,
+          ),
+        );
 
-      setRecords(
-        [...records, newRecord].sort(
-          (a, b) => new Date(a.period) - new Date(b.period),
-        ),
-      );
+        setEditingId(null);
+        showBanner("Safety record updated successfully.");
+      } else {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recordPayload),
+        });
+        const newRecord = await res.json();
 
-      showBanner("Safety record added successfully.");
+        setRecords(
+          [
+            ...records,
+            {
+              ...newRecord,
+              period: newRecord.period?.split("T")[0],
+              trifr: calcTRIFR(mti, lti, fat, workedHours),
+              ltifr: calcLTIFR(lti, workedHours),
+              severity_rate: calcSeverity(days, workedHours),
+            },
+          ].sort((a, b) => new Date(a.period) - new Date(b.period)),
+        );
+
+        showBanner("Safety record added successfully.");
+      }
+
+      setShowModal(false);
+      setForm(emptyForm);
+      setErrors({});
+    } catch (err) {
+      console.error("Failed to save safety record:", err);
     }
-
-    setShowModal(false);
-    setForm(emptyForm);
-    setErrors({});
   }
 
   function handleEdit(record) {
@@ -237,27 +273,22 @@ function SafetyPage() {
     setDeleteModal(record);
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (!deleteReason.trim()) {
       setErrors({ deleteReason: "Deletion reason is required." });
       return;
     }
 
-    const deletedRecord = records.find((r) => r.id === deleteModal.id);
-
-    console.log("DELETED SAFETY RECORD:", {
-      record: deletedRecord,
-      reason: deleteReason,
-      deletedAt: new Date().toISOString(),
-    });
-
-    setRecords(records.filter((r) => r.id !== deleteModal.id));
-
-    setDeleteModal(null);
-    setDeleteReason("");
-    setErrors({});
-
-    showBanner("Safety record deleted successfully.");
+    try {
+      await fetch(`${API_URL}/${deleteModal.id}`, { method: "DELETE" });
+      setRecords(records.filter((r) => r.id !== deleteModal.id));
+      setDeleteModal(null);
+      setDeleteReason("");
+      setErrors({});
+      showBanner("Safety record deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete safety record:", err);
+    }
   }
 
   return (

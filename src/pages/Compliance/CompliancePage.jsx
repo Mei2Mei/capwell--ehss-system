@@ -11,9 +11,10 @@
 // the expiry date compared to today's date.
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { complianceItems as initialItems } from "../../data/ComplianceData";
+import { useState, useEffect } from "react";
 import "./CompliancePage.css";
+
+const API_URL = "http://localhost:5000/api/compliance";
 
 // ── Status calculation ────────────────────────────────────────
 // This is the core business rule from Phase 1 BR-06 to BR-09.
@@ -82,7 +83,7 @@ const emptyForm = {
 
 // ── Main component ────────────────────────────────────────────
 function CompliancePage() {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [modalType, setModalType] = useState(null); // null | "add" | "edit"
@@ -93,6 +94,21 @@ function CompliancePage() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) =>
+        setItems(
+          data.map((i) => ({
+            ...i,
+            date_of_issuance: i.date_of_issuance?.split("T")[0] || "",
+            date_of_expiry: i.date_of_expiry?.split("T")[0] || "",
+          })),
+        ),
+      )
+      .catch((err) => console.error("Failed to fetch compliance items:", err));
+  }, []);
 
   // ── Summary counts ────────────────────────────────────────
   const counts = {
@@ -163,25 +179,47 @@ function CompliancePage() {
     setModalType("edit");
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validateForm()) return;
 
-    if (modalType === "add") {
-      const newItem = {
-        ...form,
-        id: Math.max(...items.map((i) => i.id)) + 1,
-      };
-      setItems([...items, newItem]);
-      showBanner("Compliance item added successfully.");
-    } else {
-      setItems(items.map((i) => (i.id === editingId ? { ...i, ...form } : i)));
-      showBanner("Compliance item updated successfully.");
-    }
+    try {
+      if (modalType === "add") {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        const newItem = await res.json();
+        const formatted = {
+          ...newItem,
+          date_of_issuance: newItem.date_of_issuance?.split("T")[0] || "",
+          date_of_expiry: newItem.date_of_expiry?.split("T")[0] || "",
+        };
+        setItems([...items, formatted]);
+        showBanner("Compliance item added successfully.");
+      } else {
+        const res = await fetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        const updated = await res.json();
+        const formatted = {
+          ...updated,
+          date_of_issuance: updated.date_of_issuance?.split("T")[0] || "",
+          date_of_expiry: updated.date_of_expiry?.split("T")[0] || "",
+        };
+        setItems(items.map((i) => (i.id === editingId ? formatted : i)));
+        showBanner("Compliance item updated successfully.");
+      }
 
-    setModalType(null);
-    setEditingId(null);
-    setForm(emptyForm);
-    setErrors({});
+      setModalType(null);
+      setEditingId(null);
+      setForm(emptyForm);
+      setErrors({});
+    } catch (err) {
+      console.error("Failed to save compliance item:", err);
+    }
   }
 
   function handleCloseModal() {
@@ -196,25 +234,22 @@ function CompliancePage() {
     setDeleteModal(item);
   }
 
-  function handleDeleteConfirm() {
-    // 1. BLOCK IF NO REASON
+  async function handleDeleteConfirm() {
     if (!deleteReason.trim()) {
       showBanner("Please enter a reason for deletion.");
       return;
     }
-
-    // 2. SAFETY CHECK (optional but good)
     if (!deleteModal) return;
 
-    // 3. DELETE ITEM
-    setItems(items.filter((i) => i.id !== deleteModal.id));
-
-    // 4. SUCCESS MESSAGE
-    showBanner(`"${deleteModal.requirement}" deleted successfully.`);
-
-    // 5. RESET STATE
-    setDeleteModal(null);
-    setDeleteReason("");
+    try {
+      await fetch(`${API_URL}/${deleteModal.id}`, { method: "DELETE" });
+      setItems(items.filter((i) => i.id !== deleteModal.id));
+      showBanner(`"${deleteModal.requirement}" deleted successfully.`);
+      setDeleteModal(null);
+      setDeleteReason("");
+    } catch (err) {
+      console.error("Failed to delete compliance item:", err);
+    }
   }
 
   // ── JSX ───────────────────────────────────────────────────

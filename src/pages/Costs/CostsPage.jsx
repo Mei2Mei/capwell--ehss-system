@@ -8,9 +8,10 @@
 // - Year on year comparison
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { costRecords as initialRecords } from "../../data/costsData";
+import { useState, useEffect } from "react";
 import "./CostsPage.css";
+
+const API_URL = "http://localhost:5000/api/costs";
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatDate(dateStr) {
@@ -37,8 +38,12 @@ function friendlyCostType(type) {
       return "PPE provision";
     case "waste_management":
       return "Waste management";
-    case "training":
-      return "Training";
+    case "training_best_practice":
+      return "Training-Best practice";
+    case "training_standard_requirement":
+      return "Training-Standard requirement";
+    case "training_statutory_requirement":
+      return "Training-Statutory requirement";
     case "improvement_initiative":
       return "Improvement initiative";
     default:
@@ -70,7 +75,7 @@ const emptyForm = {
 };
 
 function CostsPage() {
-  const [records, setRecords] = useState(initialRecords);
+  const [records, setRecords] = useState([]);
   const [yearFilter, setYearFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [budgetFilter, setBudgetFilter] = useState("all");
@@ -83,6 +88,21 @@ function CostsPage() {
   const [deleteReason, setDeleteReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) =>
+        setRecords(
+          data.map((r) => ({
+            ...r,
+            date: r.date?.split("T")[0],
+            cost_excl_vat: Number(r.cost_excl_vat),
+          })),
+        ),
+      )
+      .catch((err) => console.error("Failed to fetch cost records:", err));
+  }, []);
 
   // ── Filtered records ──────────────────────────────────────
   const filtered = records
@@ -165,61 +185,28 @@ function CostsPage() {
     setDeleteModal(record);
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (!deleteReason.trim()) {
       setErrors({ deleteReason: "Deletion reason is required." });
       return;
     }
 
-    // OPTIONAL: log deletion reason (important for audit trail later)
-    const deletedRecord = records.find((r) => r.id === deleteModal.id);
-
-    console.log("DELETED COST RECORD:", {
-      record: deletedRecord,
-      reason: deleteReason,
-      deletedAt: new Date().toISOString(),
-    });
-
-    setRecords(records.filter((r) => r.id !== deleteModal.id));
-
-    setDeleteModal(null);
-    setDeleteReason("");
-    setErrors({});
-
-    showBanner("Cost record deleted successfully.");
+    try {
+      await fetch(`${API_URL}/${deleteModal.id}`, { method: "DELETE" });
+      setRecords(records.filter((r) => r.id !== deleteModal.id));
+      setDeleteModal(null);
+      setDeleteReason("");
+      setErrors({});
+      showBanner("Cost record deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete cost record:", err);
+    }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validate()) return;
 
-    if (editingId) {
-      setRecords(
-        records.map((r) =>
-          r.id === editingId
-            ? {
-                ...r,
-                item_description: form.item_description.trim(),
-                date: form.date,
-                po_number: form.po_number.trim().toUpperCase(),
-                cost_excl_vat: Number(form.cost_excl_vat),
-                cost_type: form.cost_type,
-                refundable: form.refundable,
-                budget_status: form.budget_status,
-                year: new Date(form.date).getFullYear(),
-              }
-            : r,
-        ),
-      );
-
-      setEditingId(null);
-      setShowModal(false);
-
-      showBanner("Cost record updated successfully.");
-
-      return;
-    }
-    const newRecord = {
-      id: Date.now(),
+    const payload = {
       year: new Date(form.date).getFullYear(),
       item_description: form.item_description.trim(),
       date: form.date,
@@ -229,17 +216,61 @@ function CostsPage() {
       refundable: form.refundable,
       budget_status: form.budget_status,
     };
-    setRecords(
-      [...records, newRecord].sort(
-        (a, b) => new Date(a.date) - new Date(b.date),
-      ),
-    );
-    setShowModal(false);
-    setForm(emptyForm);
-    setErrors({});
-    showBanner(
-      `Cost record "${newRecord.item_description}" added. PO: ${newRecord.po_number}`,
-    );
+
+    try {
+      if (editingId) {
+        const res = await fetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const updated = await res.json();
+
+        setRecords(
+          records.map((r) =>
+            r.id === editingId
+              ? {
+                  ...updated,
+                  date: updated.date?.split("T")[0],
+                  cost_excl_vat: Number(updated.cost_excl_vat),
+                }
+              : r,
+          ),
+        );
+
+        setEditingId(null);
+        setShowModal(false);
+        showBanner("Cost record updated successfully.");
+        return;
+      }
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const newRecord = await res.json();
+      const formatted = {
+        ...newRecord,
+        date: newRecord.date?.split("T")[0],
+        cost_excl_vat: Number(newRecord.cost_excl_vat),
+      };
+
+      setRecords(
+        [...records, formatted].sort(
+          (a, b) => new Date(a.date) - new Date(b.date),
+        ),
+      );
+
+      setShowModal(false);
+      setForm(emptyForm);
+      setErrors({});
+      showBanner(
+        `Cost record "${formatted.item_description}" added. PO: ${formatted.po_number}`,
+      );
+    } catch (err) {
+      console.error("Failed to save cost record:", err);
+    }
   }
 
   return (
@@ -313,7 +344,13 @@ function CostsPage() {
           <option value="staff_welfare">Staff welfare</option>
           <option value="ppe_provision">PPE provision</option>
           <option value="waste_management">Waste management</option>
-          <option value="training">Training</option>
+          <option value="training_best_practice">Training-Best practice</option>
+          <option value="training_standard_requirement">
+            Training-Standard requirement
+          </option>
+          <option value="training_statutory_requirement">
+            Training-Statutory requirement
+          </option>
           <option value="improvement_initiative">Improvement initiative</option>
         </select>
         <select
@@ -532,6 +569,9 @@ function CostsPage() {
                   </option>
                   <option value="training_standard_requirement">
                     Training-Standard Requirement
+                  </option>
+                  <option value="training_statutory_requirement">
+                    Training-Statutory Requirement
                   </option>
                   <option value="improvement_initiative">
                     Improvement initiative

@@ -2,7 +2,7 @@
 // ActionTrackerPage.jsx — Action Tracker Management
 // ─────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -18,8 +18,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { actiontrackerData as initialActions } from "../../data/ActionTrackerData";
 import "./ActionTrackerPage.css";
+
+const API_URL = "http://localhost:5000/api/actionTracker";
 
 const COLORS = ["#2ecc71", "#f39c12", "#e74c3c"];
 
@@ -27,7 +28,7 @@ export default function ActionTracker() {
   // ─────────────────────────────
   // STATE
   // ─────────────────────────────
-  const [actions, setActions] = useState(initialActions);
+  const [actions, setActions] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -36,6 +37,25 @@ export default function ActionTracker() {
   const [selectedAction, setSelectedAction] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((item) => ({
+          id: item.id,
+          concern: item.concern,
+          action: item.action,
+          responsible: item.responsible,
+          dateRaised: item.date_raised?.split("T")[0],
+          targetDate: item.target_date?.split("T")[0],
+          progress: item.progress,
+          status: item.status,
+        }));
+        setActions(mapped);
+      })
+      .catch((err) => console.error("Failed to fetch actions:", err));
+  }, []);
 
   const emptyForm = {
     concern: "",
@@ -94,7 +114,7 @@ export default function ActionTracker() {
   // HELPERS
   // ─────────────────────────────
   const getStatusFromProgress = (progress) => {
-    if (progress >= 75) return "Completed";
+    if (progress >= 76) return "Completed";
     if (progress >= 25) return "In Progress";
     return "Pending";
   };
@@ -102,21 +122,41 @@ export default function ActionTracker() {
   // ─────────────────────────────
   // HANDLERS
   // ─────────────────────────────
-  const handleAdd = () => {
-    const nextId =
-      actions.length > 0
-        ? Math.max(...actions.map((a) => Number(a.id))) + 1
-        : 1;
+  const handleAdd = async () => {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          concern: formData.concern,
+          action: formData.action,
+          responsible: formData.responsible,
+          date_raised: formData.dateRaised,
+          target_date: formData.targetDate,
+          progress: formData.progress,
+          status: getStatusFromProgress(formData.progress),
+        }),
+      });
+      const newItem = await res.json();
 
-    const newItem = {
-      id: nextId,
-      ...formData,
-      status: getStatusFromProgress(formData.progress),
-    };
-
-    setActions([...actions, newItem]);
-    setFormData(emptyForm);
-    setShowAddModal(false);
+      setActions([
+        ...actions,
+        {
+          id: newItem.id,
+          concern: newItem.concern,
+          action: newItem.action,
+          responsible: newItem.responsible,
+          dateRaised: newItem.date_raised?.split("T")[0],
+          targetDate: newItem.target_date?.split("T")[0],
+          progress: newItem.progress,
+          status: newItem.status,
+        },
+      ]);
+      setFormData(emptyForm);
+      setShowAddModal(false);
+    } catch (err) {
+      console.error("Failed to add action:", err);
+    }
   };
 
   const openEdit = (item) => {
@@ -124,20 +164,47 @@ export default function ActionTracker() {
     setShowEditModal(true);
   };
 
-  const handleEditSave = () => {
-    setActions(
-      actions.map((a) =>
-        a.id === editBuffer.id
-          ? {
-              ...editBuffer,
-              status: getStatusFromProgress(editBuffer.progress),
-            }
-          : a,
-      ),
-    );
+  const handleEditSave = async () => {
+    try {
+      const updatedStatus = getStatusFromProgress(editBuffer.progress);
 
-    setEditBuffer(null);
-    setShowEditModal(false);
+      const res = await fetch(`${API_URL}/${editBuffer.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          concern: editBuffer.concern,
+          action: editBuffer.action,
+          responsible: editBuffer.responsible,
+          date_raised: editBuffer.dateRaised,
+          target_date: editBuffer.targetDate,
+          progress: editBuffer.progress,
+          status: updatedStatus,
+        }),
+      });
+      const updated = await res.json();
+
+      setActions(
+        actions.map((a) =>
+          a.id === updated.id
+            ? {
+                id: updated.id,
+                concern: updated.concern,
+                action: updated.action,
+                responsible: updated.responsible,
+                dateRaised: updated.date_raised?.split("T")[0],
+                targetDate: updated.target_date?.split("T")[0],
+                progress: updated.progress,
+                status: updated.status,
+              }
+            : a,
+        ),
+      );
+
+      setEditBuffer(null);
+      setShowEditModal(false);
+    } catch (err) {
+      console.error("Failed to update action:", err);
+    }
   };
 
   const handleDeleteOpen = (item) => {
@@ -145,18 +212,26 @@ export default function ActionTracker() {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deleteReason.trim()) {
       setDeleteError("Deletion reason is required.");
       return;
     }
 
-    setActions(actions.filter((a) => a.id !== selectedAction.id));
+    try {
+      await fetch(`${API_URL}/${selectedAction.id}`, {
+        method: "DELETE",
+      });
 
-    setDeleteError("");
-    setSelectedAction(null);
-    setDeleteReason("");
-    setShowDeleteModal(false);
+      setActions(actions.filter((a) => a.id !== selectedAction.id));
+
+      setDeleteError("");
+      setSelectedAction(null);
+      setDeleteReason("");
+      setShowDeleteModal(false);
+    } catch (err) {
+      console.error("Failed to delete action:", err);
+    }
   };
 
   // ─────────────────────────────
