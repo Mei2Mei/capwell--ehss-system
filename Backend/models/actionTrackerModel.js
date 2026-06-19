@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllActions = async () => {
-  const result = await pool.query('SELECT * FROM action_tracker ORDER BY id');
+  const result = await pool.query('SELECT * FROM action_tracker WHERE is_deleted = FALSE ORDER BY id');
   return result.rows;
 };
 
@@ -30,8 +30,13 @@ const updateAction = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteAction = async (id) => {
-  await pool.query('DELETE FROM action_tracker WHERE id=$1', [id]);
-};
+const deleteAction = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE action_tracker SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
+};;
 
 module.exports = { getAllActions, getActionById, createAction, updateAction, deleteAction };

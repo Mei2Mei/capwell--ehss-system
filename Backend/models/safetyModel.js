@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllSafetyRecords = async () => {
-  const result = await pool.query('SELECT * FROM safety_records ORDER BY period');
+  const result = await pool.query('SELECT * FROM safety_records WHERE is_deleted = FALSE ORDER BY period');
   return result.rows;
 };
 
@@ -30,8 +30,13 @@ const updateSafetyRecord = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteSafetyRecord = async (id) => {
-  await pool.query('DELETE FROM safety_records WHERE id=$1', [id]);
+const deleteSafetyRecord = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE safety_records SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = { getAllSafetyRecords, getSafetyRecordById, createSafetyRecord, updateSafetyRecord, deleteSafetyRecord };

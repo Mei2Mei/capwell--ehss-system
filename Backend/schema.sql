@@ -48,6 +48,7 @@ CREATE TABLE ppe_items (
   reserved_stock INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
+
 );
 
 -- PPE requests (reservation-based workflow)
@@ -81,7 +82,10 @@ CREATE TABLE compliance_items (
   remarks TEXT,
   status VARCHAR(20), -- auto-calculated: compliant / expiring_soon / expired (60-day threshold)
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  updated_at TIMESTAMP DEFAULT NOW(),
+  is_deleted BOOLEAN DEFAULT FALSE,
+deleted_reason TEXT,
+deleted_at TIMESTAMP
 );
 
 -- ---------------------------------------------------------
@@ -105,7 +109,10 @@ CREATE TABLE safety_records (
   hse_inspections INTEGER DEFAULT 0,
   -- Calculated fields (TRIFR, LTIFR, Severity Rate use x1,000,000 multiplier)
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  updated_at TIMESTAMP DEFAULT NOW(),
+  is_deleted BOOLEAN DEFAULT FALSE,
+deleted_reason TEXT,
+deleted_at TIMESTAMP
 );
 
 -- ---------------------------------------------------------
@@ -122,7 +129,10 @@ CREATE TABLE cost_records (
   cost_type VARCHAR(50), -- statutory_requirement, staff_welfare, improvement_initiative
   refundable VARCHAR(20) DEFAULT 'non_refundable',
   budget_status VARCHAR(20) DEFAULT 'in_budget',
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  is_deleted BOOLEAN DEFAULT FALSE,
+deleted_reason TEXT,
+deleted_at TIMESTAMP 
 );
 
 -- ---------------------------------------------------------
@@ -186,7 +196,10 @@ CREATE TABLE action_tracker (
   progress INTEGER DEFAULT 0 CHECK (progress BETWEEN 0 AND 100),
   status VARCHAR(20) DEFAULT 'Pending', -- Pending, In Progress, Completed
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  updated_at TIMESTAMP DEFAULT NOW(),
+  is_deleted BOOLEAN DEFAULT FALSE,
+deleted_reason TEXT,
+deleted_at TIMESTAMP 
 );
 
 -- ---------------------------------------------------------

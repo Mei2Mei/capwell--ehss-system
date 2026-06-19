@@ -21,8 +21,8 @@ const getPPEItem = async (req, res) => {
 
 const createRequest = async (req, res) => {
   try {
-    const { ppe_item_id, requested_by, quantity, notes } = req.body;
-    const request = await ppeModel.createPPERequest(ppe_item_id, requested_by, quantity, notes);
+    const { ppe_item_id, requested_by, quantity, notes, worker_name, department } = req.body;
+    const request = await ppeModel.createPPERequest(ppe_item_id, requested_by, quantity, notes, worker_name, department);
     res.status(201).json(request);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -41,14 +41,13 @@ const approve = async (req, res) => {
 
 const reject = async (req, res) => {
   try {
-    const { approved_by } = req.body;
-    const request = await ppeModel.rejectRequest(req.params.id, approved_by);
+    const { approved_by, reject_reason } = req.body;
+    const request = await ppeModel.rejectRequest(req.params.id, approved_by, reject_reason);
     res.json(request);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 const fulfill = async (req, res) => {
   try {
     const { fulfilled_by } = req.body;
@@ -68,7 +67,53 @@ const getRequests = async (req, res) => {
   }
 };
 
+const createItem = async (req, res) => {
+  try {
+    const item = await ppeModel.createPPEItem(req.body);
+    res.status(201).json(item);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+const updateItem = async (req, res) => {
+  try {
+    const item = await ppeModel.updatePPEItem(req.params.id, req.body);
+    res.json(item);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+const deleteItem = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ error: 'Deletion reason is required.' });
+    const deleted = await ppeModel.softDeletePPEItem(req.params.id, reason);
+    res.json(deleted);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+const createTx = async (req, res) => {
+  try {
+    const tx = await ppeModel.createTransaction(req.body);
+    res.status(201).json(tx);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+const getTxByItem = async (req, res) => {
+  try {
+    const txs = await ppeModel.getTransactionsByItem(req.params.itemId);
+    res.json(txs);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+const getAllTx = async (req, res) => {
+  try {
+    const txs = await ppeModel.getAllTransactions();
+    res.json(txs);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
 module.exports = {
   getPPEItems, getPPEItem,
-  createRequest, approve, reject, fulfill, getRequests
+  createRequest, approve, reject, fulfill, getRequests,
+  createItem, updateItem, deleteItem,
+  createTx, getTxByItem, getAllTx
 };

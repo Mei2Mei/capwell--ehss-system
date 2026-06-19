@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllEquipment = async () => {
-  const result = await pool.query('SELECT * FROM equipment ORDER BY id');
+  const result = await pool.query('SELECT * FROM equipment WHERE is_deleted = FALSE ORDER BY id');
   return result.rows;
 };
 
@@ -30,8 +30,13 @@ const updateEquipment = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteEquipment = async (id) => {
-  await pool.query('DELETE FROM equipment WHERE id=$1', [id]);
+const deleteEquipment = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE equipment SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = { getAllEquipment, getEquipmentById, createEquipment, updateEquipment, deleteEquipment };

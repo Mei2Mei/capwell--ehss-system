@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllCostRecords = async () => {
-  const result = await pool.query('SELECT * FROM cost_records ORDER BY date');
+  const result = await pool.query('SELECT * FROM cost_records WHERE is_deleted = FALSE ORDER BY date');
   return result.rows;
 };
 
@@ -30,8 +30,13 @@ const updateCostRecord = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteCostRecord = async (id) => {
-  await pool.query('DELETE FROM cost_records WHERE id=$1', [id]);
+const deleteCostRecord = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE cost_records SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = { getAllCostRecords, getCostRecordById, createCostRecord, updateCostRecord, deleteCostRecord };

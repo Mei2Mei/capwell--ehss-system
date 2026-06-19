@@ -35,8 +35,10 @@ const updateActionItem = async (req, res) => {
 
 const deleteActionItem = async (req, res) => {
   try {
-    await actionTrackerModel.deleteAction(req.params.id);
-    res.status(204).send();
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ error: 'Deletion reason is required.' });
+    const deleted = await actionTrackerModel.deleteAction(req.params.id, reason);
+    res.json(deleted);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllSustainabilityRecords = async () => {
-  const result = await pool.query('SELECT * FROM sustainability_records ORDER BY period');
+  const result = await pool.query('SELECT * FROM sustainability_records WHERE is_deleted = FALSE ORDER BY period');
   return result.rows;
 };
 
@@ -35,8 +35,13 @@ const updateSustainabilityRecord = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteSustainabilityRecord = async (id) => {
-  await pool.query('DELETE FROM sustainability_records WHERE id=$1', [id]);
+const deleteSustainabilityRecord = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE sustainability_records SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = { getAllSustainabilityRecords, getSustainabilityRecordById, getEmissionFactors, createSustainabilityRecord, updateSustainabilityRecord, deleteSustainabilityRecord };

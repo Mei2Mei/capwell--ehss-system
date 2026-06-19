@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const getAllComplianceItems = async () => {
-  const result = await pool.query('SELECT * FROM compliance_items ORDER BY id');
+  const result = await pool.query('SELECT * FROM compliance_items WHERE is_deleted = FALSE ORDER BY id');
   return result.rows;
 };
 
@@ -30,8 +30,13 @@ const updateComplianceItem = async (id, data) => {
   return result.rows[0];
 };
 
-const deleteComplianceItem = async (id) => {
-  await pool.query('DELETE FROM compliance_items WHERE id=$1', [id]);
+const deleteComplianceItem = async (id, reason) => {
+  const result = await pool.query(
+    `UPDATE compliance_items SET is_deleted = TRUE, deleted_reason = $1, deleted_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [reason, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = { getAllComplianceItems, getComplianceItemById, createComplianceItem, updateComplianceItem, deleteComplianceItem};

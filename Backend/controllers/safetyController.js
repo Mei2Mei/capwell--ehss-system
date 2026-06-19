@@ -35,8 +35,10 @@ const updateRecord = async (req, res) => {
 
 const deleteRecord = async (req, res) => {
   try {
-    await safetyModel.deleteSafetyRecord(req.params.id);
-    res.status(204).send();
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ error: 'Deletion reason is required.' });
+    const deleted = await safetyModel.deleteSafetyRecord(req.params.id, reason);
+    res.json(deleted);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
