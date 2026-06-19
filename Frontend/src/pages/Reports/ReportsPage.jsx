@@ -1,12 +1,4 @@
-import { useState } from "react";
-import { safetyRecords } from "../../data/safetyData";
-import { costRecords } from "../../data/costsData";
-import { complianceItems } from "../../data/ComplianceData";
-import { ppeItems } from "../../data/PPEData";
-import {
-  sustainabilityRecords,
-  emissionFactors,
-} from "../../data/sustainabilityData";
+import { useState, useEffect } from "react";
 import "./ReportsPage.css";
 import {
   BarChart,
@@ -21,7 +13,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { actiontrackerData } from "../../data/ActionTrackerData";
 
 function formatKES(n) {
   return `KES ${Number(n).toLocaleString()}`;
@@ -43,16 +34,16 @@ const COST_PIE_COLORS = [
   "#16a085",
 ];
 
-function calcScope1(r) {
+function calcScope1(r, factors) {
   return (
-    r.petrol_litres * emissionFactors.petrol +
-    r.diesel_litres * emissionFactors.diesel +
-    r.firewood_tonnes * emissionFactors.firewood +
-    r.lpg_kg * emissionFactors.lpg
+    r.petrol_litres * factors.petrol +
+    r.diesel_litres * factors.diesel +
+    r.firewood_tonnes * factors.firewood +
+    r.lpg_kg * factors.lpg
   );
 }
-function calcScope2(r) {
-  return r.electricity_kwh * emissionFactors.electricity;
+function calcScope2(r, factors) {
+  return r.electricity_kwh * factors.electricity;
 }
 
 function getCompStatus(item) {
@@ -68,7 +59,26 @@ function getCompStatus(item) {
 export default function ReportsPage() {
   const [reportType, setReportType] = useState("monthly_summary");
   const [generated, setGenerated] = useState(false);
-  const [selectedPPE, setSelectedPPE] = useState(ppeItems[0]?.id || "");
+  const [selectedPPE, setSelectedPPE] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Data state for each module
+  const [safetyRecords, setSafetyRecords] = useState([]);
+  const [costRecords, setCostRecords] = useState([]);
+  const [complianceItems, setComplianceItems] = useState([]);
+  const [ppeItems, setPpeItems] = useState([]);
+  const [sustainabilityRecords, setSustainabilityRecords] = useState([]);
+  const [emissionFactors, setEmissionFactors] = useState({
+    petrol: 0,
+    diesel: 0,
+    firewood: 0,
+    lpg: 0,
+    electricity: 0,
+  });
+  const [actionTrackerData, setActionTrackerData] = useState([]);
+  const [calendarActivities, setCalendarActivities] = useState([]);
+  const [safetyData, setSafetyData] = useState([]);
+  const [equipmentData, setEquipmentData] = useState([]);
 
   const totalCost = costRecords.reduce((s, r) => s + r.cost_excl_vat, 0);
   const statutory = costRecords
@@ -127,6 +137,192 @@ export default function ReportsPage() {
     restocked: i === 1 ? 20 : 0,
   }));
 
+  async function handleGenerate() {
+    setLoading(true);
+    setGenerated(false);
+
+    try {
+      if (reportType === "monthly_summary") {
+        const [
+          safety,
+          costs,
+          compliance,
+          ppe,
+          sustainability,
+          factors,
+          actions,
+          calendar,
+          equipment,
+        ] = await Promise.all([
+          fetch("http://localhost:5000/api/safety").then((r) => r.json()),
+          fetch("http://localhost:5000/api/costs").then((r) => r.json()),
+          fetch("http://localhost:5000/api/compliance").then((r) => r.json()),
+          fetch("http://localhost:5000/api/ppe").then((r) => r.json()),
+          fetch("http://localhost:5000/api/sustainability").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:5000/api/sustainability/factors").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:5000/api/actionTracker").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:5000/api/calendar").then((r) => r.json()),
+          fetch("http://localhost:5000/api/equipment").then((r) => r.json()),
+        ]);
+
+        setSafetyRecords(
+          safety.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
+        );
+        setCostRecords(
+          costs.map((r) => ({
+            ...r,
+            date: r.date?.split("T")[0],
+            cost_excl_vat: Number(r.cost_excl_vat),
+          })),
+        );
+        setComplianceItems(
+          compliance.map((c) => ({
+            ...c,
+            date_of_expiry: c.date_of_expiry?.split("T")[0] || "",
+          })),
+        );
+        setPpeItems(ppe);
+        setSelectedPPE(ppe[0]?.id || "");
+        setSustainabilityRecords(
+          sustainability.map((r) => ({
+            ...r,
+            period: r.period?.split("T")[0],
+          })),
+        );
+        const factorsObj = {};
+        factors.forEach((f) => {
+          factorsObj[f.factor_name] = Number(f.value);
+        });
+        setEmissionFactors(factorsObj);
+        setActionTrackerData(
+          actions.map((a) => ({
+            ...a,
+            targetDate: a.target_date?.split("T")[0],
+          })),
+        );
+        setCalendarActivities(
+          calendar.map((a) => ({
+            ...a,
+            scheduled_month: a.scheduled_month?.split("T")[0],
+          })),
+        );
+        setEquipmentData(
+          equipment.map((e) => ({
+            ...e,
+            last_inspection: e.last_inspection?.split("T")[0] || "",
+            next_inspection: e.next_inspection?.split("T")[0] || "",
+          })),
+        );
+      }
+
+      if (reportType === "compliance") {
+        const data = await fetch("http://localhost:5000/api/compliance").then(
+          (r) => r.json(),
+        );
+        setComplianceItems(
+          data.map((c) => ({
+            ...c,
+            date_of_expiry: c.date_of_expiry?.split("T")[0] || "",
+          })),
+        );
+      }
+
+      if (reportType === "costs") {
+        const data = await fetch("http://localhost:5000/api/costs").then((r) =>
+          r.json(),
+        );
+        setCostRecords(
+          data.map((r) => ({
+            ...r,
+            date: r.date?.split("T")[0],
+            cost_excl_vat: Number(r.cost_excl_vat),
+          })),
+        );
+      }
+
+      if (reportType === "ppe" || reportType === "ppe_trend") {
+        const data = await fetch("http://localhost:5000/api/ppe").then((r) =>
+          r.json(),
+        );
+        setPpeItems(data);
+        if (!selectedPPE && data.length > 0) setSelectedPPE(data[0].id);
+      }
+
+      if (reportType === "sustainability") {
+        const [records, factors] = await Promise.all([
+          fetch("http://localhost:5000/api/sustainability").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:5000/api/sustainability/factors").then((r) =>
+            r.json(),
+          ),
+        ]);
+        setSustainabilityRecords(
+          records.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
+        );
+        const factorsObj = {};
+        factors.forEach((f) => {
+          factorsObj[f.factor_name] = Number(f.value);
+        });
+        setEmissionFactors(factorsObj);
+      }
+
+      if (reportType === "action_tracker") {
+        const data = await fetch(
+          "http://localhost:5000/api/actionTracker",
+        ).then((r) => r.json());
+        setActionTrackerData(
+          data.map((a) => ({ ...a, targetDate: a.target_date?.split("T")[0] })),
+        );
+      }
+
+      if (reportType === "calendar") {
+        const data = await fetch("http://localhost:5000/api/calendar").then(
+          (r) => r.json(),
+        );
+        setCalendarActivities(
+          data.map((a) => ({
+            ...a,
+            scheduled_month: a.scheduled_month?.split("T")[0],
+          })),
+        );
+      }
+
+      if (reportType === "safety") {
+        const data = await fetch("http://localhost:5000/api/safety").then((r) =>
+          r.json(),
+        );
+        setSafetyRecords(
+          data.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
+        );
+      }
+
+      if (reportType === "equipment") {
+        const data = await fetch("http://localhost:5000/api/equipment").then(
+          (r) => r.json(),
+        );
+        setEquipmentData(
+          data.map((e) => ({
+            ...e,
+            next_inspection: e.next_inspection?.split("T")[0] || "",
+          })),
+        );
+      }
+
+      setGenerated(true);
+    } catch (err) {
+      console.error("Failed to fetch report data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="rep-page">
       <div className="rep-header">
@@ -144,14 +340,27 @@ export default function ReportsPage() {
           <select
             className="rep-select"
             value={reportType}
-            onChange={(e) => {
-              setReportType(e.target.value);
+            onChange={async (e) => {
+              const type = e.target.value;
+              setReportType(type);
               setGenerated(false);
+
+              // Pre-fetch PPE items so the item selector dropdown populates immediately
+              if (type === "ppe_trend") {
+                const data = await fetch("http://localhost:5000/api/ppe").then(
+                  (r) => r.json(),
+                );
+                setPpeItems(data);
+                if (data.length > 0) setSelectedPPE(data[0].id);
+              }
             }}
           >
             <option value="monthly_summary">Monthly EHSS Summary Report</option>
+            <option value="safety">Safety Metrics Report</option>
             <option value="compliance">Compliance Status Report</option>
             <option value="costs">Cost Analysis Report</option>
+            <option value="calendar">Calendar / Activities Report</option>
+            <option value="equipment">Equipment Register Report</option>
             <option value="ppe">PPE Stock Report</option>
             <option value="ppe_trend">PPE Fast-Moving Items</option>
             <option value="sustainability">Sustainability Report</option>
@@ -174,8 +383,8 @@ export default function ReportsPage() {
             </select>
           </div>
         )}
-        <button className="rep-btn-primary" onClick={() => setGenerated(true)}>
-          Generate report
+        <button className="rep-btn-primary" onClick={handleGenerate}>
+          {loading ? "Loading..." : "Generate report"}
         </button>
       </div>
 
@@ -269,39 +478,6 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
-              <div style={{ height: 220, marginTop: "10px" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={safetyRecords.map((r) => {
-                      const wh = r.worked_hours;
-                      return {
-                        month: formatMonth(r.period),
-                        TRIFR: wh
-                          ? +(
-                              ((r.medical_treatment_incidents +
-                                r.lost_time_incidents +
-                                r.fatalities) *
-                                1000000) /
-                              wh
-                            ).toFixed(2)
-                          : 0,
-                        LTIFR: wh
-                          ? +((r.lost_time_incidents * 1000000) / wh).toFixed(2)
-                          : 0,
-                      };
-                    })}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="TRIFR" fill="#c0392b" />
-                    <Bar dataKey="LTIFR" fill="#1a5276" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Cost summary
               </div>
@@ -328,7 +504,9 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div style={{ height: 220, marginBottom: "14px" }}>
+              <div
+                style={{ height: 220, minHeight: 220, marginBottom: "14px" }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -415,6 +593,358 @@ export default function ReportsPage() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Sustainability
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Water (m³)</th>
+                    <th>Electricity (kWh)</th>
+                    <th>Scope 1 (kg CO2)</th>
+                    <th>Scope 2 (kg CO2)</th>
+                    <th>Total emissions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sustainabilityRecords.map((r, i) => {
+                    const s1 = calcScope1(r, emissionFactors),
+                      s2 = calcScope2(r, emissionFactors);
+                    return (
+                      <tr key={i}>
+                        <td>{formatMonth(r.period)}</td>
+                        <td>
+                          {Number(r.water_consumption_m3).toLocaleString()}
+                        </td>
+                        <td>{Number(r.electricity_kwh).toLocaleString()}</td>
+                        <td>{s1.toFixed(2)}</td>
+                        <td>{s2.toFixed(2)}</td>
+                        <td>
+                          <strong>{(s1 + s2).toFixed(2)}</strong>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Action tracker
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total</div>
+                  <div className="rep-card-value">
+                    {actionTrackerData.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Completed</div>
+                  <div className="rep-card-value green">
+                    {
+                      actionTrackerData.filter((a) => a.status === "Completed")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">In Progress</div>
+                  <div className="rep-card-value amber">
+                    {
+                      actionTrackerData.filter(
+                        (a) => a.status === "In Progress",
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Pending</div>
+                  <div className="rep-card-value red">
+                    {
+                      actionTrackerData.filter((a) => a.status === "Pending")
+                        .length
+                    }
+                  </div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      {
+                        name: "Pending",
+                        value: actionTrackerData.filter(
+                          (a) => a.status === "Pending",
+                        ).length,
+                      },
+                      {
+                        name: "In Progress",
+                        value: actionTrackerData.filter(
+                          (a) => a.status === "In Progress",
+                        ).length,
+                      },
+                      {
+                        name: "Completed",
+                        value: actionTrackerData.filter(
+                          (a) => a.status === "Completed",
+                        ).length,
+                      },
+                    ]}
+                    dataKey="value"
+                    outerRadius={100}
+                    label
+                  >
+                    <Cell fill="#e67e22" />
+                    <Cell fill="#3498db" />
+                    <Cell fill="#27ae60" />
+                  </Pie>
+
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                EHSS calendar
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total activities</div>
+                  <div className="rep-card-value">
+                    {calendarActivities.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Completed</div>
+                  <div className="rep-card-value green">
+                    {
+                      calendarActivities.filter((a) => a.status === "completed")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Scheduled</div>
+                  <div className="rep-card-value">
+                    {
+                      calendarActivities.filter((a) => a.status === "scheduled")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Not conducted</div>
+                  <div className="rep-card-value red">
+                    {
+                      calendarActivities.filter(
+                        (a) => a.status === "not_conducted",
+                      ).length
+                    }
+                  </div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      {
+                        name: "Scheduled",
+                        value: calendarActivities.filter(
+                          (a) => a.status === "scheduled",
+                        ).length,
+                      },
+                      {
+                        name: "Completed",
+                        value: calendarActivities.filter(
+                          (a) => a.status === "completed",
+                        ).length,
+                      },
+                      {
+                        name: "Rescheduled",
+                        value: calendarActivities.filter(
+                          (a) => a.status === "rescheduled",
+                        ).length,
+                      },
+                      {
+                        name: "Not Conducted",
+                        value: calendarActivities.filter(
+                          (a) => a.status === "not_conducted",
+                        ).length,
+                      },
+                    ]}
+                    dataKey="value"
+                    outerRadius={100}
+                    label
+                  >
+                    <Cell fill="#3498db" />
+                    <Cell fill="#27ae60" />
+                    <Cell fill="#f39c12" />
+                    <Cell fill="#e74c3c" />
+                  </Pie>
+
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Equipment register
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Next Inspection</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {equipmentData
+                    .filter((e) => {
+                      const due = e.next_inspection
+                        ? new Date(e.next_inspection)
+                        : null;
+                      const daysLeft = due
+                        ? Math.floor((due - new Date()) / (1000 * 60 * 60 * 24))
+                        : null;
+                      return daysLeft !== null && daysLeft <= 60;
+                    })
+                    .map((e, i) => {
+                      const due = new Date(e.next_inspection);
+                      const daysLeft = Math.floor(
+                        (due - new Date()) / (1000 * 60 * 60 * 24),
+                      );
+                      return (
+                        <tr
+                          key={i}
+                          className={daysLeft < 0 ? "row-incident" : ""}
+                        >
+                          <td>{e.name}</td>
+                          <td>{e.category}</td>
+                          <td>{e.status}</td>
+                          <td>
+                            {e.next_inspection}{" "}
+                            <span
+                              className={`rep-badge ${daysLeft < 0 ? "badge-expired" : "badge-expiring"}`}
+                            >
+                              {daysLeft < 0 ? "Overdue" : "Due soon"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {reportType === "safety" && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">Safety Metrics Report</div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total incidents</div>
+                  <div className="rep-card-value red">
+                    {safetyRecords.reduce(
+                      (s, r) =>
+                        s +
+                        Number(r.medical_treatment_incidents) +
+                        Number(r.lost_time_incidents),
+                      0,
+                    )}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Training hours</div>
+                  <div className="rep-card-value">
+                    {safetyRecords.reduce(
+                      (s, r) => s + Number(r.hse_training_hours),
+                      0,
+                    )}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Fatalities</div>
+                  <div className="rep-card-value green">
+                    {safetyRecords.reduce(
+                      (s, r) => s + Number(r.fatalities),
+                      0,
+                    )}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Inspections</div>
+                  <div className="rep-card-value">
+                    {safetyRecords.reduce(
+                      (s, r) => s + Number(r.hse_inspections),
+                      0,
+                    )}
+                  </div>
+                </div>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Staff</th>
+                    <th>MTI</th>
+                    <th>LTI</th>
+                    <th>Days Away</th>
+                    <th>Training Hrs</th>
+                    <th>TRIFR</th>
+                    <th>LTIFR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {safetyRecords.map((r, i) => {
+                    const wh = Number(r.worked_hours);
+                    const mti = Number(r.medical_treatment_incidents);
+                    const lti = Number(r.lost_time_incidents);
+                    const fat = Number(r.fatalities);
+                    const trifr = wh
+                      ? (((mti + lti + fat) * 1000000) / wh).toFixed(2)
+                      : "0.00";
+                    const ltifr = wh
+                      ? ((lti * 1000000) / wh).toFixed(2)
+                      : "0.00";
+                    return (
+                      <tr
+                        key={i}
+                        className={mti > 0 || lti > 0 ? "row-incident" : ""}
+                      >
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{r.staff_numbers}</td>
+                        <td>{mti}</td>
+                        <td>{lti}</td>
+                        <td>{r.days_away_from_work}</td>
+                        <td>{r.hse_training_hours}</td>
+                        <td className={Number(trifr) > 0 ? "calc-alert" : ""}>
+                          {trifr}
+                        </td>
+                        <td className={Number(ltifr) > 0 ? "calc-alert" : ""}>
+                          {ltifr}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </>
@@ -586,6 +1116,202 @@ export default function ReportsPage() {
             </>
           )}
 
+          {reportType === "calendar" && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">
+                    Calendar / Activities Report
+                  </div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total activities</div>
+                  <div className="rep-card-value">
+                    {calendarActivities.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Completed</div>
+                  <div className="rep-card-value green">
+                    {
+                      calendarActivities.filter((a) => a.status === "completed")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Scheduled</div>
+                  <div className="rep-card-value">
+                    {
+                      calendarActivities.filter((a) => a.status === "scheduled")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Not conducted</div>
+                  <div className="rep-card-value red">
+                    {
+                      calendarActivities.filter(
+                        (a) => a.status === "not_conducted",
+                      ).length
+                    }
+                  </div>
+                </div>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Category</th>
+                    <th>Audience</th>
+                    <th>Month</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calendarActivities.map((a, i) => (
+                    <tr key={i}>
+                      <td>{a.activity_name}</td>
+                      <td>{a.category}</td>
+                      <td>{a.target_audience}</td>
+                      <td>{formatMonth(a.scheduled_month)}</td>
+                      <td>{a.internal_external}</td>
+                      <td>
+                        <span
+                          className={`rep-badge ${a.status === "completed" ? "badge-valid" : a.status === "not_conducted" ? "badge-expired" : "badge-expiring"}`}
+                        >
+                          {a.status}
+                        </span>
+                      </td>
+                      <td>{a.notes || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {reportType === "equipment" && (
+            <>
+              <div className="rep-preview-header">
+                <div>
+                  <div className="rep-preview-title">
+                    Equipment Register Report
+                  </div>
+                  <div className="rep-preview-meta">
+                    Generated: {new Date().toLocaleDateString("en-GB")}
+                  </div>
+                </div>
+                <button
+                  className="rep-btn-export"
+                  onClick={() => window.print()}
+                >
+                  🖨 Print / Save as PDF
+                </button>
+              </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total equipment</div>
+                  <div className="rep-card-value">{equipmentData.length}</div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Available</div>
+                  <div className="rep-card-value green">
+                    {
+                      equipmentData.filter((e) => e.status === "Available")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">In use</div>
+                  <div className="rep-card-value">
+                    {equipmentData.filter((e) => e.status === "In Use").length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Maintenance</div>
+                  <div className="rep-card-value red">
+                    {
+                      equipmentData.filter((e) => e.status === "Maintenance")
+                        .length
+                    }
+                  </div>
+                </div>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Last Inspection</th>
+                    <th>Next Inspection</th>
+                    <th>Inspection Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {equipmentData.map((e, i) => {
+                    const today = new Date();
+                    const due = e.next_inspection
+                      ? new Date(e.next_inspection)
+                      : null;
+                    const daysLeft = due
+                      ? Math.floor((due - today) / (1000 * 60 * 60 * 24))
+                      : null;
+                    const inspStatus =
+                      daysLeft === null
+                        ? "—"
+                        : daysLeft < 0
+                          ? "Overdue"
+                          : daysLeft <= 60
+                            ? "Due soon"
+                            : "OK";
+                    return (
+                      <tr
+                        key={i}
+                        className={
+                          inspStatus === "Overdue" ? "row-incident" : ""
+                        }
+                      >
+                        <td>{e.name}</td>
+                        <td>{e.category}</td>
+                        <td>{e.capacity}</td>
+                        <td>{e.status}</td>
+                        <td>{e.location}</td>
+                        <td>{e.last_inspection || "—"}</td>
+                        <td>{e.next_inspection || "—"}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${daysLeft < 0 ? "badge-expired" : daysLeft <= 60 ? "badge-expiring" : "badge-valid"}`}
+                          >
+                            {inspStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
+          )}
+
           {reportType === "ppe" && (
             <>
               <div className="rep-preview-header">
@@ -680,7 +1406,7 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
-              <div style={{ height: 220, marginTop: "10px" }}>
+              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={ppeMonthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -730,8 +1456,8 @@ export default function ReportsPage() {
                 </thead>
                 <tbody>
                   {sustainabilityRecords.map((r, i) => {
-                    const s1 = calcScope1(r),
-                      s2 = calcScope2(r);
+                    const s1 = calcScope1(r, emissionFactors),
+                      s2 = calcScope2(r, emissionFactors);
                     return (
                       <tr key={i}>
                         <td>{formatMonth(r.period)}</td>
@@ -748,13 +1474,13 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
-              <div style={{ height: 220, marginTop: "10px" }}>
+              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sustainabilityRecords.map((r) => ({
                       month: formatMonth(r.period),
-                      Scope1: +calcScope1(r).toFixed(2),
-                      Scope2: +calcScope2(r).toFixed(2),
+                      Scope1: +calcScope1(r, emissionFactors).toFixed(2),
+                      Scope2: +calcScope2(r, emissionFactors).toFixed(2),
                     }))}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -790,14 +1516,14 @@ export default function ReportsPage() {
                 <div className="rep-card">
                   <div className="rep-card-label">Total</div>
                   <div className="rep-card-value">
-                    {actiontrackerData.length}
+                    {actionTrackerData.length}
                   </div>
                 </div>
                 <div className="rep-card">
                   <div className="rep-card-label">Completed</div>
                   <div className="rep-card-value green">
                     {
-                      actiontrackerData.filter((a) => a.status === "Completed")
+                      actionTrackerData.filter((a) => a.status === "Completed")
                         .length
                     }
                   </div>
@@ -806,7 +1532,7 @@ export default function ReportsPage() {
                   <div className="rep-card-label">In Progress</div>
                   <div className="rep-card-value amber">
                     {
-                      actiontrackerData.filter(
+                      actionTrackerData.filter(
                         (a) => a.status === "In Progress",
                       ).length
                     }
@@ -816,32 +1542,34 @@ export default function ReportsPage() {
                   <div className="rep-card-label">Pending</div>
                   <div className="rep-card-value red">
                     {
-                      actiontrackerData.filter((a) => a.status === "Pending")
+                      actionTrackerData.filter((a) => a.status === "Pending")
                         .length
                     }
                   </div>
                 </div>
               </div>
-              <div style={{ height: 220, marginBottom: "14px" }}>
+              <div
+                style={{ height: 220, minHeight: 220, marginBottom: "14px" }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={[
                         {
                           name: "Completed",
-                          value: actiontrackerData.filter(
+                          value: actionTrackerData.filter(
                             (a) => a.status === "Completed",
                           ).length,
                         },
                         {
                           name: "In Progress",
-                          value: actiontrackerData.filter(
+                          value: actionTrackerData.filter(
                             (a) => a.status === "In Progress",
                           ).length,
                         },
                         {
                           name: "Pending",
-                          value: actiontrackerData.filter(
+                          value: actionTrackerData.filter(
                             (a) => a.status === "Pending",
                           ).length,
                         },
@@ -874,7 +1602,7 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {actiontrackerData.map((a, i) => (
+                  {actionTrackerData.map((a, i) => (
                     <tr key={i}>
                       <td>{a.concern}</td>
                       <td>{a.action}</td>
