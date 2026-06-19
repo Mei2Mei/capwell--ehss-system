@@ -794,6 +794,36 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Equipment register
               </div>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total equipment</div>
+                  <div className="rep-card-value">{equipmentData.length}</div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Available</div>
+                  <div className="rep-card-value green">
+                    {
+                      equipmentData.filter((e) => e.status === "Available")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">In use</div>
+                  <div className="rep-card-value">
+                    {equipmentData.filter((e) => e.status === "In Use").length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Maintenance</div>
+                  <div className="rep-card-value red">
+                    {
+                      equipmentData.filter((e) => e.status === "Maintenance")
+                        .length
+                    }
+                  </div>
+                </div>
+              </div>
               <table className="rep-table">
                 <thead>
                   <tr>
