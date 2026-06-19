@@ -2,9 +2,10 @@
 // EquipmentPage.jsx — Lifting Equipment Management
 // ─────────────────────────────────────────────
 
-import { useState } from "react";
-import { equipmentData as initialData } from "../../data/EquipmentData";
+import { useState, useEffect } from "react";
 import "./EquipmentPage.css";
+
+const API_URL = "http://localhost:5000/api/equipment";
 
 // HELPERS//
 function getInspectionStatus(nextInspection) {
@@ -30,7 +31,7 @@ const getEquipmentStatus = (item) => {
 };
 
 export default function EquipmentPage() {
-  const [equipment, setEquipment] = useState(initialData);
+  const [equipment, setEquipment] = useState([]);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [showModal, setShowModal] = useState(false);
@@ -39,6 +40,21 @@ export default function EquipmentPage() {
   const [deleteReason, setDeleteReason] = useState("");
   const [selectedAction, setSelectedAction] = useState(null);
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) =>
+        setEquipment(
+          data.map((e) => ({
+            ...e,
+            lastInspection: e.last_inspection?.split("T")[0],
+            nextInspection: e.next_inspection?.split("T")[0],
+          })),
+        ),
+      )
+      .catch((err) => console.error("Failed to fetch equipment:", err));
+  }, []);
 
   const counts = {
     all: equipment.length,
@@ -78,41 +94,77 @@ export default function EquipmentPage() {
   // ─────────────────────────────
   // ADD EQUIPMENT
   // ─────────────────────────────
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.name.trim() || !form.category.trim() || !form.capacity.trim()) {
       alert("Please fill in Equipment Name, Category, and Capacity.");
       return;
     }
 
-    if (editingId) {
-      setEquipment(
-        equipment.map((item) =>
-          item.id === editingId ? { ...item, ...form } : item,
-        ),
-      );
-
-      setEditingId(null);
-      setShowModal(false);
-      return;
-    }
-
-    const newItem = {
-      id: equipment.length + 1,
-      ...form,
+    const payload = {
+      name: form.name,
+      category: form.category,
+      capacity: form.capacity,
+      status: form.status,
+      location: form.location || "",
+      last_inspection: form.lastInspection || null,
+      next_inspection: form.nextInspection || null,
     };
 
-    setEquipment([newItem, ...equipment]);
+    try {
+      if (editingId) {
+        const res = await fetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const updated = await res.json();
 
-    setForm({
-      name: "",
-      category: "",
-      capacity: "",
-      status: "Available",
-      lastInspection: "",
-      nextInspection: "",
-    });
+        setEquipment(
+          equipment.map((item) =>
+            item.id === editingId
+              ? {
+                  ...updated,
+                  lastInspection: updated.last_inspection?.split("T")[0],
+                  nextInspection: updated.next_inspection?.split("T")[0],
+                }
+              : item,
+          ),
+        );
 
-    setShowModal(false);
+        setEditingId(null);
+        setShowModal(false);
+        return;
+      }
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const newItem = await res.json();
+
+      setEquipment([
+        {
+          ...newItem,
+          lastInspection: newItem.last_inspection?.split("T")[0],
+          nextInspection: newItem.next_inspection?.split("T")[0],
+        },
+        ...equipment,
+      ]);
+
+      setForm({
+        name: "",
+        category: "",
+        capacity: "",
+        status: "Available",
+        lastInspection: "",
+        nextInspection: "",
+      });
+
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to save equipment:", err);
+    }
   };
 
   const handleEdit = (item) => {
@@ -136,18 +188,28 @@ export default function EquipmentPage() {
     setDeleteModal(item);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deleteReason.trim()) {
       setDeleteError("Deletion reason is required.");
       return;
     }
 
-    setEquipment(equipment.filter((item) => item.id !== deleteModal.id));
+    try {
+      await fetch(`${API_URL}/${deleteModal.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      });
 
-    setShowDeleteModal(null);
-    setDeleteError("");
-    setSelectedAction(null);
-    setDeleteReason("");
+      setEquipment(equipment.filter((item) => item.id !== deleteModal.id));
+
+      setDeleteModal(null);
+      setDeleteError("");
+      setSelectedAction(null);
+      setDeleteReason("");
+    } catch (err) {
+      console.error("Failed to delete equipment:", err);
+    }
   };
 
   return (

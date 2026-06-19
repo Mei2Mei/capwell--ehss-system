@@ -147,7 +147,7 @@
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  overflow: auto;
+  overflow-x: auto;
   margin-bottom: 12px;
 }
 
@@ -309,3 +309,13 @@
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+.comp-edit-btn {
+  color: #1a5276;
+  border-color: #1a5276;
+}
+
+.comp-delete-btn {
+  color: #c0392b;
+  border-color: #c0392b;
+}  

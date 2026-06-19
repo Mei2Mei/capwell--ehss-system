@@ -152,6 +152,19 @@ function CompliancePage() {
       e.requirement_reference = "Legal reference is required.";
     if (!form.validity_period)
       e.validity_period = "Validity period is required.";
+
+    // Reference number uniqueness check (only if filled in)
+    if (form.reference_number.trim()) {
+      const dup = items.find(
+        (i) =>
+          i.reference_number?.toLowerCase() ===
+            form.reference_number.toLowerCase() && i.id !== editingId,
+      );
+      if (dup)
+        e.reference_number =
+          "This reference number already exists. Reference numbers must be unique.";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -242,7 +255,11 @@ function CompliancePage() {
     if (!deleteModal) return;
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, { method: "DELETE" });
+      await fetch(`${API_URL}/${deleteModal.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      });
       setItems(items.filter((i) => i.id !== deleteModal.id));
       showBanner(`"${deleteModal.requirement}" deleted successfully.`);
       setDeleteModal(null);
@@ -413,14 +430,13 @@ function CompliancePage() {
                     <td className="comp-remarks">{item.remarks || "—"}</td>
                     <td>
                       <button
-                        className="comp-btn-sm"
+                        className="comp-btn-sm comp-edit-btn"
                         onClick={() => openEdit(item)}
                       >
                         ✎ Edit
                       </button>{" "}
                       <button
-                        className="comp-btn-sm"
-                        style={{ color: "#c0392b", borderColor: "#c0392b" }}
+                        className="comp-btn-sm comp-delete-btn"
                         onClick={() => handleDeleteOpen(item)}
                       >
                         🗑 Delete
@@ -577,6 +593,8 @@ function CompliancePage() {
                   value={form.validity_period}
                   onChange={handleFormChange}
                 >
+                  <option value="3 months">3 months</option>
+                  <option value="6 months">6 months</option>
                   <option value="Annual">Annual</option>
                   <option value="2 years">2 years</option>
                   <option value="5 years">5 years</option>

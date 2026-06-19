@@ -6,9 +6,10 @@
 // - Inline status update
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { calendarActivities as initialActivities } from "../../data/calendarData";
+import { useState, useEffect } from "react";
 import "./CalendarPage.css";
+
+const API_URL = "http://localhost:5000/api/calendar";
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatMonth(dateStr) {
@@ -83,7 +84,7 @@ const emptyForm = {
 };
 
 function CalendarPage() {
-  const [activities, setActivities] = useState(initialActivities);
+  const [activities, setActivities] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [catFilter, setCatFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,6 +94,24 @@ function CalendarPage() {
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) =>
+        setActivities(
+          data.map((a) => ({
+            ...a,
+            scheduled_month: a.scheduled_month?.split("T")[0],
+          })),
+        ),
+      )
+      .catch((err) =>
+        console.error("Failed to fetch calendar activities:", err),
+      );
+  }, []);
 
   // ── Counts for tabs ───────────────────────────────────────
   const counts = {
@@ -169,37 +188,96 @@ function CalendarPage() {
     setModalType("form");
   }
 
-  function handleSave() {
-    if (!validate()) return;
-    if (modalType === "form" && editingId === null) {
-      const newActivity = {
-        ...form,
-        id: Date.now(),
-        scheduled_month: form.scheduled_month + "-01",
-      };
-      setActivities([...activities, newActivity]);
-      showBanner("Activity added successfully.");
-    } else {
-      setActivities(
-        activities.map((a) =>
-          a.id === editingId
-            ? {
-                ...a,
-                ...form,
-                scheduled_month:
-                  form.scheduled_month.length === 7
-                    ? form.scheduled_month + "-01"
-                    : form.scheduled_month,
-              }
-            : a,
-        ),
-      );
-      showBanner("Activity updated successfully.");
+  function handleDeleteOpen(activity) {
+    setDeleteReason("");
+    setDeleteModal(activity);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteReason.trim()) {
+      setErrors({ deleteReason: "Deletion reason is required." });
+      return;
     }
-    setModalType(null);
-    setEditingId(null);
-    setForm(emptyForm);
-    setErrors({});
+
+    try {
+      await fetch(`${API_URL}/${deleteModal.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      });
+
+      setActivities(activities.filter((a) => a.id !== deleteModal.id));
+
+      setDeleteModal(null);
+      setDeleteReason("");
+      setErrors({});
+      showBanner("Activity deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete activity:", err);
+    }
+  }
+
+  async function handleSave() {
+    if (!validate()) return;
+
+    const payload = {
+      activity_name: form.activity_name,
+      category: form.category,
+      target_audience: form.target_audience,
+      internal_external: form.internal_external,
+      scheduled_month:
+        form.scheduled_month.length === 7
+          ? form.scheduled_month + "-01"
+          : form.scheduled_month,
+      status: form.status,
+      notes: form.notes,
+    };
+
+    try {
+      if (modalType === "form" && editingId === null) {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const newActivity = await res.json();
+
+        setActivities([
+          ...activities,
+          {
+            ...newActivity,
+            scheduled_month: newActivity.scheduled_month?.split("T")[0],
+          },
+        ]);
+        showBanner("Activity added successfully.");
+      } else {
+        const res = await fetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const updated = await res.json();
+
+        setActivities(
+          activities.map((a) =>
+            a.id === editingId
+              ? {
+                  ...updated,
+                  scheduled_month: updated.scheduled_month?.split("T")[0],
+                }
+              : a,
+          ),
+        );
+        showBanner("Activity updated successfully.");
+      }
+
+      setModalType(null);
+      setEditingId(null);
+      setForm(emptyForm);
+      setErrors({});
+    } catch (err) {
+      console.error("Failed to save activity:", err);
+    }
   }
 
   // Inline status change directly in the table
@@ -385,10 +463,16 @@ function CalendarPage() {
                         <option value="not_conducted">Not conducted</option>
                       </select>{" "}
                       <button
-                        className="cal-btn-sm"
+                        className="cal-btn-sm cal-edit-btn"
                         onClick={() => openEdit(a)}
                       >
                         ✎ Edit
+                      </button>
+                      <button
+                        className="cal-btn-sm cal-delete-btn"
+                        onClick={() => handleDeleteOpen(a)}
+                      >
+                        🗑 Delete
                       </button>
                     </td>
                   </tr>
@@ -547,6 +631,47 @@ function CalendarPage() {
               </button>
               <button className="cal-btn-primary" onClick={handleSave}>
                 {editingId ? "Save changes" : "Add activity"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*DELETE CONFIRMATION MODAL*/}
+      {deleteModal && (
+        <div className="cal-modal-overlay">
+          <div className="cal-modal">
+            <h2 className="cal-modal-title">Delete Activity</h2>
+            <p>
+              Are you sure you want to delete "{deleteModal.activity_name}"?
+            </p>
+            <div className="cal-form-group full">
+              <label className="cal-form-label">
+                Reason for deletion<span className="required">*</span>
+              </label>
+              <input
+                className="cal-form-input"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder="Enter reason..."
+              />
+              {errors.deleteReason && (
+                <div className="cal-field-error">{errors.deleteReason}</div>
+              )}
+            </div>
+            <div className="cal-modal-buttons">
+              <button
+                className="cal-btn-secondary"
+                onClick={() => setDeleteModal(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="cal-btn-primary"
+                style={{ background: "#c0392b" }}
+                onClick={handleDeleteConfirm}
+              >
+                Confirm Delete
               </button>
             </div>
           </div>

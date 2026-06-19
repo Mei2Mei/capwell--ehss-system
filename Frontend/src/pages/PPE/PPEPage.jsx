@@ -10,9 +10,10 @@
 // - Edit reorder level inline
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { ppeItems as initialItems } from "../../data/PPEData";
+import { useState, useEffect } from "react";
 import "./PPEPage.css";
+
+const API_URL = "http://localhost:5000/api/ppe";
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ function PPEPage() {
   const canViewStock = () => true; // replace with real permission check later
   const canApprove = () => true; // replace with: role === "ehss_officer" when login is added
 
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState([]);
 
   // Stores all transactions ever recorded
   // Each transaction links to an item via ppe_item_id
@@ -124,6 +125,38 @@ function PPEPage() {
     (i) => i.current_stock === 0,
   ).length;
 
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => setItems(data))
+      .catch((err) => console.error("Failed to fetch PPE items:", err));
+
+    fetch(`${API_URL}/transactions`)
+      .then((res) => res.json())
+      .then((data) =>
+        setTransactions(
+          data.map((tx) => ({
+            ...tx,
+            date: tx.transaction_date?.split("T")[0],
+          })),
+        ),
+      )
+      .catch((err) => console.error("Failed to fetch transactions:", err));
+
+    fetch(`${API_URL}/requests`)
+      .then((res) => res.json())
+      .then((data) =>
+        setRequests(
+          data.map((r) => ({
+            ...r,
+            item_id: r.ppe_item_id,
+            date: r.requested_at,
+          })),
+        ),
+      )
+      .catch((err) => console.error("Failed to fetch PPE requests:", err));
+  }, []);
+
   // ── Success banner ────────────────────────────────────────
   function showBanner(message) {
     setSuccessMessage(message);
@@ -172,59 +205,55 @@ function PPEPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleTxSave() {
+  async function handleTxSave() {
     if (!validateTx()) return;
     const id = Number(txForm.ppe_item_id);
     const qty = Number(txForm.quantity);
 
-    // Update stock balance
-    setItems(
-      items.map((item) => {
-        if (item.id === id) {
-          let newStock = item.current_stock;
+    try {
+      const res = await fetch(`${API_URL}/transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ppe_item_id: id,
+          transaction_type: txForm.transaction_type,
+          quantity: qty,
+          transaction_date: txForm.date,
+          notes: txForm.notes,
+          recorded_by: "Linda", // will come from logged-in user later
+        }),
+      });
+      const newTx = await res.json();
 
-          if (txForm.transaction_type === "received") {
-            newStock = item.current_stock + qty;
-          } else if (txForm.transaction_type === "issued") {
-            newStock = item.current_stock - qty;
-          } else if (txForm.transaction_type === "stocktake") {
-            newStock = qty; // override with physical count
-          }
+      // Refresh the item's stock from backend (since stock was updated server-side)
+      const itemRes = await fetch(`${API_URL}/${id}`);
+      const updatedItem = await itemRes.json();
+      setItems(items.map((item) => (item.id === id ? updatedItem : item)));
 
-          return { ...item, current_stock: newStock };
-        }
-        return item;
-      }),
-    );
+      // Add to transaction history
+      setTransactions([
+        ...transactions,
+        { ...newTx, date: newTx.transaction_date?.split("T")[0] },
+      ]);
 
-    // Save the transaction to history
-    // In the real system this goes to the database
-    const newTx = {
-      id: Date.now(), // temporary id until database is connected
-      ppe_item_id: id,
-      transaction_type: txForm.transaction_type,
-      quantity: qty,
-      date: txForm.date,
-      notes: txForm.notes,
-      recorded_by: "Linda", // will come from logged-in user later
-    };
-    setTransactions([...transactions, newTx]);
+      // Auto-expand the history for this item after recording
+      setExpandedItemId(id);
 
-    // Auto-expand the history for this item after recording
-    setExpandedItemId(id);
-
-    setModalType(null);
-    setTxForm({
-      ppe_item_id: "",
-      transaction_type: "",
-      quantity: "",
-      date: "",
-      notes: "",
-    });
-    setErrors({});
-    showBanner(
-      "Transaction recorded. Stock balance updated. History expanded below.",
-    );
+      setModalType(null);
+      setTxForm({
+        ppe_item_id: "",
+        transaction_type: "",
+        quantity: "",
+        date: "",
+        notes: "",
+      });
+      setErrors({});
+      showBanner(
+        "Transaction recorded. Stock balance updated. History expanded below.",
+      );
+    } catch (err) {
+      console.error("Failed to save transaction:", err);
+    }
   }
 
   // ── Add new item form ─────────────────────────────────────
@@ -250,30 +279,39 @@ function PPEPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleItemSave() {
+  async function handleItemSave() {
     if (!validateItem()) return;
-    const newItem = {
-      id: Math.max(...items.map((i) => i.id)) + 1,
-      item_name: itemForm.item_name.trim(),
-      size_spec: itemForm.size_spec.trim(),
-      unit_of_measure: itemForm.unit_of_measure.trim(),
-      reorder_level: itemForm.reorder_level
-        ? Number(itemForm.reorder_level)
-        : 0,
-      current_stock: 0,
-    };
-    setItems([...items, newItem]);
-    setModalType(null);
-    setItemForm({
-      item_name: "",
-      size_spec: "",
-      unit_of_measure: "pcs",
-      reorder_level: "",
-    });
-    setErrors({});
-    showBanner(
-      `"${newItem.item_name} — ${newItem.size_spec}" added. Current stock is 0 — record a received transaction to add stock.`,
-    );
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_name: itemForm.item_name.trim(),
+          size_spec: itemForm.size_spec.trim(),
+          unit_of_measure: itemForm.unit_of_measure.trim(),
+          reorder_level: itemForm.reorder_level
+            ? Number(itemForm.reorder_level)
+            : 0,
+        }),
+      });
+      const newItem = await res.json();
+
+      setItems([...items, newItem]);
+      setModalType(null);
+      setItemForm({
+        item_name: "",
+        size_spec: "",
+        unit_of_measure: "pcs",
+        reorder_level: "",
+      });
+      setErrors({});
+      showBanner(
+        `"${newItem.item_name} — ${newItem.size_spec}" added. Current stock is 0 — record a received transaction to add stock.`,
+      );
+    } catch (err) {
+      console.error("Failed to add PPE item:", err);
+    }
   }
 
   function handleCloseModal() {
@@ -298,7 +336,7 @@ function PPEPage() {
     setRequestForm({ ...requestForm, [e.target.name]: e.target.value });
   }
 
-  function handleRequestSave() {
+  async function handleRequestSave() {
     if (!requestForm.item_id) {
       showBanner("Please select a PPE item.");
       return;
@@ -316,72 +354,80 @@ function PPEPage() {
       return;
     }
 
-    const newRequest = {
-      id: Date.now(),
-      item_id: Number(requestForm.item_id),
-      quantity: Number(requestForm.quantity),
-      worker_name: requestForm.worker_name,
-      department: requestForm.department,
-      requested_by: requestForm.requested_by,
-      status: "pending",
-      date: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`${API_URL}/requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ppe_item_id: Number(requestForm.item_id),
+          requested_by: 1, // placeholder until login is added
+          quantity: Number(requestForm.quantity),
+          notes: "",
+          worker_name: requestForm.worker_name,
+          department: requestForm.department,
+        }),
+      });
+      const newRequest = await res.json();
 
-    setRequests([...requests, newRequest]);
+      setRequests([
+        ...requests,
+        {
+          ...newRequest,
+          item_id: newRequest.ppe_item_id,
+          date: newRequest.requested_at,
+        },
+      ]);
 
-    setRequestForm({
-      item_id: "",
-      quantity: "",
-      worker_name: "",
-      department: "",
-      requested_by: "Supervisor",
-      status: "pending",
-    });
+      setRequestForm({
+        item_id: "",
+        quantity: "",
+        worker_name: "",
+        department: "",
+        requested_by: "Supervisor",
+        status: "pending",
+      });
 
-    setModalType(null);
-    showBanner("PPE request created successfully.");
+      setModalType(null);
+      showBanner("PPE request created successfully.");
+    } catch (err) {
+      console.error("Failed to create PPE request:", err);
+    }
   }
 
-  function handleApproveRequest(requestId) {
-    const request = requests.find((r) => r.id === requestId);
-    if (!request) return;
+  async function handleApproveRequest(requestId) {
+    try {
+      const res = await fetch(`${API_URL}/requests/${requestId}/approve`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approved_by: 1 }), // placeholder until login
+      });
 
-    // NEW SAFETY CHECK
-    if (request.status !== "pending") {
-      showBanner("Only pending requests can be approved.");
-      return;
+      if (!res.ok) {
+        const errData = await res.json();
+        showBanner(errData.error || "Failed to approve request.");
+        return;
+      }
+
+      const updated = await res.json();
+
+      setRequests(
+        requests.map((r) =>
+          r.id === requestId ? { ...r, status: updated.status } : r,
+        ),
+      );
+
+      // Refresh item to reflect new reserved_stock
+      const request = requests.find((r) => r.id === requestId);
+      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const updatedItem = await itemRes.json();
+      setItems((prev) =>
+        prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+      );
+
+      showBanner("Request approved and stock reserved.");
+    } catch (err) {
+      console.error("Failed to approve request:", err);
     }
-
-    const qty = Number(request.quantity);
-    const itemId = request.item_id;
-
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          const available = item.current_stock - (item.reserved_stock || 0);
-
-          // ❌ SAFETY CHECK (NEW)
-          if (qty > available) {
-            showBanner(`Not enough available stock. Available: ${available}`);
-            return item;
-          }
-
-          return {
-            ...item,
-            reserved_stock: (item.reserved_stock || 0) + qty,
-          };
-        }
-        return item;
-      }),
-    );
-
-    setRequests(
-      requests.map((req) =>
-        req.id === requestId ? { ...req, status: "approved" } : req,
-      ),
-    );
-
-    showBanner("Request approved and stock reserved.");
   }
 
   function handleRejectRequest(requestId) {
@@ -389,109 +435,109 @@ function PPEPage() {
     setRejectModal(requestId);
   }
 
-  function confirmReject() {
+  async function confirmReject() {
     if (!rejectReason.trim()) {
       showBanner("Please enter a reason for rejection.");
       return;
     }
-    const request = requests.find((r) => r.id === rejectModal);
-    if (!request) return;
-    const qty = Number(request.quantity);
-    const itemId = request.item_id;
-    setItems((items) =>
-      items.map((item) => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            reserved_stock: Math.max((item.reserved_stock || 0) - qty, 0),
-          };
-        }
-        return item;
-      }),
-    );
-    setRequests(
-      requests.map((r) =>
-        r.id === rejectModal
-          ? { ...r, status: "rejected", reject_reason: rejectReason }
-          : r,
-      ),
-    );
-    setRejectModal(null);
-    setRejectReason("");
-    showBanner("Request rejected.");
+
+    try {
+      const res = await fetch(`${API_URL}/requests/${rejectModal}/reject`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approved_by: 1, reject_reason: rejectReason }),
+      });
+      const updated = await res.json();
+
+      const request = requests.find((r) => r.id === rejectModal);
+
+      setRequests(
+        requests.map((r) =>
+          r.id === rejectModal
+            ? { ...r, status: "rejected", reject_reason: rejectReason }
+            : r,
+        ),
+      );
+
+      // Refresh item to reflect released reserved_stock
+      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const updatedItem = await itemRes.json();
+      setItems((prev) =>
+        prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+      );
+
+      setRejectModal(null);
+      setRejectReason("");
+      showBanner("Request rejected.");
+    } catch (err) {
+      console.error("Failed to reject request:", err);
+    }
   }
 
-  function handleFulfillRequest(requestId) {
-    const request = requests.find((r) => r.id === requestId);
-    if (!request) return;
+  async function handleFulfillRequest(requestId) {
+    try {
+      const res = await fetch(`${API_URL}/requests/${requestId}/fulfill`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fulfilled_by: 1 }), // placeholder until login
+      });
 
-    if (request.status !== "approved") {
-      showBanner("Only approved requests can be fulfilled.");
-      return;
+      if (!res.ok) {
+        const errData = await res.json();
+        showBanner(errData.error || "Failed to fulfill request.");
+        return;
+      }
+
+      const updated = await res.json();
+      const request = requests.find((r) => r.id === requestId);
+
+      setRequests(
+        requests.map((req) =>
+          req.id === requestId
+            ? {
+                ...req,
+                status: "fulfilled",
+                fulfilled_date: updated.fulfilled_at,
+              }
+            : req,
+        ),
+      );
+
+      // Refresh item to reflect deducted stock
+      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const updatedItem = await itemRes.json();
+      setItems((prev) =>
+        prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+      );
+
+      showBanner("Request fulfilled. Stock and reservations updated.");
+    } catch (err) {
+      console.error("Failed to fulfill request:", err);
     }
-
-    const itemId = request.item_id;
-    const qty = Number(request.quantity);
-
-    // 1. Deduct from reserved stock AND actual stock
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          const reserved = item.reserved_stock || 0;
-
-          return {
-            ...item,
-            current_stock: Math.max(item.current_stock - qty, 0),
-            reserved_stock: Math.max(reserved - qty, 0),
-          };
-        }
-        return item;
-      }),
-    );
-
-    // 2. Add transaction record
-    const autoTx = {
-      id: Date.now(),
-      ppe_item_id: itemId,
-      transaction_type: "issued",
-      quantity: qty,
-      date: new Date().toISOString(),
-      notes: `Fulfilled from approved request #${requestId}`,
-      recorded_by: "System (Fulfillment)",
-    };
-
-    setTransactions((prev) => [...prev, autoTx]);
-
-    // 3. Mark request as fulfilled
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === requestId
-          ? {
-              ...req,
-              status: "fulfilled",
-              fulfilled_date: new Date().toISOString(),
-            }
-          : req,
-      ),
-    );
-
-    showBanner("Request fulfilled. Stock and reservations updated.");
   }
 
   // ── Reorder level inline edit ─────────────────────────────
-  function handleReorderSave(itemId) {
+  async function handleReorderSave(itemId) {
     const newLevel = Number(editingReorder.value);
     if (isNaN(newLevel) || newLevel < 0) {
       alert("Please enter a valid number (0 or above).");
       return;
     }
-    setItems(
-      items.map((item) =>
-        item.id === itemId ? { ...item, reorder_level: newLevel } : item,
-      ),
-    );
-    setEditingReorder(null);
-    showBanner("Reorder level updated successfully.");
+
+    try {
+      const res = await fetch(`${API_URL}/${itemId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reorder_level: newLevel }),
+      });
+      const updated = await res.json();
+
+      setItems(items.map((item) => (item.id === itemId ? updated : item)));
+      setEditingReorder(null);
+      showBanner("Reorder level updated successfully.");
+    } catch (err) {
+      console.error("Failed to update reorder level:", err);
+    }
   }
 
   // ── Live new balance for transaction form ─────────────────
@@ -804,7 +850,7 @@ function PPEPage() {
                                           t.transaction_type === "received",
                                       )
                                       .reduce(
-                                        (sum, t) => sum + t.quantity,
+                                        (sum, t) => sum + Number(t.quantity),
                                         0,
                                       )}{" "}
                                     {item.unit_of_measure}
@@ -819,7 +865,7 @@ function PPEPage() {
                                         (t) => t.transaction_type === "issued",
                                       )
                                       .reduce(
-                                        (sum, t) => sum + t.quantity,
+                                        (sum, t) => sum + Number(t.quantity),
                                         0,
                                       )}{" "}
                                     {item.unit_of_measure}

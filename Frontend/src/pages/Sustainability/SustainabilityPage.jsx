@@ -1,5 +1,5 @@
 // SustainabilityPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -15,26 +15,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  sustainabilityRecords as initialRecords,
-  emissionFactors,
-} from "../../data/sustainabilityData";
 import "./SustainabilityPage.css";
 
-// ── Calculations ──────────────────────────────────────────────
-function calcScope1(r) {
-  return (
-    r.petrol_litres * emissionFactors.petrol +
-    r.diesel_litres * emissionFactors.diesel +
-    r.firewood_tonnes * emissionFactors.firewood +
-    r.lpg_kg * emissionFactors.lpg
-  ); // convert kg to tonnes
-}
+const API_URL = "http://localhost:5000/api/sustainability";
 
-function calcScope2(r) {
-  return r.electricity_kwh * emissionFactors.electricity;
-}
-
+// ── Calculations ─────────────────────────────────────────────
 function formatMonth(dateStr) {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString("en-GB", {
@@ -62,13 +47,60 @@ const emptyForm = {
 };
 
 export default function SustainabilityPage() {
-  const [records, setRecords] = useState(initialRecords);
-
+  const [records, setRecords] = useState([]);
+  const [emissionFactors, setEmissionFactors] = useState({
+    petrol: 0,
+    diesel: 0,
+    firewood: 0,
+    lpg: 0,
+    electricity: 0,
+  });
   const [activeTab, setActiveTab] = useState("water");
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) =>
+        setRecords(
+          data.map((r) => ({
+            ...r,
+            period: r.period?.split("T")[0],
+          })),
+        ),
+      )
+      .catch((err) =>
+        console.error("Failed to fetch sustainability records:", err),
+      );
+
+    fetch(`${API_URL}/factors`)
+      .then((res) => res.json())
+      .then((data) => {
+        const factorsObj = {};
+        data.forEach((f) => {
+          factorsObj[f.factor_name] = Number(f.value);
+        });
+        setEmissionFactors(factorsObj);
+      })
+      .catch((err) => console.error("Failed to fetch emission factors:", err));
+  }, []);
+
+  // ── Calculations ─────────────────────────────────────────────
+  function calcScope1(r) {
+    return (
+      r.petrol_litres * emissionFactors.petrol +
+      r.diesel_litres * emissionFactors.diesel +
+      r.firewood_tonnes * emissionFactors.firewood +
+      r.lpg_kg * emissionFactors.lpg
+    );
+  }
+
+  function calcScope2(r) {
+    return r.electricity_kwh * emissionFactors.electricity;
+  }
 
   // ── Live calculations ─────────────────────────────────────
   const liveScope1 =
@@ -91,9 +123,12 @@ export default function SustainabilityPage() {
   // ── Summary totals ────────────────────────────────────────
   const totalScope1 = records.reduce((s, r) => s + calcScope1(r), 0).toFixed(2);
   const totalScope2 = records.reduce((s, r) => s + calcScope2(r), 0).toFixed(2);
-  const totalWater = records.reduce((s, r) => s + r.water_consumption_m3, 0);
-  const totalElec = records.reduce((s, r) => s + r.electricity_kwh, 0);
-
+  const totalWater = records
+    .reduce((s, r) => s + Number(r.water_consumption_m3), 0)
+    .toFixed(2);
+  const totalElec = records
+    .reduce((s, r) => s + Number(r.electricity_kwh), 0)
+    .toFixed(2);
   // ── Chart data ────────────────────────────────────────────
   const emissionsChartData = records.map((r) => {
     const scope1 = calcScope1(r);
@@ -170,10 +205,10 @@ export default function SustainabilityPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validate()) return;
-    const newRecord = {
-      id: Date.now(),
+
+    const payload = {
       period: form.period + "-01",
       water_consumption_m3: Number(form.water_consumption_m3) || 0,
       water_recycled_m3: Number(form.water_recycled_m3) || 0,
@@ -189,16 +224,28 @@ export default function SustainabilityPage() {
       recyclable_plastic_kg: Number(form.recyclable_plastic_kg) || 0,
     };
 
-    setRecords(
-      [...records, newRecord].sort(
-        (a, b) => new Date(a.period) - new Date(b.period),
-      ),
-    );
-    setShowModal(false);
-    setForm(emptyForm);
-    setErrors({});
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 4000);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const newRecord = await res.json();
+
+      setRecords(
+        [
+          ...records,
+          { ...newRecord, period: newRecord.period?.split("T")[0] },
+        ].sort((a, b) => new Date(a.period) - new Date(b.period)),
+      );
+      setShowModal(false);
+      setForm(emptyForm);
+      setErrors({});
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 4000);
+    } catch (err) {
+      console.error("Failed to save sustainability record:", err);
+    }
   }
 
   const tabs = ["water", "energy", "waste", "emissions"];

@@ -32,7 +32,7 @@
 /* ─────────────────────────────
    SUMMARY CARDS
 ──────────────────────────── */
-.ehss-summary-grid {
+.ehss-cards {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 12px;
@@ -44,7 +44,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 14px 16px;
-   border-left: 4px solid #e0e0e0;
+  border-left: 4px solid #e0e0e0;
   transition: box-shadow 0.15s;
 }
 

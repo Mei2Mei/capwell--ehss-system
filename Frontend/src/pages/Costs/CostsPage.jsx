@@ -192,7 +192,11 @@ function CostsPage() {
     }
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, { method: "DELETE" });
+      await fetch(`${API_URL}/${deleteModal.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      });
       setRecords(records.filter((r) => r.id !== deleteModal.id));
       setDeleteModal(null);
       setDeleteReason("");

@@ -221,6 +221,8 @@ export default function ActionTracker() {
     try {
       await fetch(`${API_URL}/${selectedAction.id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
       });
 
       setActions(actions.filter((a) => a.id !== selectedAction.id));
@@ -257,7 +259,7 @@ export default function ActionTracker() {
       </div>
 
       {/* SUMMARY CARDS*/}
-      <div className="ehss-summary-grid">
+      <div className="ehss-cards">
         <div className="ehss-card ehss-card-primary">
           <div className="ehss-card-label">TOTAL</div>
           <h3>{stats.total}</h3>

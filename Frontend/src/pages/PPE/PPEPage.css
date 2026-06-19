@@ -98,7 +98,8 @@
   background: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  margin-bottom: 12px;
 }
 
 /* ── Table ── */
@@ -213,12 +214,14 @@
 
 /* ── Modal box ── */
 .ppe-modal {
-  background: #ffffff;
+  background: #fff;
   border-radius: 10px;
   padding: 28px 32px;
-  width: 460px;
+  width: 620px;
   max-width: 95%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
 
 .ppe-modal-title {
