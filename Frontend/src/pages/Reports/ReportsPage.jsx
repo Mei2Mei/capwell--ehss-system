@@ -154,21 +154,27 @@ export default function ReportsPage() {
           calendar,
           equipment,
         ] = await Promise.all([
-          fetch("http://localhost:5000/api/safety").then((r) => r.json()),
-          fetch("http://localhost:5000/api/costs").then((r) => r.json()),
-          fetch("http://localhost:5000/api/compliance").then((r) => r.json()),
-          fetch("http://localhost:5000/api/ppe").then((r) => r.json()),
-          fetch("http://localhost:5000/api/sustainability").then((r) =>
+          fetch(`${import.meta.env.VITE_API_URL}/safety`).then((r) => r.json()),
+          fetch(`${import.meta.env.VITE_API_URL}/costs`).then((r) => r.json()),
+          fetch(`${import.meta.env.VITE_API_URL}/compliance`).then((r) =>
             r.json(),
           ),
-          fetch("http://localhost:5000/api/sustainability/factors").then((r) =>
+          fetch(`${import.meta.env.VITE_API_URL}/ppe`).then((r) => r.json()),
+          fetch(`${import.meta.env.VITE_API_URL}/sustainability`).then((r) =>
             r.json(),
           ),
-          fetch("http://localhost:5000/api/actionTracker").then((r) =>
+          fetch(`${import.meta.env.VITE_API_URL}/sustainability/factors`).then(
+            (r) => r.json(),
+          ),
+          fetch(`${import.meta.env.VITE_API_URL}/actionTracker`).then((r) =>
             r.json(),
           ),
-          fetch("http://localhost:5000/api/calendar").then((r) => r.json()),
-          fetch("http://localhost:5000/api/equipment").then((r) => r.json()),
+          fetch(`${import.meta.env.VITE_API_URL}/calendar`).then((r) =>
+            r.json(),
+          ),
+          fetch(`${import.meta.env.VITE_API_URL}/equipment`).then((r) =>
+            r.json(),
+          ),
         ]);
 
         setSafetyRecords(
@@ -222,9 +228,9 @@ export default function ReportsPage() {
       }
 
       if (reportType === "compliance") {
-        const data = await fetch("http://localhost:5000/api/compliance").then(
-          (r) => r.json(),
-        );
+        const data = await fetch(
+          `${import.meta.env.VITE_API_URL}/compliance`,
+        ).then((r) => r.json());
         setComplianceItems(
           data.map((c) => ({
             ...c,
@@ -234,8 +240,8 @@ export default function ReportsPage() {
       }
 
       if (reportType === "costs") {
-        const data = await fetch("http://localhost:5000/api/costs").then((r) =>
-          r.json(),
+        const data = await fetch(`${import.meta.env.VITE_API_URL}/costs`).then(
+          (r) => r.json(),
         );
         setCostRecords(
           data.map((r) => ({
@@ -247,8 +253,8 @@ export default function ReportsPage() {
       }
 
       if (reportType === "ppe" || reportType === "ppe_trend") {
-        const data = await fetch("http://localhost:5000/api/ppe").then((r) =>
-          r.json(),
+        const data = await fetch(`${import.meta.env.VITE_API_URL}/ppe`).then(
+          (r) => r.json(),
         );
         setPpeItems(data);
         if (!selectedPPE && data.length > 0) setSelectedPPE(data[0].id);
@@ -256,11 +262,11 @@ export default function ReportsPage() {
 
       if (reportType === "sustainability") {
         const [records, factors] = await Promise.all([
-          fetch("http://localhost:5000/api/sustainability").then((r) =>
+          fetch(`${import.meta.env.VITE_API_URL}/sustainability`).then((r) =>
             r.json(),
           ),
-          fetch("http://localhost:5000/api/sustainability/factors").then((r) =>
-            r.json(),
+          fetch(`${import.meta.env.VITE_API_URL}/sustainability/factors`).then(
+            (r) => r.json(),
           ),
         ]);
         setSustainabilityRecords(
@@ -275,7 +281,7 @@ export default function ReportsPage() {
 
       if (reportType === "action_tracker") {
         const data = await fetch(
-          "http://localhost:5000/api/actionTracker",
+          `${import.meta.env.VITE_API_URL}/actionTracker`,
         ).then((r) => r.json());
         setActionTrackerData(
           data.map((a) => ({ ...a, targetDate: a.target_date?.split("T")[0] })),
@@ -283,9 +289,9 @@ export default function ReportsPage() {
       }
 
       if (reportType === "calendar") {
-        const data = await fetch("http://localhost:5000/api/calendar").then(
-          (r) => r.json(),
-        );
+        const data = await fetch(
+          `${import.meta.env.VITE_API_URL}/calendar`,
+        ).then((r) => r.json());
         setCalendarActivities(
           data.map((a) => ({
             ...a,
@@ -295,8 +301,8 @@ export default function ReportsPage() {
       }
 
       if (reportType === "safety") {
-        const data = await fetch("http://localhost:5000/api/safety").then((r) =>
-          r.json(),
+        const data = await fetch(`${import.meta.env.VITE_API_URL}/safety`).then(
+          (r) => r.json(),
         );
         setSafetyRecords(
           data.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
@@ -304,9 +310,9 @@ export default function ReportsPage() {
       }
 
       if (reportType === "equipment") {
-        const data = await fetch("http://localhost:5000/api/equipment").then(
-          (r) => r.json(),
-        );
+        const data = await fetch(
+          `${import.meta.env.VITE_API_URL}/equipment`,
+        ).then((r) => r.json());
         setEquipmentData(
           data.map((e) => ({
             ...e,
@@ -347,9 +353,9 @@ export default function ReportsPage() {
 
               // Pre-fetch PPE items so the item selector dropdown populates immediately
               if (type === "ppe_trend") {
-                const data = await fetch("http://localhost:5000/api/ppe").then(
-                  (r) => r.json(),
-                );
+                const data = await fetch(
+                  `${import.meta.env.VITE_API_URL}/ppe`,
+                ).then((r) => r.json());
                 setPpeItems(data);
                 if (data.length > 0) setSelectedPPE(data[0].id);
               }

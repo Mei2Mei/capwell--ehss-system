@@ -13,7 +13,7 @@
 import { useState, useEffect } from "react";
 import "./PPEPage.css";
 
-const API_URL = "http://localhost:5000/api/ppe";
+const API_URL = `${import.meta.env.VITE_API_URL}/ppe`;
 
 // ── Helpers ───────────────────────────────────────────────────
 

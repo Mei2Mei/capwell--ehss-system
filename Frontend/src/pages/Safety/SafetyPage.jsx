@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from "react";
 import "./SafetyPage.css";
-const API_URL = "http://localhost:5000/api/safety";
+const API_URL = `${import.meta.env.VITE_API_URL}/safety`;
 
 // ── Calculations ──────────────────────────────────────────────
 // All three use 1,000,000 as multiplier

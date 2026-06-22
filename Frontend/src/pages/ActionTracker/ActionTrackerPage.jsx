@@ -20,7 +20,7 @@ import {
 } from "recharts";
 import "./ActionTrackerPage.css";
 
-const API_URL = "http://localhost:5000/api/actionTracker";
+const API_URL = `${import.meta.env.VITE_API_URL}/actionTracker`;
 
 const COLORS = ["#2ecc71", "#f39c12", "#e74c3c"];
 

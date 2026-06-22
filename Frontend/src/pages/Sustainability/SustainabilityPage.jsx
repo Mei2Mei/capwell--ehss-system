@@ -17,7 +17,7 @@ import {
 } from "recharts";
 import "./SustainabilityPage.css";
 
-const API_URL = "http://localhost:5000/api/sustainability";
+const API_URL = `${import.meta.env.VITE_API_URL}/sustainability`;
 
 // ── Calculations ─────────────────────────────────────────────
 function formatMonth(dateStr) {

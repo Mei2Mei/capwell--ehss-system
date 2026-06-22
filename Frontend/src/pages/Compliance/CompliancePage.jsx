@@ -14,7 +14,7 @@
 import { useState, useEffect } from "react";
 import "./CompliancePage.css";
 
-const API_URL = "http://localhost:5000/api/compliance";
+const API_URL = `${import.meta.env.VITE_API_URL}/compliance`;
 
 // ── Status calculation ────────────────────────────────────────
 // This is the core business rule from Phase 1 BR-06 to BR-09.
