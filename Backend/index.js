@@ -42,3 +42,19 @@ app.use('/api/actionTracker', actionTrackerRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const { requireAuth } = require('./middleware/auth');
+
+// Add this AFTER your existing route registrations, replacing them:
+app.use('/api/auth', authRoutes); // no auth needed for login
+
+// All other routes require authentication
+app.use('/api/ppe', requireAuth, ppeRoutes);
+app.use('/api/safety', requireAuth, safetyRoutes);
+app.use('/api/costs', requireAuth, costsRoutes);
+app.use('/api/compliance', requireAuth, complianceRoutes);
+app.use('/api/sustainability', requireAuth, sustainabilityRoutes);
+app.use('/api/calendar', requireAuth, calendarRoutes);
+app.use('/api/actionTracker', requireAuth, actionTrackerRoutes);
+app.use('/api/equipment', requireAuth, equipmentRoutes);
+app.use('/api/reports', requireAuth, reportsRoutes);
