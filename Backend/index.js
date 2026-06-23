@@ -10,6 +10,9 @@ app.get('/', (req, res) => {
   res.send('Capwell EHSS Backend API running');
 });
 
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 const ppeRoutes = require('./routes/ppeRoutes');
 app.use('/api/ppe', ppeRoutes);
 
