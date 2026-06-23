@@ -9,7 +9,9 @@
 
 import { useState, useEffect } from "react";
 import "./SafetyPage.css";
-const API_URL = `${import.meta.env.VITE_API_URL}/safety`;
+import apiFetch from "../../utils/api";
+
+const API_URL = `/safety`;
 
 // ── Calculations ──────────────────────────────────────────────
 // All three use 1,000,000 as multiplier
@@ -70,7 +72,7 @@ function SafetyPage() {
   const [deleteReason, setDeleteReason] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) => {
         setRecords(
@@ -191,7 +193,7 @@ function SafetyPage() {
 
     try {
       if (editingId) {
-        const res = await fetch(`${API_URL}/${editingId}`, {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(recordPayload),
@@ -215,7 +217,7 @@ function SafetyPage() {
         setEditingId(null);
         showBanner("Safety record updated successfully.");
       } else {
-        const res = await fetch(API_URL, {
+        const res = await apiFetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(recordPayload),
@@ -280,7 +282,7 @@ function SafetyPage() {
     }
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),

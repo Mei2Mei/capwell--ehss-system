@@ -182,3 +182,16 @@
     border-right-color: var(--border);
   }
 }
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #111;
+}
+
+* {
+  box-sizing: border-box;
+}

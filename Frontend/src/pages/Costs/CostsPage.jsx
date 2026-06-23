@@ -10,8 +10,9 @@
 
 import { useState, useEffect } from "react";
 import "./CostsPage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/costs`;
+const API_URL = `/costs`;
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatDate(dateStr) {
@@ -90,7 +91,7 @@ function CostsPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) =>
         setRecords(
@@ -192,7 +193,7 @@ function CostsPage() {
     }
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),
@@ -223,7 +224,7 @@ function CostsPage() {
 
     try {
       if (editingId) {
-        const res = await fetch(`${API_URL}/${editingId}`, {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -248,7 +249,7 @@ function CostsPage() {
         return;
       }
 
-      const res = await fetch(API_URL, {
+      const res = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

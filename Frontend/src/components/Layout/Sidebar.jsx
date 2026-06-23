@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
+  const { user, logout } = useAuth();
+
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "🏠" },
     { id: "safety", label: "Safety metrics", icon: "🛡️" },
@@ -15,18 +18,34 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     { id: "reports", label: "Reports", icon: "📊" },
   ];
 
+  // Get initials from full name
+  const initials = user?.full_name
+    ? user.full_name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "??";
+
+  // Friendly role label
+  const roleLabel =
+    {
+      ehss_officer: "EHSS Officer",
+      it_admin: "IT Admin",
+      qa: "QA",
+      storekeeper: "Storekeeper",
+      supervisor: "Supervisor",
+      production_manager: "Production Manager",
+    }[user?.role_name] || user?.role_name;
+
   return (
     <div className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
       <div className="sidebar-logo">
         {!collapsed && <div className="sidebar-logo-icon">🛡️</div>}
         {!collapsed && (
           <div className="sidebar-logo-text">
-            <div
-              className="sidebar-logo-title"
-              title="Environment, Health, Safety and Sustainability"
-            >
-              EHSS
-            </div>
+            <div className="sidebar-logo-title">EHSS</div>
             <div className="sidebar-logo-sub">Management System</div>
           </div>
         )}
@@ -54,14 +73,20 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       <div className="sidebar-footer">
         {!collapsed && (
           <div className="sidebar-user">
-            <div className="sidebar-user-avatar">LN</div>
+            <div className="sidebar-user-avatar">{initials}</div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">Linda</div>
-              <div className="sidebar-user-role">EHSS Officer</div>
+              <div className="sidebar-user-name">
+                {user?.full_name || "User"}
+              </div>
+              <div className="sidebar-user-role">{roleLabel}</div>
             </div>
           </div>
         )}
-        {!collapsed && <button className="sidebar-logout">Logout</button>}
+        {!collapsed && (
+          <button className="sidebar-logout" onClick={logout}>
+            Logout
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./ReportsPage.css";
+import apiFetch from "../../utils/api";
 import {
   BarChart,
   Bar,
@@ -13,6 +14,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function formatKES(n) {
   return `KES ${Number(n).toLocaleString()}`;
@@ -179,27 +182,15 @@ export default function ReportsPage() {
           calendar,
           equipment,
         ] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/safety`).then((r) => r.json()),
-          fetch(`${import.meta.env.VITE_API_URL}/costs`).then((r) => r.json()),
-          fetch(`${import.meta.env.VITE_API_URL}/compliance`).then((r) =>
-            r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/ppe`).then((r) => r.json()),
-          fetch(`${import.meta.env.VITE_API_URL}/sustainability`).then((r) =>
-            r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/sustainability/factors`).then(
-            (r) => r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/actionTracker`).then((r) =>
-            r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/calendar`).then((r) =>
-            r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/equipment`).then((r) =>
-            r.json(),
-          ),
+          apiFetch(`/safety`).then((r) => r.json()),
+          apiFetch(`/costs`).then((r) => r.json()),
+          apiFetch(`/compliance`).then((r) => r.json()),
+          apiFetch(`/ppe`).then((r) => r.json()),
+          apiFetch(`/sustainability`).then((r) => r.json()),
+          apiFetch(`/sustainability/factors`).then((r) => r.json()),
+          apiFetch(`/actionTracker`).then((r) => r.json()),
+          apiFetch(`/calendar`).then((r) => r.json()),
+          apiFetch(`/equipment`).then((r) => r.json()),
         ]);
 
         setSafetyRecords(
@@ -253,9 +244,7 @@ export default function ReportsPage() {
       }
 
       if (reportType === "compliance") {
-        const data = await fetch(
-          `${import.meta.env.VITE_API_URL}/compliance`,
-        ).then((r) => r.json());
+        const data = await apiFetch(`/compliance`).then((r) => r.json());
         setComplianceItems(
           data.map((c) => ({
             ...c,
@@ -265,9 +254,7 @@ export default function ReportsPage() {
       }
 
       if (reportType === "costs") {
-        const data = await fetch(`${import.meta.env.VITE_API_URL}/costs`).then(
-          (r) => r.json(),
-        );
+        const data = await apiFetch(`/costs`).then((r) => r.json());
         setCostRecords(
           data.map((r) => ({
             ...r,
@@ -278,21 +265,15 @@ export default function ReportsPage() {
       }
 
       if (reportType === "ppe" || reportType === "ppe_trend") {
-        const data = await fetch(`${import.meta.env.VITE_API_URL}/ppe`).then(
-          (r) => r.json(),
-        );
+        const data = await apiFetch(`/ppe`).then((r) => r.json());
         setPpeItems(data);
         if (!selectedPPE && data.length > 0) setSelectedPPE(data[0].id);
       }
 
       if (reportType === "sustainability") {
         const [records, factors] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/sustainability`).then((r) =>
-            r.json(),
-          ),
-          fetch(`${import.meta.env.VITE_API_URL}/sustainability/factors`).then(
-            (r) => r.json(),
-          ),
+          apiFetch(`/sustainability`).then((r) => r.json()),
+          apiFetch(`/sustainability/factors`).then((r) => r.json()),
         ]);
         setSustainabilityRecords(
           records.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
@@ -305,18 +286,14 @@ export default function ReportsPage() {
       }
 
       if (reportType === "action_tracker") {
-        const data = await fetch(
-          `${import.meta.env.VITE_API_URL}/actionTracker`,
-        ).then((r) => r.json());
+        const data = await apiFetch(`/actionTracker`).then((r) => r.json());
         setActionTrackerData(
           data.map((a) => ({ ...a, targetDate: a.target_date?.split("T")[0] })),
         );
       }
 
       if (reportType === "calendar") {
-        const data = await fetch(
-          `${import.meta.env.VITE_API_URL}/calendar`,
-        ).then((r) => r.json());
+        const data = await apiFetch(`/calendar`).then((r) => r.json());
         setCalendarActivities(
           data.map((a) => ({
             ...a,
@@ -326,18 +303,14 @@ export default function ReportsPage() {
       }
 
       if (reportType === "safety") {
-        const data = await fetch(`${import.meta.env.VITE_API_URL}/safety`).then(
-          (r) => r.json(),
-        );
+        const data = await apiFetch(`/safety`).then((r) => r.json());
         setSafetyRecords(
           data.map((r) => ({ ...r, period: r.period?.split("T")[0] })),
         );
       }
 
       if (reportType === "equipment") {
-        const data = await fetch(
-          `${import.meta.env.VITE_API_URL}/equipment`,
-        ).then((r) => r.json());
+        const data = await apiFetch(`/equipment`).then((r) => r.json());
         setEquipmentData(
           data.map((e) => ({
             ...e,
@@ -378,9 +351,7 @@ export default function ReportsPage() {
 
               // Pre-fetch PPE items so the item selector dropdown populates immediately
               if (type === "ppe_trend") {
-                const data = await fetch(
-                  `${import.meta.env.VITE_API_URL}/ppe`,
-                ).then((r) => r.json());
+                const data = await apiFetch(`/ppe`).then((r) => r.json());
                 setPpeItems(data);
                 if (data.length > 0) setSelectedPPE(data[0].id);
               }
@@ -433,8 +404,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -459,7 +478,7 @@ export default function ReportsPage() {
                   <div className="rep-card-value green">0</div>
                 </div>
               </div>
-              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
+              <div style={{ height: 160, minHeight: 160, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={safetyRecords.map((r) => {
@@ -993,8 +1012,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1102,8 +1169,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1197,8 +1312,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1316,8 +1479,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1405,8 +1616,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1510,8 +1769,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1600,8 +1907,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1630,7 +1985,7 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
-              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
+              <div style={{ height: 160, minHeight: 160, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={ppeMonthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -1661,8 +2016,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>
@@ -1701,7 +2104,7 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Emissions (Scope 1 & 2)
               </div>
-              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
+              <div style={{ height: 160, minHeight: 160, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sustainabilityRecords.map((r) => ({
@@ -1723,7 +2126,7 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Water consumption
               </div>
-              <div style={{ height: 200, minHeight: 200 }}>
+              <div style={{ height: 160, minHeight: 160 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sustainabilityRecords.map((r) => ({
@@ -1746,7 +2149,7 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Waste breakdown
               </div>
-              <div style={{ height: 200, minHeight: 200 }}>
+              <div style={{ height: 160, minHeight: 160 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sustainabilityRecords.map((r) => ({
@@ -1772,7 +2175,7 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Energy consumption
               </div>
-              <div style={{ height: 220, minHeight: 220 }}>
+              <div style={{ height: 160, minHeight: 160 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={sustainabilityRecords.map((r) => ({
@@ -1807,8 +2210,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <button
+                  id="hide-on-export"
                   className="rep-btn-export"
-                  onClick={() => window.print()}
+                  onClick={async () => {
+                    const btn = document.getElementById("hide-on-export");
+                    btn.style.display = "none";
+                    const element = document.querySelector(".rep-preview");
+                    const canvas = await html2canvas(element, {
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new jsPDF("p", "mm", "a4");
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(
+                      imgData,
+                      "PNG",
+                      0,
+                      position,
+                      imgWidth,
+                      imgHeight,
+                    );
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft > 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(
+                        imgData,
+                        "PNG",
+                        0,
+                        position,
+                        imgWidth,
+                        imgHeight,
+                      );
+                      heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(
+                      `EHSS_Report_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`,
+                    );
+                  }}
                 >
                   🖨 Print / Save as PDF
                 </button>

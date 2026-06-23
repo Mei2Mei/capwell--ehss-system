@@ -11,7 +11,9 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useState } from "react";
+import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout/Layout";
+import LoginPage from "./pages/Login/LoginPage";
 
 // Import all pages
 import DashboardPage from "./pages/Dashboard/DashboardPage";
@@ -27,8 +29,13 @@ import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
 
 function App() {
   // Track which page is active — starts on dashboard
+  const { user, loading } = useAuth();
   const [activePage, setActivePage] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  if (loading) return <div style={{ padding: "28px" }}>Loading...</div>;
+
+  if (!user) return <LoginPage />;
 
   // Returns the correct page component based on activePage
   function renderPage() {

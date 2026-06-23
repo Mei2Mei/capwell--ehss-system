@@ -26,8 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./DashboardPage.css";
-
-const BASE_URL = import.meta.env.VITE_API_URL;
+import apiFetch from "../../utils/api";
 
 const COST_COLORS = {
   statutory: "#1a5276",
@@ -93,11 +92,11 @@ function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${BASE_URL}/safety`).then((r) => r.json()),
-      fetch(`${BASE_URL}/compliance`).then((r) => r.json()),
-      fetch(`${BASE_URL}/calendar`).then((r) => r.json()),
-      fetch(`${BASE_URL}/costs`).then((r) => r.json()),
-      fetch(`${BASE_URL}/ppe`).then((r) => r.json()),
+      apiFetch(`/safety`).then((r) => r.json()),
+      apiFetch(`/compliance`).then((r) => r.json()),
+      apiFetch(`/calendar`).then((r) => r.json()),
+      apiFetch(`/costs`).then((r) => r.json()),
+      apiFetch(`/ppe`).then((r) => r.json()),
     ])
       .then(([safety, compliance, calendar, costs, ppe]) => {
         // Safety — calculate TRIFR/LTIFR per month

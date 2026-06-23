@@ -3,6 +3,9 @@
   display: flex;
   min-height: 100vh;
   background-color: #f5f7fa;
+  color-scheme: light;
+  background-color: #f5f7fa;
+
 }
 
 /* Main content area — sits to the right of the sidebar */
@@ -12,8 +15,10 @@
   flex: 1;
   min-height: 100vh;
   overflow-x: hidden;
+  max-width: calc(100vw - 220px);
 }
 
 .layout-content-collapsed {
   margin-left: 60px;
+  max-width: calc(100vw - 60px);
 }

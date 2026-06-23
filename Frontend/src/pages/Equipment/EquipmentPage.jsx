@@ -4,8 +4,9 @@
 
 import { useState, useEffect } from "react";
 import "./EquipmentPage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/equipment`;
+const API_URL = `/equipment`;
 
 // HELPERS//
 function getInspectionStatus(nextInspection) {
@@ -42,7 +43,7 @@ export default function EquipmentPage() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) =>
         setEquipment(
@@ -112,7 +113,7 @@ export default function EquipmentPage() {
 
     try {
       if (editingId) {
-        const res = await fetch(`${API_URL}/${editingId}`, {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -136,7 +137,7 @@ export default function EquipmentPage() {
         return;
       }
 
-      const res = await fetch(API_URL, {
+      const res = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -195,7 +196,7 @@ export default function EquipmentPage() {
     }
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),

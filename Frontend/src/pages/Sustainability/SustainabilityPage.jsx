@@ -16,8 +16,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./SustainabilityPage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/sustainability`;
+const API_URL = `/sustainability`;
 
 // ── Calculations ─────────────────────────────────────────────
 function formatMonth(dateStr) {
@@ -62,7 +63,7 @@ export default function SustainabilityPage() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) =>
         setRecords(
@@ -76,7 +77,7 @@ export default function SustainabilityPage() {
         console.error("Failed to fetch sustainability records:", err),
       );
 
-    fetch(`${API_URL}/factors`)
+    apiFetch(`${API_URL}/factors`)
       .then((res) => res.json())
       .then((data) => {
         const factorsObj = {};
@@ -225,7 +226,7 @@ export default function SustainabilityPage() {
     };
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

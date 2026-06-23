@@ -13,8 +13,9 @@
 
 import { useState, useEffect } from "react";
 import "./CompliancePage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/compliance`;
+const API_URL = `/compliance`;
 
 // ── Status calculation ────────────────────────────────────────
 // This is the core business rule from Phase 1 BR-06 to BR-09.
@@ -96,7 +97,7 @@ function CompliancePage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) =>
         setItems(
@@ -197,7 +198,7 @@ function CompliancePage() {
 
     try {
       if (modalType === "add") {
-        const res = await fetch(API_URL, {
+        const res = await apiFetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
@@ -211,7 +212,7 @@ function CompliancePage() {
         setItems([...items, formatted]);
         showBanner("Compliance item added successfully.");
       } else {
-        const res = await fetch(`${API_URL}/${editingId}`, {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
@@ -255,7 +256,7 @@ function CompliancePage() {
     if (!deleteModal) return;
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),

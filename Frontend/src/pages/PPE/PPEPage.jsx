@@ -13,8 +13,9 @@
 import { useState, useEffect } from "react";
 import "./PPEPage.css";
 import React from "react";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/ppe`;
+const API_URL = `/ppe`;
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -127,12 +128,12 @@ function PPEPage() {
   ).length;
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) => setItems(data))
       .catch((err) => console.error("Failed to fetch PPE items:", err));
 
-    fetch(`${API_URL}/transactions`)
+    apiFetch(`${API_URL}/transactions`)
       .then((res) => res.json())
       .then((data) =>
         setTransactions(
@@ -144,7 +145,7 @@ function PPEPage() {
       )
       .catch((err) => console.error("Failed to fetch transactions:", err));
 
-    fetch(`${API_URL}/requests`)
+    apiFetch(`${API_URL}/requests`)
       .then((res) => res.json())
       .then((data) =>
         setRequests(
@@ -212,7 +213,7 @@ function PPEPage() {
     const qty = Number(txForm.quantity);
 
     try {
-      const res = await fetch(`${API_URL}/transactions`, {
+      const res = await apiFetch(`${API_URL}/transactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -227,7 +228,7 @@ function PPEPage() {
       const newTx = await res.json();
 
       // Refresh the item's stock from backend (since stock was updated server-side)
-      const itemRes = await fetch(`${API_URL}/${id}`);
+      const itemRes = await apiFetch(`${API_URL}/${id}`);
       const updatedItem = await itemRes.json();
       setItems(items.map((item) => (item.id === id ? updatedItem : item)));
 
@@ -284,7 +285,7 @@ function PPEPage() {
     if (!validateItem()) return;
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -356,7 +357,7 @@ function PPEPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/requests`, {
+      const res = await apiFetch(`${API_URL}/requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -397,7 +398,7 @@ function PPEPage() {
 
   async function handleApproveRequest(requestId) {
     try {
-      const res = await fetch(`${API_URL}/requests/${requestId}/approve`, {
+      const res = await apiFetch(`${API_URL}/requests/${requestId}/approve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approved_by: 1 }), // placeholder until login
@@ -419,7 +420,7 @@ function PPEPage() {
 
       // Refresh item to reflect new reserved_stock
       const request = requests.find((r) => r.id === requestId);
-      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const itemRes = await apiFetch(`${API_URL}/${request.item_id}`);
       const updatedItem = await itemRes.json();
       setItems((prev) =>
         prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
@@ -443,7 +444,7 @@ function PPEPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/requests/${rejectModal}/reject`, {
+      const res = await apiFetch(`${API_URL}/requests/${rejectModal}/reject`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approved_by: 1, reject_reason: rejectReason }),
@@ -461,7 +462,7 @@ function PPEPage() {
       );
 
       // Refresh item to reflect released reserved_stock
-      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const itemRes = await apiFetch(`${API_URL}/${request.item_id}`);
       const updatedItem = await itemRes.json();
       setItems((prev) =>
         prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
@@ -477,7 +478,7 @@ function PPEPage() {
 
   async function handleFulfillRequest(requestId) {
     try {
-      const res = await fetch(`${API_URL}/requests/${requestId}/fulfill`, {
+      const res = await apiFetch(`${API_URL}/requests/${requestId}/fulfill`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fulfilled_by: 1 }), // placeholder until login
@@ -505,7 +506,7 @@ function PPEPage() {
       );
 
       // Refresh item to reflect deducted stock
-      const itemRes = await fetch(`${API_URL}/${request.item_id}`);
+      const itemRes = await apiFetch(`${API_URL}/${request.item_id}`);
       const updatedItem = await itemRes.json();
       setItems((prev) =>
         prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
@@ -526,7 +527,7 @@ function PPEPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/${itemId}`, {
+      const res = await apiFetch(`${API_URL}/${itemId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reorder_level: newLevel }),

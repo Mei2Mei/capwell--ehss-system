@@ -19,8 +19,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./ActionTrackerPage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/actionTracker`;
+const API_URL = `/actionTracker`;
 
 const COLORS = ["#2ecc71", "#f39c12", "#e74c3c"];
 
@@ -39,7 +40,7 @@ export default function ActionTracker() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) => {
         const mapped = data.map((item) => ({
@@ -124,7 +125,7 @@ export default function ActionTracker() {
   // ─────────────────────────────
   const handleAdd = async () => {
     try {
-      const res = await fetch(API_URL, {
+      const res = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -168,7 +169,7 @@ export default function ActionTracker() {
     try {
       const updatedStatus = getStatusFromProgress(editBuffer.progress);
 
-      const res = await fetch(`${API_URL}/${editBuffer.id}`, {
+      const res = await apiFetch(`${API_URL}/${editBuffer.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -219,7 +220,7 @@ export default function ActionTracker() {
     }
 
     try {
-      await fetch(`${API_URL}/${selectedAction.id}`, {
+      await apiFetch(`${API_URL}/${selectedAction.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),

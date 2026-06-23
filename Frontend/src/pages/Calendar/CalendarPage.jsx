@@ -8,8 +8,9 @@
 
 import { useState, useEffect } from "react";
 import "./CalendarPage.css";
+import apiFetch from "../../utils/api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/calendar`;
+const API_URL = `/calendar`;
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatMonth(dateStr) {
@@ -98,7 +99,7 @@ function CalendarPage() {
   const [deleteReason, setDeleteReason] = useState("");
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) =>
         setActivities(
@@ -200,7 +201,7 @@ function CalendarPage() {
     }
 
     try {
-      await fetch(`${API_URL}/${deleteModal.id}`, {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: deleteReason }),
@@ -235,7 +236,7 @@ function CalendarPage() {
 
     try {
       if (modalType === "form" && editingId === null) {
-        const res = await fetch(API_URL, {
+        const res = await apiFetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -251,7 +252,7 @@ function CalendarPage() {
         ]);
         showBanner("Activity added successfully.");
       } else {
-        const res = await fetch(`${API_URL}/${editingId}`, {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
