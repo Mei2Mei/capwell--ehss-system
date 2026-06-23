@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from "react";
 import "./PPEPage.css";
+import React from "react";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/ppe`;
 
@@ -661,9 +662,9 @@ function PPEPage() {
               const expanded = expandedItemId === item.id;
 
               return (
-                <>
+                <React.Fragment key={item.id}>
                   {/* Main item row */}
-                  <tr key={item.id} className={getRowClass(status)}>
+                  <tr className={getRowClass(status)}>
                     <td>{index + 1}</td>
                     <td>
                       {/* Click item name to expand/collapse history */}
@@ -760,7 +761,7 @@ function PPEPage() {
 
                   {/* Transaction history — expands below the item row */}
                   {expanded && (
-                    <tr key={`history-${item.id}`} className="ppe-history-row">
+                    <tr className="ppe-history-row">
                       <td colSpan={canViewStock() ? 8 : 7}>
                         <div className="ppe-history-wrap">
                           <div className="ppe-history-title">
@@ -884,7 +885,7 @@ function PPEPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>

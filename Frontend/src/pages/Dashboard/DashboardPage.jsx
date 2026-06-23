@@ -11,7 +11,7 @@
 // 5. Compliance expiry alerts
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -25,54 +25,9 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import { ppeItems } from "../../data/PPEData";
 import "./DashboardPage.css";
 
-// ── Sample data ───────────────────────────────────────────────
-// This will come from the backend API once connected.
-// For now it mirrors the real Excel data from Phase 1 analysis.
-
-const safetyData = [
-  { month: "Jan", trifr: 0.0, ltifr: 0.0 },
-  { month: "Feb", trifr: 18.1, ltifr: 9.0 },
-  { month: "Mar", trifr: 0.0, ltifr: 0.0 },
-  { month: "Apr", trifr: 0.0, ltifr: 0.0 },
-];
-
-const complianceAlerts = [
-  { name: "NEMA EIA licence", expires: "28 Jun 2026", daysLeft: 24 },
-  { name: "Fire safety certificate", expires: "01 Apr 2026", daysLeft: -64 },
-  { name: "Lift inspection — Unit 2", expires: "15 Jun 2026", daysLeft: 11 },
-];
-
-const calendarActivities = [
-  { name: "OSH Committee meeting", month: "Jun 2026", category: "Statutory" },
-  {
-    name: "Forklift safety training",
-    month: "Jun 2026",
-    category: "Best practice",
-  },
-  {
-    name: "Chemical handling refresher",
-    month: "Jul 2026",
-    category: "Statutory",
-  },
-  { name: "Fire drill", month: "Jul 2026", category: "Statutory" },
-  { name: "First aid refresher", month: "Aug 2026", category: "Best practice" },
-];
-
-const costByMonth = [
-  {
-    month: "Jan",
-    statutory: 710000,
-    staff_welfare: 359395,
-    ppe: 0,
-    improvement: 0,
-  },
-  { month: "Feb", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-  { month: "Mar", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-  { month: "Apr", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-];
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const COST_COLORS = {
   statutory: "#1a5276",
@@ -129,6 +84,125 @@ function SafetyBarChart({ data }) {
 // ── Main component ────────────────────────────────────────────
 function DashboardPage() {
   const [alertTab, setAlertTab] = useState("compliance");
+  const [safetyData, setSafetyData] = useState([]);
+  const [complianceItems, setComplianceItems] = useState([]);
+  const [calendarActivities, setCalendarActivities] = useState([]);
+  const [costRecords, setCostRecords] = useState([]);
+  const [ppeItems, setPpeItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${BASE_URL}/safety`).then((r) => r.json()),
+      fetch(`${BASE_URL}/compliance`).then((r) => r.json()),
+      fetch(`${BASE_URL}/calendar`).then((r) => r.json()),
+      fetch(`${BASE_URL}/costs`).then((r) => r.json()),
+      fetch(`${BASE_URL}/ppe`).then((r) => r.json()),
+    ])
+      .then(([safety, compliance, calendar, costs, ppe]) => {
+        // Safety — calculate TRIFR/LTIFR per month
+        setSafetyData(
+          safety.map((r) => {
+            const wh = Number(r.worked_hours);
+            const mti = Number(r.medical_treatment_incidents);
+            const lti = Number(r.lost_time_incidents);
+            const fat = Number(r.fatalities);
+            return {
+              month: new Date(r.period).toLocaleDateString("en-GB", {
+                month: "short",
+              }),
+              trifr: wh ? +(((mti + lti + fat) * 1000000) / wh).toFixed(2) : 0,
+              ltifr: wh ? +((lti * 1000000) / wh).toFixed(2) : 0,
+            };
+          }),
+        );
+
+        // Compliance
+        setComplianceItems(
+          compliance.map((c) => ({
+            ...c,
+            date_of_expiry: c.date_of_expiry?.split("T")[0] || "",
+          })),
+        );
+
+        // Calendar
+        setCalendarActivities(
+          calendar.map((a) => ({
+            ...a,
+            scheduled_month: a.scheduled_month?.split("T")[0],
+          })),
+        );
+
+        // Costs
+        setCostRecords(
+          costs.map((r) => ({
+            ...r,
+            cost_excl_vat: Number(r.cost_excl_vat),
+          })),
+        );
+
+        // PPE
+        setPpeItems(ppe);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Dashboard fetch failed:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const complianceAlerts = complianceItems
+    .map((c) => {
+      const daysLeft = c.date_of_expiry
+        ? Math.floor(
+            (new Date(c.date_of_expiry) - new Date()) / (1000 * 60 * 60 * 24),
+          )
+        : null;
+      return { ...c, name: c.requirement, daysLeft };
+    })
+    .filter((c) => c.daysLeft !== null && c.daysLeft <= 60)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+
+  const totalCost = costRecords.reduce((s, r) => s + r.cost_excl_vat, 0);
+
+  const costByMonth = (() => {
+    const monthOrder = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const months = {};
+    costRecords.forEach((r) => {
+      const month = new Date(r.date).toLocaleDateString("en-GB", {
+        month: "short",
+      });
+      if (!months[month])
+        months[month] = {
+          month,
+          statutory: 0,
+          staff_welfare: 0,
+          ppe: 0,
+          improvement: 0,
+        };
+      if (r.cost_type === "statutory_requirement")
+        months[month].statutory += r.cost_excl_vat;
+      else if (r.cost_type === "staff_welfare")
+        months[month].staff_welfare += r.cost_excl_vat;
+      else if (r.cost_type === "improvement_initiative")
+        months[month].improvement += r.cost_excl_vat;
+    });
+    return monthOrder.filter((m) => months[m]).map((m) => months[m]);
+  })();
 
   // PPE calculations — from real ppeData
   const lowStockItems = ppeItems.filter(
@@ -148,6 +222,13 @@ function DashboardPage() {
     (c) => c.daysLeft >= 0 && c.daysLeft <= 30,
   ).length;
   const expiredCount = complianceAlerts.filter((c) => c.daysLeft < 0).length;
+
+  if (loading)
+    return (
+      <div className="dash-page">
+        <p style={{ padding: "28px" }}>Loading dashboard...</p>
+      </div>
+    );
 
   return (
     <div className="dash-page">
@@ -329,7 +410,7 @@ function DashboardPage() {
                   >
                     <div className="dash-alert-name">{item.name}</div>
                     <div className="dash-alert-meta">
-                      <span>Expires {item.expires}</span>
+                      <span>Expires {item.date_of_expiry || "—"}</span>
                       <span className={badge.cls}>{badge.text}</span>
                     </div>
                   </div>
@@ -377,17 +458,46 @@ function DashboardPage() {
 
           {alertTab === "calendar" && (
             <div className="dash-calendar-list">
-              {calendarActivities.map((act, i) => (
-                <div key={i} className="dash-cal-item">
-                  <div className="dash-cal-dot"></div>
-                  <div className="dash-cal-body">
-                    <div className="dash-cal-name">{act.name}</div>
-                    <div className="dash-cal-meta">
-                      {act.month} · {act.category}
+              {calendarActivities
+                .filter(
+                  (a) =>
+                    a.status === "scheduled" &&
+                    new Date(a.scheduled_month) >= new Date(),
+                )
+                .sort(
+                  (a, b) =>
+                    new Date(a.scheduled_month) - new Date(b.scheduled_month),
+                )
+                .slice(0, 5)
+                .map((act, i) => (
+                  <div key={i} className="dash-cal-item">
+                    <div className="dash-cal-dot"></div>
+                    <div className="dash-cal-body">
+                      <div className="dash-cal-name">{act.activity_name}</div>
+                      <div className="dash-cal-meta">
+                        {new Date(act.scheduled_month).toLocaleDateString(
+                          "en-GB",
+                          { month: "short", year: "numeric" },
+                        )}
+                        {" · "}
+                        {act.category === "statutory_requirement"
+                          ? "Statutory"
+                          : act.category === "industry_best_practice"
+                            ? "Best practice"
+                            : "Behaviour Based Safety"}
+                      </div>
                     </div>
                   </div>
+                ))}
+              {calendarActivities.filter(
+                (a) =>
+                  a.status === "scheduled" &&
+                  new Date(a.scheduled_month) >= new Date(),
+              ).length === 0 && (
+                <div className="dash-empty">
+                  No upcoming activities scheduled.
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

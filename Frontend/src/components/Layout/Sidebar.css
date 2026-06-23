@@ -155,3 +155,29 @@
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
+
+.sidebar-collapsed {
+  width: 60px;
+}
+
+.sidebar-collapsed .sidebar-logo {
+  justify-content: center;
+  padding: 20px 8px;
+}
+
+.sidebar-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}

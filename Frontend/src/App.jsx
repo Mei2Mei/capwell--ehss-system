@@ -28,6 +28,7 @@ import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
 function App() {
   // Track which page is active — starts on dashboard
   const [activePage, setActivePage] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Returns the correct page component based on activePage
   function renderPage() {
@@ -61,7 +62,12 @@ function App() {
     // Layout wraps everything — sidebar + content
     // activePage tells the sidebar which item to highlight
     // setActivePage is called when user clicks a nav item
-    <Layout activePage={activePage} onNavigate={setActivePage}>
+    <Layout
+      activePage={activePage}
+      onNavigate={setActivePage}
+      sidebarCollapsed={sidebarCollapsed}
+      onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+    >
       {renderPage()}
     </Layout>
   );

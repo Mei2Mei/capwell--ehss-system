@@ -90,18 +90,43 @@ export default function ReportsPage() {
   const outsideBudget = costRecords
     .filter((r) => r.budget_status === "outside_budget")
     .reduce((s, r) => s + r.cost_excl_vat, 0);
-  const costByMonth = [
-    {
-      month: "Jan",
-      statutory: 710000,
-      staff_welfare: 359395,
-      ppe: 0,
-      improvement: 0,
-    },
-    { month: "Feb", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-    { month: "Mar", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-    { month: "Apr", statutory: 0, staff_welfare: 0, ppe: 0, improvement: 0 },
-  ];
+  const costByMonth = (() => {
+    const monthOrder = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const months = {};
+    costRecords.forEach((r) => {
+      const month = new Date(r.date).toLocaleDateString("en-GB", {
+        month: "short",
+      });
+      if (!months[month])
+        months[month] = {
+          month,
+          statutory: 0,
+          staff_welfare: 0,
+          ppe: 0,
+          improvement: 0,
+        };
+      if (r.cost_type === "statutory_requirement")
+        months[month].statutory += r.cost_excl_vat;
+      else if (r.cost_type === "staff_welfare")
+        months[month].staff_welfare += r.cost_excl_vat;
+      else if (r.cost_type === "improvement_initiative")
+        months[month].improvement += r.cost_excl_vat;
+    });
+    return monthOrder.filter((m) => months[m]).map((m) => months[m]);
+  })();
   const COST_COLORS = {
     statutory: "#1a5276",
     staff_welfare: "#27ae60",
@@ -434,55 +459,33 @@ export default function ReportsPage() {
                   <div className="rep-card-value green">0</div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Staff</th>
-                    <th>MTI</th>
-                    <th>LTI</th>
-                    <th>TRIFR</th>
-                    <th>LTIFR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safetyRecords.map((r, i) => {
-                    const wh = r.worked_hours;
-                    const trifr = wh
-                      ? ((r.medical_treatment_incidents +
-                          r.lost_time_incidents +
-                          r.fatalities) *
-                          1000000) /
-                        wh
-                      : 0;
-                    const ltifr = wh
-                      ? (r.lost_time_incidents * 1000000) / wh
-                      : 0;
-                    return (
-                      <tr
-                        key={i}
-                        className={
-                          r.medical_treatment_incidents > 0 ||
-                          r.lost_time_incidents > 0
-                            ? "row-incident"
-                            : ""
-                        }
-                      >
-                        <td>{formatMonth(r.period)}</td>
-                        <td>{r.staff_numbers}</td>
-                        <td>{r.medical_treatment_incidents}</td>
-                        <td>{r.lost_time_incidents}</td>
-                        <td className={trifr > 0 ? "calc-alert" : ""}>
-                          {trifr.toFixed(2)}
-                        </td>
-                        <td className={ltifr > 0 ? "calc-alert" : ""}>
-                          {ltifr.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={safetyRecords.map((r) => {
+                      const wh = Number(r.worked_hours);
+                      const mti = Number(r.medical_treatment_incidents);
+                      const lti = Number(r.lost_time_incidents);
+                      const fat = Number(r.fatalities);
+                      return {
+                        month: formatMonth(r.period),
+                        TRIFR: wh
+                          ? +(((mti + lti + fat) * 1000000) / wh).toFixed(2)
+                          : 0,
+                        LTIFR: wh ? +((lti * 1000000) / wh).toFixed(2) : 0,
+                      };
+                    })}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="TRIFR" fill="#c0392b" />
+                    <Bar dataKey="LTIFR" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Cost summary
@@ -511,39 +514,83 @@ export default function ReportsPage() {
               </div>
 
               <div
-                style={{ height: 220, minHeight: 220, marginBottom: "14px" }}
+                style={{ height: 250, minHeight: 250, marginBottom: "16px" }}
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={Object.entries(
-                        costRecords.reduce((acc, r) => {
-                          acc[r.cost_type] =
-                            (acc[r.cost_type] || 0) + r.cost_excl_vat;
-                          return acc;
-                        }, {}),
-                      ).map(([name, value]) => ({ name, value }))}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={({ name, value }) =>
-                        `${name}: ${formatKES(value)}`
-                      }
-                    >
-                      {COST_PIE_COLORS.map((c, i) => (
-                        <Cell key={i} fill={c} />
-                      ))}
-                    </Pie>
+                  <BarChart
+                    data={Object.entries(
+                      costRecords.reduce((acc, r) => {
+                        acc[r.cost_type] =
+                          (acc[r.cost_type] || 0) + r.cost_excl_vat;
+                        return acc;
+                      }, {}),
+                    ).map(([name, value]) => ({ name, value }))}
+                    margin={{ top: 10, right: 20, left: 60, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="name"
+                      angle={-20}
+                      textAnchor="end"
+                      interval={0}
+                    />
+                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
                     <Tooltip formatter={(v) => formatKES(v)} />
-                    <Legend />
-                  </PieChart>
+                    <Bar dataKey="value" name="Total cost" fill="#1a5276" />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Compliance alerts
+              </div>
+              <div
+                className="rep-summary-cards"
+                style={{ marginBottom: "16px" }}
+              >
+                <div className="rep-card">
+                  <div className="rep-card-label">Total items</div>
+                  <div className="rep-card-value">
+                    {complianceWithStatus.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Valid</div>
+                  <div className="rep-card-value green">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Valid")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Expiring soon</div>
+                  <div className="rep-card-value amber">
+                    {
+                      complianceWithStatus.filter(
+                        (c) => c.status === "Expiring soon",
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Expired</div>
+                  <div className="rep-card-value red">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Expired")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Pending</div>
+                  <div className="rep-card-value">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Pending")
+                        .length
+                    }
+                  </div>
+                </div>
               </div>
               <table className="rep-table">
                 <thead>
@@ -572,6 +619,42 @@ export default function ReportsPage() {
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 PPE stock alerts
+              </div>
+              <div
+                className="rep-summary-cards"
+                style={{ marginBottom: "16px" }}
+              >
+                <div className="rep-card">
+                  <div className="rep-card-label">Total items</div>
+                  <div className="rep-card-value">{ppeItems.length}</div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">OK</div>
+                  <div className="rep-card-value green">
+                    {
+                      ppeItems.filter((p) => p.current_stock > p.reorder_level)
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Low stock</div>
+                  <div className="rep-card-value amber">
+                    {
+                      ppeItems.filter(
+                        (p) =>
+                          p.current_stock > 0 &&
+                          p.current_stock <= p.reorder_level,
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Out of stock</div>
+                  <div className="rep-card-value red">
+                    {ppeItems.filter((p) => p.current_stock === 0).length}
+                  </div>
+                </div>
               </div>
               <table className="rep-table">
                 <thead>
@@ -605,38 +688,59 @@ export default function ReportsPage() {
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Sustainability
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Water (m³)</th>
-                    <th>Electricity (kWh)</th>
-                    <th>Scope 1 (kg CO2)</th>
-                    <th>Scope 2 (kg CO2)</th>
-                    <th>Total emissions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sustainabilityRecords.map((r, i) => {
-                    const s1 = calcScope1(r, emissionFactors),
-                      s2 = calcScope2(r, emissionFactors);
-                    return (
-                      <tr key={i}>
-                        <td>{formatMonth(r.period)}</td>
-                        <td>
-                          {Number(r.water_consumption_m3).toLocaleString()}
-                        </td>
-                        <td>{Number(r.electricity_kwh).toLocaleString()}</td>
-                        <td>{s1.toFixed(2)}</td>
-                        <td>{s2.toFixed(2)}</td>
-                        <td>
-                          <strong>{(s1 + s2).toFixed(2)}</strong>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="rep-summary-cards">
+                <div className="rep-card">
+                  <div className="rep-card-label">Total Scope 1 (kg CO2)</div>
+                  <div className="rep-card-value">
+                    {sustainabilityRecords
+                      .reduce((s, r) => s + calcScope1(r, emissionFactors), 0)
+                      .toFixed(2)}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Total Scope 2 (kg CO2)</div>
+                  <div className="rep-card-value">
+                    {sustainabilityRecords
+                      .reduce((s, r) => s + calcScope2(r, emissionFactors), 0)
+                      .toFixed(2)}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Total water (m³)</div>
+                  <div className="rep-card-value">
+                    {sustainabilityRecords
+                      .reduce((s, r) => s + Number(r.water_consumption_m3), 0)
+                      .toLocaleString()}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Total electricity (kWh)</div>
+                  <div className="rep-card-value">
+                    {sustainabilityRecords
+                      .reduce((s, r) => s + Number(r.electricity_kwh), 0)
+                      .toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: 180, minHeight: 180, marginTop: "10px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sustainabilityRecords.map((r) => ({
+                      month: formatMonth(r.period),
+                      Scope1: +calcScope1(r, emissionFactors).toFixed(2),
+                      Scope2: +calcScope2(r, emissionFactors).toFixed(2),
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Scope1" fill="#c0392b" />
+                    <Bar dataKey="Scope2" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Action tracker
@@ -1004,6 +1108,54 @@ export default function ReportsPage() {
                   🖨 Print / Save as PDF
                 </button>
               </div>
+              <div
+                className="rep-summary-cards"
+                style={{ marginBottom: "16px" }}
+              >
+                <div className="rep-card">
+                  <div className="rep-card-label">Total items</div>
+                  <div className="rep-card-value">
+                    {complianceWithStatus.length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Valid</div>
+                  <div className="rep-card-value green">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Valid")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Expiring soon</div>
+                  <div className="rep-card-value amber">
+                    {
+                      complianceWithStatus.filter(
+                        (c) => c.status === "Expiring soon",
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Expired</div>
+                  <div className="rep-card-value red">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Expired")
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Pending</div>
+                  <div className="rep-card-value">
+                    {
+                      complianceWithStatus.filter((c) => c.status === "Pending")
+                        .length
+                    }
+                  </div>
+                </div>
+              </div>
               <table className="rep-table">
                 <thead>
                   <tr>
@@ -1364,6 +1516,42 @@ export default function ReportsPage() {
                   🖨 Print / Save as PDF
                 </button>
               </div>
+              <div
+                className="rep-summary-cards"
+                style={{ marginBottom: "16px" }}
+              >
+                <div className="rep-card">
+                  <div className="rep-card-label">Total items</div>
+                  <div className="rep-card-value">{ppeItems.length}</div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">OK</div>
+                  <div className="rep-card-value green">
+                    {
+                      ppeItems.filter((p) => p.current_stock > p.reorder_level)
+                        .length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Low stock</div>
+                  <div className="rep-card-value amber">
+                    {
+                      ppeItems.filter(
+                        (p) =>
+                          p.current_stock > 0 &&
+                          p.current_stock <= p.reorder_level,
+                      ).length
+                    }
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Out of stock</div>
+                  <div className="rep-card-value red">
+                    {ppeItems.filter((p) => p.current_stock === 0).length}
+                  </div>
+                </div>
+              </div>
               <table className="rep-table">
                 <thead>
                   <tr>
@@ -1510,6 +1698,9 @@ export default function ReportsPage() {
                 </tbody>
               </table>
 
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Emissions (Scope 1 & 2)
+              </div>
               <div style={{ height: 220, minHeight: 220, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -1526,6 +1717,80 @@ export default function ReportsPage() {
                     <Legend />
                     <Bar dataKey="Scope1" fill="#c0392b" />
                     <Bar dataKey="Scope2" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Water consumption
+              </div>
+              <div style={{ height: 200, minHeight: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sustainabilityRecords.map((r) => ({
+                      month: formatMonth(r.period),
+                      Consumed: Number(r.water_consumption_m3),
+                      Recycled: Number(r.water_recycled_m3),
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Consumed" fill="#1a5276" />
+                    <Bar dataKey="Recycled" fill="#27ae60" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Waste breakdown
+              </div>
+              <div style={{ height: 200, minHeight: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sustainabilityRecords.map((r) => ({
+                      month: formatMonth(r.period),
+                      Paper: Number(r.paper_waste_kg),
+                      Plastic: Number(r.plastic_packaging_kg),
+                      Hazardous: Number(r.hazardous_waste_kg),
+                      Recyclable: Number(r.recyclable_plastic_kg),
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Paper" fill="#1a5276" />
+                    <Bar dataKey="Plastic" fill="#e67e22" />
+                    <Bar dataKey="Hazardous" fill="#c0392b" />
+                    <Bar dataKey="Recyclable" fill="#27ae60" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="rep-section-title" style={{ marginTop: "20px" }}>
+                Energy consumption
+              </div>
+              <div style={{ height: 220, minHeight: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sustainabilityRecords.map((r) => ({
+                      month: formatMonth(r.period),
+                      Electricity: Number(r.electricity_kwh),
+                      Solar: Number(r.solar_kwh),
+                    }))}
+                    margin={{ top: 10, right: 20, left: 60, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+                    <Tooltip
+                      formatter={(v) => `${Number(v).toLocaleString()} kWh`}
+                    />
+                    <Legend />
+                    <Bar dataKey="Electricity" fill="#1a5276" />
+                    <Bar dataKey="Solar" fill="#27ae60" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -1,9 +1,3 @@
-/* ─────────────────────────────────────────────────────────────
-   Layout.css
-   Positions the sidebar on the left and the main content
-   on the right, side by side across the full screen.
-───────────────────────────────────────────────────────────── */
-
 /* Outer wrapper — full screen, side by side */
 .layout {
   display: flex;
@@ -18,4 +12,8 @@
   flex: 1;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+.layout-content-collapsed {
+  margin-left: 60px;
 }
