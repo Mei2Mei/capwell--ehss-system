@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin() {
     if (!email.trim() || !password.trim()) {
@@ -48,39 +49,47 @@ export default function LoginPage() {
         <p className="login-subtitle">Capwell Industries</p>
 
         <div className="login-form">
-          <div className="login-field">
-            <label className="login-label">Email</label>
-            <input
-              className="login-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@capwell.com"
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-          </div>
-
-          <div className="login-field">
-            <label className="login-label">Password</label>
-            <input
-              className="login-input"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-          </div>
-
-          {error && <div className="login-error">{error}</div>}
-
-          <button
-            className="login-btn"
-            onClick={handleLogin}
-            disabled={loading}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="login-form"
           >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
+            <div className="login-field">
+              <label className="login-label">Email</label>
+              <input
+                className="login-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@capwell.com"
+              />
+            </div>
+            <div className="login-field">
+              <label className="login-label">Password</label>
+              <div className="login-password-wrap">
+                <input
+                  className="login-input"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  className="login-eye-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              {error && <div className="login-error">{error}</div>}
+              <button type="submit" className="login-btn" disabled={loading}>
+                {loading ? "Signing in..." : "Sign in"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

@@ -30,7 +30,23 @@ import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
 function App() {
   // Track which page is active — starts on dashboard
   const { user, loading } = useAuth();
-  const [activePage, setActivePage] = useState("dashboard");
+  // Set default page based on role
+  const getDefaultPage = (role) => {
+    switch (role) {
+      case "storekeeper":
+      case "supervisor":
+      case "production_manager":
+        return "ppe";
+      case "qa":
+        return "compliance";
+      default:
+        return "dashboard";
+    }
+  };
+
+  const [activePage, setActivePage] = useState(
+    user ? getDefaultPage(user.role_name) : "dashboard",
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (loading) return <div style={{ padding: "28px" }}>Loading...</div>;

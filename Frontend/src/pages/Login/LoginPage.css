@@ -95,3 +95,25 @@
 
 .login-btn:hover { background: #154360; }
 .login-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+.login-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-password-wrap .login-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.login-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}

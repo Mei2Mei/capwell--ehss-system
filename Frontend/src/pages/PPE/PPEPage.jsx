@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import "./PPEPage.css";
 import React from "react";
 import apiFetch from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = `/ppe`;
 
@@ -55,8 +56,25 @@ function formatDate(dateStr) {
 
 function PPEPage() {
   console.log("PPEPage loaded");
-  const canViewStock = () => true; // replace with real permission check later
-  const canApprove = () => true; // replace with: role === "ehss_officer" when login is added
+  const { user } = useAuth();
+  const role = user?.role_name;
+
+  const canViewStock = () => ["ehss_officer", "it_admin"].includes(role);
+
+  const canAddItem = () => ["ehss_officer", "it_admin"].includes(role);
+
+  const canRecordTransaction = () =>
+    ["ehss_officer", "it_admin"].includes(role);
+
+  const canCreateRequest = () =>
+    ["supervisor", "ehss_officer", "it_admin"].includes(role);
+
+  const canApprove = () => ["ehss_officer", "it_admin"].includes(role);
+
+  const canFulfill = () =>
+    ["storekeeper", "ehss_officer", "it_admin"].includes(role);
+
+  const canReject = () => ["ehss_officer", "it_admin"].includes(role);
 
   const [items, setItems] = useState([]);
 
@@ -581,30 +599,36 @@ function PPEPage() {
       <div className="ppe-header">
         <h1 className="ppe-title">PPE Inventory</h1>
         <div className="ppe-header-buttons">
-          <button
-            className="ppe-btn-secondary"
-            onClick={() => setModalType("request")}
-          >
-            + Create PPE Request
-          </button>
-          <button
-            className="ppe-btn-secondary"
-            onClick={() => {
-              setErrors({});
-              setModalType("addItem");
-            }}
-          >
-            + Add new item
-          </button>
-          <button
-            className="ppe-btn-primary"
-            onClick={() => {
-              setErrors({});
-              setModalType("transaction");
-            }}
-          >
-            + Record transaction
-          </button>
+          {canCreateRequest() && (
+            <button
+              className="ppe-btn-secondary"
+              onClick={() => setModalType("request")}
+            >
+              + Create PPE Request
+            </button>
+          )}
+          {canAddItem() && (
+            <button
+              className="ppe-btn-secondary"
+              onClick={() => {
+                setErrors({});
+                setModalType("addItem");
+              }}
+            >
+              + Add new item
+            </button>
+          )}
+          {canRecordTransaction() && (
+            <button
+              className="ppe-btn-primary"
+              onClick={() => {
+                setErrors({});
+                setModalType("transaction");
+              }}
+            >
+              + Record transaction
+            </button>
+          )}
         </div>
       </div>
 
@@ -649,7 +673,7 @@ function PPEPage() {
               <th>Size</th>
               <th>Unit</th>
               {canViewStock() && <th>Current stock</th>}
-              <th>Reserved</th>
+              {canViewStock() && <th>Reserved</th>}
               <th>Reorder level</th>
               <th>Status</th>
               <th>Action</th>
@@ -668,17 +692,20 @@ function PPEPage() {
                   <tr className={getRowClass(status)}>
                     <td>{index + 1}</td>
                     <td>
-                      {/* Click item name to expand/collapse history */}
-                      <button
-                        className="ppe-item-name-btn"
-                        onClick={() => toggleHistory(item.id)}
-                        title="Click to view transaction history"
-                      >
-                        <span className="ppe-expand-icon">
-                          {expanded ? "▼" : "▶"}
-                        </span>
-                        {item.item_name}
-                      </button>
+                      {canViewStock() ? (
+                        <button
+                          className="ppe-item-name-btn"
+                          onClick={() => toggleHistory(item.id)}
+                          title="Click to view transaction history"
+                        >
+                          <span className="ppe-expand-icon">
+                            {expanded ? "▼" : "▶"}
+                          </span>
+                          {item.item_name}
+                        </button>
+                      ) : (
+                        <span>{item.item_name}</span>
+                      )}
                     </td>
                     <td>{item.size_spec}</td>
                     <td>{item.unit_of_measure}</td>
@@ -693,197 +720,210 @@ function PPEPage() {
                       </>
                     )}
                     <td>
-                      {/* Inline reorder level editing */}
-                      {editingReorder && editingReorder.itemId === item.id ? (
-                        <div className="ppe-reorder-edit">
-                          <input
-                            className="ppe-reorder-input"
-                            type="number"
-                            min="0"
-                            value={editingReorder.value}
-                            onChange={(e) =>
+                      {canAddItem() ? (
+                        // Editable — Linda/Collins only
+                        editingReorder && editingReorder.itemId === item.id ? (
+                          <div className="ppe-reorder-edit">
+                            <input
+                              className="ppe-reorder-input"
+                              type="number"
+                              min="0"
+                              value={editingReorder.value}
+                              onChange={(e) =>
+                                setEditingReorder({
+                                  ...editingReorder,
+                                  value: e.target.value,
+                                })
+                              }
+                              autoFocus
+                            />
+                            <button
+                              className="ppe-btn-xs primary"
+                              onClick={() => handleReorderSave(item.id)}
+                            >
+                              ✓
+                            </button>
+                            <button
+                              className="ppe-btn-xs"
+                              onClick={() => setEditingReorder(null)}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            className="ppe-reorder-display"
+                            title="Click to edit reorder level"
+                            onClick={() =>
                               setEditingReorder({
-                                ...editingReorder,
-                                value: e.target.value,
+                                itemId: item.id,
+                                value: String(item.reorder_level || 0),
                               })
                             }
-                            autoFocus
-                          />
-                          <button
-                            className="ppe-btn-xs primary"
-                            onClick={() => handleReorderSave(item.id)}
                           >
-                            ✓
-                          </button>
-                          <button
-                            className="ppe-btn-xs"
-                            onClick={() => setEditingReorder(null)}
-                          >
-                            ✕
-                          </button>
-                        </div>
+                            {item.reorder_level || "—"}
+                            <span className="ppe-edit-hint"> ✎</span>
+                          </span>
+                        )
                       ) : (
-                        <span
-                          className="ppe-reorder-display"
-                          title="Click to edit reorder level"
-                          onClick={() =>
-                            setEditingReorder({
-                              itemId: item.id,
-                              value: String(item.reorder_level || 0),
-                            })
-                          }
-                        >
-                          {item.reorder_level || "—"}
-                          <span className="ppe-edit-hint"> ✎</span>
-                        </span>
+                        // Read only — everyone else
+                        <span>{item.reorder_level || "—"}</span>
                       )}
                     </td>
                     <td>
                       <span className={badge.className}>{badge.text}</span>
                     </td>
                     <td>
-                      <button
-                        className="ppe-btn-sm"
-                        onClick={() => {
-                          setTxForm({
-                            ...txForm,
-                            ppe_item_id: String(item.id),
-                          });
-                          setErrors({});
-                          setModalType("transaction");
-                        }}
-                      >
-                        {item.current_stock === 0
-                          ? "Receive"
-                          : "Issue / Receive"}
-                      </button>
+                      {canRecordTransaction() && (
+                        <button
+                          className="ppe-btn-sm"
+                          onClick={() => {
+                            setTxForm({
+                              ...txForm,
+                              ppe_item_id: String(item.id),
+                            });
+                            setErrors({});
+                            setModalType("transaction");
+                          }}
+                        >
+                          {item.current_stock === 0
+                            ? "Receive"
+                            : "Issue / Receive"}
+                        </button>
+                      )}
+                      {!canRecordTransaction() && "—"}
                     </td>
                   </tr>
 
                   {/* Transaction history — expands below the item row */}
-                  {expanded && (
-                    <tr className="ppe-history-row">
-                      <td colSpan={canViewStock() ? 8 : 7}>
-                        <div className="ppe-history-wrap">
-                          <div className="ppe-history-title">
-                            📋 Transaction history — {item.item_name} (
-                            {item.size_spec})
-                          </div>
-
-                          {history.length === 0 ? (
-                            <div className="ppe-history-empty">
-                              No transactions recorded yet for this item. Use
-                              "Record transaction" to add stock movements.
+                  {expanded && canViewStock() && (
+                    <tr key={`history-${item.id}`} className="ppe-history-row">
+                      <tr className="ppe-history-row">
+                        <td colSpan={canViewStock() ? 8 : 7}>
+                          <div className="ppe-history-wrap">
+                            <div className="ppe-history-title">
+                              📋 Transaction history — {item.item_name} (
+                              {item.size_spec})
                             </div>
-                          ) : (
-                            <>
-                              <table className="ppe-history-table">
-                                <thead>
-                                  <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Type</th>
-                                    <th>Quantity</th>
-                                    <th>Notes</th>
-                                    <th>Recorded by</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {history.map((tx, i) => (
-                                    <tr
-                                      key={tx.id}
-                                      className={
-                                        tx.transaction_type === "received"
-                                          ? "tx-received"
-                                          : tx.transaction_type === "issued"
-                                            ? "tx-issued"
-                                            : "tx-stocktake"
-                                      }
-                                    >
-                                      <td>{i + 1}</td>
-                                      <td>{formatDate(tx.date)}</td>
-                                      <td>
-                                        <span
-                                          className={`tx-badge ${
-                                            tx.transaction_type === "received"
-                                              ? "tx-badge-in"
-                                              : tx.transaction_type === "issued"
-                                                ? "tx-badge-out"
-                                                : "tx-badge-stocktake"
-                                          }`}
-                                        >
-                                          {tx.transaction_type === "received"
-                                            ? "▲ Received"
-                                            : tx.transaction_type === "issued"
-                                              ? "▼ Issued"
-                                              : "📦 Stock Take"}
-                                        </span>
-                                      </td>
-                                      <td>
-                                        <strong
-                                          className={
-                                            tx.transaction_type === "received"
-                                              ? "qty-in"
-                                              : "qty-out"
-                                          }
-                                        >
-                                          {tx.transaction_type === "received"
-                                            ? `+${tx.quantity}`
-                                            : `-${tx.quantity}`}
-                                        </strong>{" "}
-                                        {item.unit_of_measure}
-                                      </td>
-                                      <td>{tx.notes || "—"}</td>
-                                      <td>{tx.recorded_by}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
 
-                              {/* Running balance summary */}
-                              <div className="ppe-history-summary">
-                                <span>
-                                  Total received:{" "}
-                                  <strong className="qty-in">
-                                    +
-                                    {history
-                                      .filter(
-                                        (t) =>
-                                          t.transaction_type === "received",
-                                      )
-                                      .reduce(
-                                        (sum, t) => sum + Number(t.quantity),
-                                        0,
-                                      )}{" "}
-                                    {item.unit_of_measure}
-                                  </strong>
-                                </span>
-                                <span>
-                                  Total issued:{" "}
-                                  <strong className="qty-out">
-                                    -
-                                    {history
-                                      .filter(
-                                        (t) => t.transaction_type === "issued",
-                                      )
-                                      .reduce(
-                                        (sum, t) => sum + Number(t.quantity),
-                                        0,
-                                      )}{" "}
-                                    {item.unit_of_measure}
-                                  </strong>
-                                </span>
-                                <span>
-                                  Current balance:{" "}
-                                  <strong>
-                                    {item.current_stock} {item.unit_of_measure}
-                                  </strong>
-                                </span>
+                            {history.length === 0 ? (
+                              <div className="ppe-history-empty">
+                                No transactions recorded yet for this item. Use
+                                "Record transaction" to add stock movements.
                               </div>
-                            </>
-                          )}
-                        </div>
-                      </td>
+                            ) : (
+                              <>
+                                <table className="ppe-history-table">
+                                  <thead>
+                                    <tr>
+                                      <th>#</th>
+                                      <th>Date</th>
+                                      <th>Type</th>
+                                      <th>Quantity</th>
+                                      <th>Notes</th>
+                                      <th>Recorded by</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {history.map((tx, i) => (
+                                      <tr
+                                        key={tx.id}
+                                        className={
+                                          tx.transaction_type === "received"
+                                            ? "tx-received"
+                                            : tx.transaction_type === "issued"
+                                              ? "tx-issued"
+                                              : "tx-stocktake"
+                                        }
+                                      >
+                                        <td>{i + 1}</td>
+                                        <td>{formatDate(tx.date)}</td>
+                                        <td>
+                                          <span
+                                            className={`tx-badge ${
+                                              tx.transaction_type === "received"
+                                                ? "tx-badge-in"
+                                                : tx.transaction_type ===
+                                                    "issued"
+                                                  ? "tx-badge-out"
+                                                  : "tx-badge-stocktake"
+                                            }`}
+                                          >
+                                            {tx.transaction_type === "received"
+                                              ? "▲ Received"
+                                              : tx.transaction_type === "issued"
+                                                ? "▼ Issued"
+                                                : "📦 Stock Take"}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          <strong
+                                            className={
+                                              tx.transaction_type === "received"
+                                                ? "qty-in"
+                                                : "qty-out"
+                                            }
+                                          >
+                                            {tx.transaction_type === "received"
+                                              ? `+${tx.quantity}`
+                                              : `-${tx.quantity}`}
+                                          </strong>{" "}
+                                          {item.unit_of_measure}
+                                        </td>
+                                        <td>{tx.notes || "—"}</td>
+                                        <td>{tx.recorded_by}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+
+                                {/* Running balance summary */}
+                                <div className="ppe-history-summary">
+                                  <span>
+                                    Total received:{" "}
+                                    <strong className="qty-in">
+                                      +
+                                      {history
+                                        .filter(
+                                          (t) =>
+                                            t.transaction_type === "received",
+                                        )
+                                        .reduce(
+                                          (sum, t) => sum + Number(t.quantity),
+                                          0,
+                                        )}{" "}
+                                      {item.unit_of_measure}
+                                    </strong>
+                                  </span>
+                                  <span>
+                                    Total issued:{" "}
+                                    <strong className="qty-out">
+                                      -
+                                      {history
+                                        .filter(
+                                          (t) =>
+                                            t.transaction_type === "issued",
+                                        )
+                                        .reduce(
+                                          (sum, t) => sum + Number(t.quantity),
+                                          0,
+                                        )}{" "}
+                                      {item.unit_of_measure}
+                                    </strong>
+                                  </span>
+                                  <span>
+                                    Current balance:{" "}
+                                    <strong>
+                                      {item.current_stock}{" "}
+                                      {item.unit_of_measure}
+                                    </strong>
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     </tr>
                   )}
                 </React.Fragment>
@@ -983,45 +1023,40 @@ function PPEPage() {
                               Approve
                             </button>
                           )}
-
-                          <button
-                            className="ppe-btn-sm"
-                            onClick={() => handleRejectRequest(request.id)}
-                            style={{ marginLeft: "6px" }}
-                          >
-                            Reject
-                          </button>
-
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "#888",
-                              marginTop: "4px",
-                            }}
-                          >
-                            Must be approved before fulfillment
-                          </div>
+                          {canReject() && (
+                            <button
+                              className="ppe-btn-sm"
+                              onClick={() => handleRejectRequest(request.id)}
+                              style={{ marginLeft: "6px" }}
+                            >
+                              Reject
+                            </button>
+                          )}
+                          {!canApprove() && !canReject() && (
+                            <span style={{ color: "#888", fontSize: "11px" }}>
+                              Awaiting approval
+                            </span>
+                          )}
                         </>
                       )}
 
                       {request.status === "approved" && (
                         <>
-                          <button
-                            className="ppe-btn-sm"
-                            onClick={() => handleFulfillRequest(request.id)}
-                          >
-                            Fulfill
-                          </button>
-
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "#888",
-                              marginTop: "4px",
-                            }}
-                          >
-                            Ready to issue stock
-                          </div>
+                          {canFulfill() && (
+                            <button
+                              className="ppe-btn-sm"
+                              onClick={() => handleFulfillRequest(request.id)}
+                            >
+                              Fulfill
+                            </button>
+                          )}
+                          {!canFulfill() && (
+                            <span
+                              style={{ color: "#27ae60", fontSize: "11px" }}
+                            >
+                              ✓ Approved
+                            </span>
+                          )}
                         </>
                       )}
 

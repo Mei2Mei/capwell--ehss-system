@@ -5,18 +5,79 @@ import "./Sidebar.css";
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();
 
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: "🏠" },
-    { id: "safety", label: "Safety metrics", icon: "🛡️" },
-    { id: "costs", label: "Dept. costs", icon: "🧾" },
-    { id: "compliance", label: "Compliance", icon: "✅" },
-    { id: "calendar", label: "EHSS Training calendar", icon: "📅" },
-    { id: "equipment", label: "Lifting equipment", icon: "🏗️" },
-    { id: "ppe", label: "PPE inventory", icon: "🦺" },
-    { id: "sustainability", label: "Sustainability", icon: "🌿" },
-    { id: "action-tracker", label: "Action Tracker", icon: "📌" },
-    { id: "reports", label: "Reports", icon: "📊" },
+  const allNavItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: "🏠",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "safety",
+      label: "Safety metrics",
+      icon: "🛡️",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "costs",
+      label: "Dept. costs",
+      icon: "🧾",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "compliance",
+      label: "Compliance",
+      icon: "✅",
+      roles: ["ehss_officer", "it_admin", "qa"],
+    },
+    {
+      id: "calendar",
+      label: "EHSS Training calendar",
+      icon: "📅",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "equipment",
+      label: "Lifting equipment",
+      icon: "🏗️",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "ppe",
+      label: "PPE inventory",
+      icon: "🦺",
+      roles: [
+        "ehss_officer",
+        "it_admin",
+        "storekeeper",
+        "supervisor",
+        "production_manager",
+      ],
+    },
+    {
+      id: "sustainability",
+      label: "Sustainability",
+      icon: "🌿",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "action-tracker",
+      label: "Action Tracker",
+      icon: "📌",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    {
+      id: "reports",
+      label: "Reports",
+      icon: "📊",
+      roles: ["ehss_officer", "it_admin"],
+    },
   ];
+
+  // Filter nav items based on user role
+  const navItems = allNavItems.filter((item) =>
+    item.roles.includes(user?.role_name),
+  );
 
   // Get initials from full name
   const initials = user?.full_name
