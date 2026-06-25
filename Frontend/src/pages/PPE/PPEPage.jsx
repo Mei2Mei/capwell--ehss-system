@@ -72,11 +72,11 @@ function PPEPage() {
   const canCreateRequest = () =>
     ["supervisor", "ehss_officer", "it_admin"].includes(role);
 
-  const canApprove = () => ["ehss_officer", "it_admin"].includes(role);
+  const canApprove = () => ["ehss_officer"].includes(role);
 
   const canFulfill = () => ["storekeeper"].includes(role);
 
-  const canReject = () => ["ehss_officer", "it_admin"].includes(role);
+  const canReject = () => ["ehss_officer"].includes(role);
 
   const [items, setItems] = useState([]);
 
@@ -242,7 +242,7 @@ function PPEPage() {
           quantity: qty,
           transaction_date: txForm.date,
           notes: txForm.notes,
-          recorded_by: "Linda", // will come from logged-in user later
+          recorded_by: user?.full_name,
         }),
       });
       const newTx = await res.json();

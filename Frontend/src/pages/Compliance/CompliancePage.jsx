@@ -14,6 +14,7 @@
 import { useState, useEffect } from "react";
 import "./CompliancePage.css";
 import apiFetch from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = `/compliance`;
 
@@ -84,6 +85,12 @@ const emptyForm = {
 
 // ── Main component ────────────────────────────────────────────
 function CompliancePage() {
+  const { user } = useAuth();
+  const role = user?.role_name;
+
+  const canEdit = () => ["ehss_officer", "it_admin", "qa"].includes(role);
+  const canDelete = () => ["ehss_officer", "it_admin"].includes(role);
+  const canAdd = () => ["ehss_officer", "it_admin", "qa"].includes(role);
   const [items, setItems] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -287,9 +294,11 @@ function CompliancePage() {
             manually.
           </p>
         </div>
-        <button className="comp-btn-primary" onClick={openAdd}>
-          + Add item
-        </button>
+        {canAdd() && (
+          <button className="comp-btn-primary" onClick={openAdd}>
+            + Add item
+          </button>
+        )}
       </div>
 
       {/* Summary cards */}
@@ -430,18 +439,22 @@ function CompliancePage() {
                     </td>
                     <td className="comp-remarks">{item.remarks || "—"}</td>
                     <td>
-                      <button
-                        className="comp-btn-sm comp-edit-btn"
-                        onClick={() => openEdit(item)}
-                      >
-                        ✎ Edit
-                      </button>{" "}
-                      <button
-                        className="comp-btn-sm comp-delete-btn"
-                        onClick={() => handleDeleteOpen(item)}
-                      >
-                        🗑 Delete
-                      </button>
+                      {canEdit() && (
+                        <button
+                          className="ehss-btn-sm ehss-edit-btn"
+                          onClick={() => openEdit(item)}
+                        >
+                          ✎ Edit
+                        </button>
+                      )}
+                      {canDelete() && (
+                        <button
+                          className="ehss-btn-sm ehss-delete-btn"
+                          onClick={() => handleDeleteOpen(item)}
+                        >
+                          🗑 Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

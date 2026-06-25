@@ -322,13 +322,23 @@ export default function ActionTracker() {
               <th>Target Date</th>
               <th>Progress</th>
               <th>Status</th>
+              <th>Days elapsed</th>
               <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {filteredActions.map((item) => (
-              <tr key={item.id}>
+              <tr
+                key={item.id}
+                className={
+                  item.status === "Pending"
+                    ? "row-pending"
+                    : item.status === "In Progress"
+                      ? "row-progress"
+                      : ""
+                }
+              >
                 <td>{item.id}</td>
                 <td>{item.concern}</td>
                 <td>{item.action}</td>
@@ -357,6 +367,14 @@ export default function ActionTracker() {
                   >
                     {item.status}
                   </span>
+                </td>
+                <td>
+                  {item.dateRaised
+                    ? Math.floor(
+                        (new Date() - new Date(item.dateRaised)) /
+                          (1000 * 60 * 60 * 24),
+                      )
+                    : "—"}
                 </td>
                 <td>
                   <button
