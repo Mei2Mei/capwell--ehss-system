@@ -61,6 +61,9 @@ function PPEPage() {
 
   const canViewStock = () => ["ehss_officer", "it_admin"].includes(role);
 
+  const canViewReserved = () =>
+    ["ehss_officer", "it_admin", "storekeeper"].includes(role);
+
   const canAddItem = () => ["ehss_officer", "it_admin"].includes(role);
 
   const canRecordTransaction = () =>
@@ -71,8 +74,7 @@ function PPEPage() {
 
   const canApprove = () => ["ehss_officer", "it_admin"].includes(role);
 
-  const canFulfill = () =>
-    ["storekeeper", "ehss_officer", "it_admin"].includes(role);
+  const canFulfill = () => ["storekeeper"].includes(role);
 
   const canReject = () => ["ehss_officer", "it_admin"].includes(role);
 
@@ -673,7 +675,7 @@ function PPEPage() {
               <th>Size</th>
               <th>Unit</th>
               {canViewStock() && <th>Current stock</th>}
-              {canViewStock() && <th>Reserved</th>}
+              {canViewReserved() && <th>Reserved</th>}
               <th>Reorder level</th>
               <th>Status</th>
               <th>Action</th>
@@ -710,15 +712,13 @@ function PPEPage() {
                     <td>{item.size_spec}</td>
                     <td>{item.unit_of_measure}</td>
                     {canViewStock() && (
-                      <>
-                        <td>
-                          <strong>
-                            {item.current_stock - (item.reserved_stock || 0)}
-                          </strong>
-                        </td>
-                        <td>{item.reserved_stock || 0}</td>
-                      </>
+                      <td>
+                        <strong>
+                          {item.current_stock - (item.reserved_stock || 0)}
+                        </strong>
+                      </td>
                     )}
+                    {canViewReserved() && <td>{item.reserved_stock || 0}</td>}
                     <td>
                       {canAddItem() ? (
                         // Editable — Linda/Collins only
