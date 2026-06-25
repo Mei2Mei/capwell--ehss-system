@@ -6,7 +6,7 @@
 
 /* ── Sidebar container ── */
 .sidebar {
-  width: 220px;
+  width: var(--sidebar-width);
   min-height: 100vh;
   background-color: #1a5276;
   display: flex;
@@ -15,8 +15,10 @@
   top: 0;
   left: 0;
   z-index: 100;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  transition: width 0.2s ease;
 }
+
 
 /* ── Logo area at top ── */
 .sidebar-logo {
@@ -157,7 +159,7 @@
 }
 
 .sidebar-collapsed {
-  width: 60px;
+  width: var(--sidebar-collapsed-width);
 }
 
 .sidebar-collapsed .sidebar-logo {

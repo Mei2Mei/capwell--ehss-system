@@ -1,24 +1,29 @@
+:root {
+  --sidebar-width: 220px;
+  --sidebar-collapsed-width: 60px;
+}
+
 /* Outer wrapper — full screen, side by side */
 .layout {
   display: flex;
   min-height: 100vh;
   background-color: #f5f7fa;
   color-scheme: light;
-  background-color: #f5f7fa;
-
 }
 
 /* Main content area — sits to the right of the sidebar */
 /* margin-left: 220px pushes it right to make room for sidebar */
 .layout-content {
-  margin-left: 0;
+  margin-left: var(--sidebar-width);
   flex: 1;
   min-height: 100vh;
   overflow-x: hidden;
-  max-width: calc(100vw - 220px);
+  transition: margin-left 0.2s ease;
+  width: calc(100% - var(--sidebar-width));
+  box-sizing: border-box;
 }
 
 .layout-content-collapsed {
-  margin-left: 0;
-  max-width: calc(100vw - 60px);
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
 }

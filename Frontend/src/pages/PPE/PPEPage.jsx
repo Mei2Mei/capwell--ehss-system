@@ -939,7 +939,9 @@ function PPEPage() {
 
             <tbody>
               {requests.map((request) => {
-                const item = items.find((i) => i.id === request.item_id);
+                const item = items.find(
+                  (i) => Number(i.id) === Number(request.item_id),
+                );
 
                 return (
                   <tr key={request.id}>
