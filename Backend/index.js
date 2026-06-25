@@ -4,14 +4,22 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: [
-    'https://capwell-ehss-system.vercel.app',
-    'http://localhost:5173'
-  ],
+  origin: function(origin, callback) {
+    const allowed = [
+      'http://localhost:5173',
+      'https://capwell-ehss-system.vercel.app',
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     res.header('Access-Control-Allow-Origin', req.headers.origin);
