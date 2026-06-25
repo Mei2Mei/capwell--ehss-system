@@ -32,6 +32,9 @@ const { requireAuth } = require('./middleware/auth');
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+const usersRoutes = require("./routes/usersRoutes");
+app.use("/api/users", usersRoutes);
+
 const ppeRoutes = require('./routes/ppeRoutes');
 app.use('/api/ppe', requireAuth, ppeRoutes);
 
