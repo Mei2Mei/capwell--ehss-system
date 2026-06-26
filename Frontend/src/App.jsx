@@ -10,7 +10,7 @@
 // - The renderPage function returns the correct page component
 // ─────────────────────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout/Layout";
 import LoginPage from "./pages/Login/LoginPage";
@@ -44,18 +44,56 @@ function App() {
     }
   };
 
-  const [activePage, setActivePage] = useState(
-    user ? getDefaultPage(user.role_name) : "dashboard",
-  );
+  const [activePage, setActivePage] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setActivePage(getDefaultPage(user.role_name));
+    }
+  }, [user?.role_name]);
 
   if (loading) return <div style={{ padding: "28px" }}>Loading...</div>;
 
   if (!user) return <LoginPage />;
 
   // Returns the correct page component based on activePage
+  const allowedPages = {
+    ehss_officer: [
+      "dashboard",
+      "safety",
+      "costs",
+      "compliance",
+      "calendar",
+      "equipment",
+      "ppe",
+      "sustainability",
+      "action-tracker",
+      "reports",
+    ],
+    it_admin: [
+      "dashboard",
+      "safety",
+      "costs",
+      "compliance",
+      "calendar",
+      "equipment",
+      "ppe",
+      "sustainability",
+      "action-tracker",
+      "reports",
+    ],
+    qa: ["compliance"],
+    storekeeper: ["ppe"],
+    supervisor: ["ppe"],
+    production_manager: ["ppe"],
+  };
+
   function renderPage() {
-    switch (activePage) {
+    const allowed = allowedPages[user?.role_name] || ["dashboard"];
+    const page = allowed.includes(activePage) ? activePage : allowed[0];
+
+    switch (page) {
       case "dashboard":
         return <DashboardPage />;
       case "safety":
@@ -77,7 +115,7 @@ function App() {
       case "action-tracker":
         return <ActionTrackerPage />;
       default:
-        return <DashboardPage />;
+        return <PPEPage />;
     }
   }
 
