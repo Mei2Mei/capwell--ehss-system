@@ -70,5 +70,8 @@ app.use('/api/equipment', requireAuth, equipmentRoutes);
 const actionTrackerRoutes = require('./routes/actionTrackerRoutes');
 app.use('/api/actionTracker', requireAuth, actionTrackerRoutes);
 
+const ppeMatrixRoutes = require('./routes/ppeMatrixRoutes');
+app.use('/api/ppe-matrix', requireAuth, ppeMatrixRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
