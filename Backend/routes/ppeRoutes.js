@@ -18,5 +18,6 @@ router.get('/:id', ppeController.getPPEItem);
 router.post('/', ppeController.createItem);
 router.put('/:id', ppeController.updateItem);
 router.delete('/:id', ppeController.deleteItem);
+router.delete('/requests/:id', ppeController.deleteRequestItem);
 
 module.exports = router;

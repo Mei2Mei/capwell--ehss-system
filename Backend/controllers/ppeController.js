@@ -111,9 +111,16 @@ const getAllTx = async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
+const deleteRequestItem = async (req, res) => {
+  try {
+    await ppeModel.deleteRequest(req.params.id);
+    res.status(204).send();
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
 module.exports = {
   getPPEItems, getPPEItem,
   createRequest, approve, reject, fulfill, getRequests,
   createItem, updateItem, deleteItem,
-  createTx, getTxByItem, getAllTx
+  createTx, getTxByItem, getAllTx, deleteRequestItem
 };

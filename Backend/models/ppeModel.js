@@ -160,9 +160,13 @@ const getAllTransactions = async () => {
   return result.rows;
 };
 
+const deleteRequest = async (id) => {
+  await pool.query('DELETE FROM ppe_requests WHERE id = $1', [id]);
+};
+
 module.exports = {
   getAllPPEItems, getPPEItemById,
   createPPERequest, approveRequest, rejectRequest, fulfillRequest, getAllRequests,
   createPPEItem, updatePPEItem, softDeletePPEItem,
-  createTransaction, getTransactionsByItem, getAllTransactions
+  createTransaction, getTransactionsByItem, getAllTransactions, deleteRequest
 };
