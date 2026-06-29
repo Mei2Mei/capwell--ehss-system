@@ -44,7 +44,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     },
     {
       id: "ppe",
-      label: "PPE inventory",
+      label: "PPE Management",
       icon: "🦺",
       roles: [
         "ehss_officer",

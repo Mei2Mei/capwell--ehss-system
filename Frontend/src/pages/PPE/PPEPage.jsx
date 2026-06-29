@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// PPEPage.jsx — EHSS PPE Inventory Page
+// PPEPage.jsx — EHSS PPE Management Page
 // Full version with:
 // - Summary cards
 // - Search filter
@@ -78,6 +78,18 @@ function PPEPage() {
 
   const canReject = () => ["ehss_officer"].includes(role);
 
+  const isFullAccess = ["ehss_officer", "it_admin"].includes(role);
+  const isStorekeeper = role === "storekeeper";
+  const isSupervisor = role === "supervisor";
+  const isProductionManager = role === "production_manager";
+
+  const [activeTab, setActiveTab] = useState("inventory");
+  const [matrix, setMatrix] = useState([]);
+  const [matrixDepartments, setMatrixDepartments] = useState([]);
+  const [matrixItems, setMatrixItems] = useState([]);
+  const [newDepartment, setNewDepartment] = useState("");
+  const [newPPEItem, setNewPPEItem] = useState("");
+
   const [items, setItems] = useState([]);
 
   // Stores all transactions ever recorded
@@ -127,7 +139,7 @@ function PPEPage() {
     quantity: "",
     worker_name: "",
     department: "",
-    requested_by: "Supervisor",
+    requested_by: user?.id,
     status: "pending",
   });
 
@@ -148,6 +160,15 @@ function PPEPage() {
   ).length;
 
   useEffect(() => {
+    apiFetch("/ppe-matrix")
+      .then((res) => res.json())
+      .then((data) => {
+        setMatrix(data.matrix);
+        setMatrixDepartments(data.departments);
+        setMatrixItems(data.ppeItems);
+      })
+      .catch((err) => console.error("Failed to fetch PPE matrix:", err));
+
     apiFetch(API_URL)
       .then((res) => res.json())
       .then((data) => setItems(data))
@@ -178,6 +199,123 @@ function PPEPage() {
       )
       .catch((err) => console.error("Failed to fetch PPE requests:", err));
   }, []);
+
+  function getCellValue(department, ppeItem) {
+    const cell = matrix.find(
+      (c) => c.department === department && c.ppe_item === ppeItem,
+    );
+    return cell?.requirement || "none";
+  }
+
+  async function handleCellChange(department, ppeItem, requirement) {
+    await apiFetch("/ppe-matrix/cell", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department, ppe_item: ppeItem, requirement }),
+    });
+    setMatrix((prev) => {
+      const existing = prev.find(
+        (c) => c.department === department && c.ppe_item === ppeItem,
+      );
+      if (existing) {
+        return prev.map((c) =>
+          c.department === department && c.ppe_item === ppeItem
+            ? { ...c, requirement }
+            : c,
+        );
+      }
+      return [...prev, { department, ppe_item: ppeItem, requirement }];
+    });
+  }
+
+  async function handleAddDepartment() {
+    if (!newDepartment.trim()) return;
+    await apiFetch("/ppe-matrix/department", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ department: newDepartment.trim() }),
+    });
+    setMatrixDepartments([...matrixDepartments, newDepartment.trim()]);
+    setNewDepartment("");
+  }
+
+  async function handleAddPPEItem() {
+    if (!newPPEItem.trim()) return;
+    await apiFetch("/ppe-matrix/item", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ppe_item: newPPEItem.trim() }),
+    });
+    setMatrixItems([...matrixItems, newPPEItem.trim()]);
+    setNewPPEItem("");
+  }
+
+  async function handleDeleteDepartment(department) {
+    if (
+      !window.confirm(
+        `Remove department "${department}" and all its matrix entries?`,
+      )
+    )
+      return;
+    try {
+      await apiFetch(
+        `/ppe-matrix/department/${encodeURIComponent(department)}`,
+        {
+          method: "DELETE",
+        },
+      );
+      setMatrixDepartments(matrixDepartments.filter((d) => d !== department));
+      setMatrix(matrix.filter((c) => c.department !== department));
+      showBanner(`Department "${department}" removed from matrix.`);
+    } catch (err) {
+      console.error("Failed to delete department:", err);
+    }
+  }
+
+  async function handleDeletePPEItem(item) {
+    if (!window.confirm(`Remove "${item}" from the matrix?`)) return;
+    try {
+      await apiFetch(`/ppe-matrix/item/${encodeURIComponent(item)}`, {
+        method: "DELETE",
+      });
+      setMatrixItems(matrixItems.filter((i) => i !== item));
+      setMatrix(matrix.filter((c) => c.ppe_item !== item));
+      showBanner(`"${item}" removed from matrix.`);
+    } catch (err) {
+      console.error("Failed to delete PPE item:", err);
+    }
+  }
+
+  async function handleDeleteItem(itemId) {
+    if (!window.confirm("Are you sure you want to remove this PPE item?"))
+      return;
+    try {
+      await apiFetch(`${API_URL}/${itemId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Removed by admin" }),
+      });
+      setItems(items.filter((i) => i.id !== itemId));
+      showBanner("PPE item removed successfully.");
+    } catch (err) {
+      console.error("Failed to delete PPE item:", err);
+    }
+  }
+
+  async function handleDeleteRequest(requestId) {
+    if (!window.confirm("Remove this request?")) return;
+    try {
+      await apiFetch(`${API_URL}/requests/${requestId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Removed by admin" }),
+      });
+      setRequests(requests.filter((r) => r.id !== requestId));
+      showBanner("Request removed.");
+    } catch (err) {
+      console.error("Failed to delete request:", err);
+    }
+  }
 
   // ── Success banner ────────────────────────────────────────
   function showBanner(message) {
@@ -382,7 +520,7 @@ function PPEPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ppe_item_id: Number(requestForm.item_id),
-          requested_by: 1, // placeholder until login is added
+          requested_by: user?.id,
           quantity: Number(requestForm.quantity),
           notes: "",
           worker_name: requestForm.worker_name,
@@ -421,7 +559,7 @@ function PPEPage() {
       const res = await apiFetch(`${API_URL}/requests/${requestId}/approve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ approved_by: 1 }), // placeholder until login
+        body: JSON.stringify({ approved_by: user?.id }),
       });
 
       if (!res.ok) {
@@ -467,7 +605,10 @@ function PPEPage() {
       const res = await apiFetch(`${API_URL}/requests/${rejectModal}/reject`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ approved_by: 1, reject_reason: rejectReason }),
+        body: JSON.stringify({
+          approved_by: user?.id,
+          reject_reason: rejectReason,
+        }),
       });
       const updated = await res.json();
 
@@ -501,7 +642,7 @@ function PPEPage() {
       const res = await apiFetch(`${API_URL}/requests/${requestId}/fulfill`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fulfilled_by: 1 }), // placeholder until login
+        body: JSON.stringify({ fulfilled_by: user?.id }),
       });
 
       if (!res.ok) {
@@ -599,7 +740,7 @@ function PPEPage() {
 
       {/* Header */}
       <div className="ppe-header">
-        <h1 className="ppe-title">PPE Inventory</h1>
+        <h1 className="ppe-title">PPE Management</h1>
         <div className="ppe-header-buttons">
           {canCreateRequest() && (
             <button
@@ -634,460 +775,716 @@ function PPEPage() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="ppe-search-wrap">
-        <input
-          className="ppe-search-input"
-          type="text"
-          placeholder="Search by item name or size..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      {/* Tabs */}
+      <div className="ppe-tabs">
+        <button
+          className={`ppe-tab ${activeTab === "inventory" ? "active" : ""}`}
+          onClick={() => setActiveTab("inventory")}
+        >
+          📦 Inventory
+        </button>
+        <button
+          className={`ppe-tab ${activeTab === "matrix" ? "active" : ""}`}
+          onClick={() => setActiveTab("matrix")}
+        >
+          📋 PPE Matrix
+        </button>
       </div>
 
-      {/* Summary cards */}
-      <div className="ppe-cards">
-        <div className="ppe-card">
-          <div className="ppe-card-label">Total items tracked</div>
-          <div className="ppe-card-value">{totalItems}</div>
-        </div>
-        <div className="ppe-card">
-          <div className="ppe-card-label">Items at / below reorder level</div>
-          <div className={`ppe-card-value ${lowStockCount > 0 ? "amber" : ""}`}>
-            {lowStockCount}
-          </div>
-        </div>
-        <div className="ppe-card">
-          <div className="ppe-card-label">Out of stock</div>
-          <div className={`ppe-card-value ${outOfStockCount > 0 ? "red" : ""}`}>
-            {outOfStockCount}
-          </div>
-        </div>
-      </div>
+      {activeTab === "inventory" && (
+        <>
+          {/* Search */}
+          {isFullAccess && (
+            <div className="ppe-search-wrap">
+              <input
+                className="ppe-search-input"
+                type="text"
+                placeholder="Search by item name or size..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          )}
 
-      {/* Table */}
-      <div className="ppe-table-wrap">
-        <table className="ppe-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Item name</th>
-              <th>Size</th>
-              <th>Unit</th>
-              {canViewStock() && <th>Current stock</th>}
-              {canViewReserved() && <th>Reserved</th>}
-              <th>Reorder level</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map((item, index) => {
-              const status = getStockStatus(item);
-              const badge = getStatusBadge(status);
-              const history = getItemTransactions(item.id);
-              const expanded = expandedItemId === item.id;
+          {/* Summary cards */}
+          {isFullAccess && (
+            <div className="ppe-cards">
+              <div className="ppe-card">
+                <div className="ppe-card-label">Total items tracked</div>
+                <div className="ppe-card-value">{totalItems}</div>
+              </div>
+              <div className="ppe-card">
+                <div className="ppe-card-label">
+                  Items at / below reorder level
+                </div>
+                <div
+                  className={`ppe-card-value ${lowStockCount > 0 ? "amber" : ""}`}
+                >
+                  {lowStockCount}
+                </div>
+              </div>
+              <div className="ppe-card">
+                <div className="ppe-card-label">Out of stock</div>
+                <div
+                  className={`ppe-card-value ${outOfStockCount > 0 ? "red" : ""}`}
+                >
+                  {outOfStockCount}
+                </div>
+              </div>
+            </div>
+          )}
+          {isStorekeeper && (
+            <div className="ppe-cards">
+              <div className="ppe-card">
+                <div className="ppe-card-label">
+                  Requests awaiting fulfillment
+                </div>
+                <div className="ppe-card-value amber">
+                  {requests.filter((r) => r.status === "approved").length}
+                </div>
+              </div>
+              <div className="ppe-card">
+                <div className="ppe-card-label">Fulfilled today</div>
+                <div className="ppe-card-value green">
+                  {
+                    requests.filter((r) => {
+                      if (r.status !== "fulfilled") return false;
+                      const today = new Date().toDateString();
+                      return (
+                        new Date(r.fulfilled_date || r.date).toDateString() ===
+                        today
+                      );
+                    }).length
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+          {isSupervisor && (
+            <div className="ppe-cards">
+              <div className="ppe-card">
+                <div className="ppe-card-label">My pending requests</div>
+                <div className="ppe-card-value amber">
+                  {requests.filter((r) => r.status === "pending").length}
+                </div>
+              </div>
+              <div className="ppe-card">
+                <div className="ppe-card-label">Approved</div>
+                <div className="ppe-card-value green">
+                  {requests.filter((r) => r.status === "approved").length}
+                </div>
+              </div>
+              <div className="ppe-card">
+                <div className="ppe-card-label">Rejected</div>
+                <div className="ppe-card-value red">
+                  {requests.filter((r) => r.status === "rejected").length}
+                </div>
+              </div>
+            </div>
+          )}
 
-              return (
-                <React.Fragment key={item.id}>
-                  {/* Main item row */}
-                  <tr className={getRowClass(status)}>
-                    <td>{index + 1}</td>
-                    <td>
-                      {canViewStock() ? (
-                        <button
-                          className="ppe-item-name-btn"
-                          onClick={() => toggleHistory(item.id)}
-                          title="Click to view transaction history"
-                        >
-                          <span className="ppe-expand-icon">
-                            {expanded ? "▼" : "▶"}
-                          </span>
-                          {item.item_name}
-                        </button>
-                      ) : (
-                        <span>{item.item_name}</span>
-                      )}
-                    </td>
-                    <td>{item.size_spec}</td>
-                    <td>{item.unit_of_measure}</td>
-                    {canViewStock() && (
-                      <td>
-                        <strong>
-                          {item.current_stock - (item.reserved_stock || 0)}
-                        </strong>
-                      </td>
-                    )}
-                    {canViewReserved() && <td>{item.reserved_stock || 0}</td>}
-                    <td>
-                      {canAddItem() ? (
-                        // Editable — Linda/Collins only
-                        editingReorder && editingReorder.itemId === item.id ? (
-                          <div className="ppe-reorder-edit">
-                            <input
-                              className="ppe-reorder-input"
-                              type="number"
-                              min="0"
-                              value={editingReorder.value}
-                              onChange={(e) =>
-                                setEditingReorder({
-                                  ...editingReorder,
-                                  value: e.target.value,
-                                })
-                              }
-                              autoFocus
-                            />
-                            <button
-                              className="ppe-btn-xs primary"
-                              onClick={() => handleReorderSave(item.id)}
-                            >
-                              ✓
-                            </button>
-                            <button
-                              className="ppe-btn-xs"
-                              onClick={() => setEditingReorder(null)}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <span
-                            className="ppe-reorder-display"
-                            title="Click to edit reorder level"
-                            onClick={() =>
-                              setEditingReorder({
-                                itemId: item.id,
-                                value: String(item.reorder_level || 0),
-                              })
-                            }
-                          >
-                            {item.reorder_level || "—"}
-                            <span className="ppe-edit-hint"> ✎</span>
-                          </span>
-                        )
-                      ) : (
-                        // Read only — everyone else
-                        <span>{item.reorder_level || "—"}</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={badge.className}>{badge.text}</span>
-                    </td>
-                    <td>
-                      {canRecordTransaction() && (
-                        <button
-                          className="ppe-btn-sm"
-                          onClick={() => {
-                            setTxForm({
-                              ...txForm,
-                              ppe_item_id: String(item.id),
-                            });
-                            setErrors({});
-                            setModalType("transaction");
-                          }}
-                        >
-                          {item.current_stock === 0
-                            ? "Receive"
-                            : "Issue / Receive"}
-                        </button>
-                      )}
-                      {!canRecordTransaction() && "—"}
-                    </td>
+          {/* Table */}
+          {isFullAccess && (
+            <div className="ppe-table-wrap">
+              <table className="ppe-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Item name</th>
+                    <th>Size</th>
+                    <th>Unit</th>
+                    {canViewStock() && <th>Current stock</th>}
+                    {canViewReserved() && <th>Reserved</th>}
+                    <th>Reorder level</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item, index) => {
+                    const status = getStockStatus(item);
+                    const badge = getStatusBadge(status);
+                    const history = getItemTransactions(item.id);
+                    const expanded = expandedItemId === item.id;
 
-                  {/* Transaction history — expands below the item row */}
-                  {expanded && canViewStock() && (
-                    <tr key={`history-${item.id}`} className="ppe-history-row">
-                      <tr className="ppe-history-row">
-                        <td colSpan={canViewStock() ? 8 : 7}>
-                          <div className="ppe-history-wrap">
-                            <div className="ppe-history-title">
-                              📋 Transaction history — {item.item_name} (
-                              {item.size_spec})
-                            </div>
-
-                            {history.length === 0 ? (
-                              <div className="ppe-history-empty">
-                                No transactions recorded yet for this item. Use
-                                "Record transaction" to add stock movements.
-                              </div>
+                    return (
+                      <React.Fragment key={item.id}>
+                        {/* Main item row */}
+                        <tr className={getRowClass(status)}>
+                          <td>{index + 1}</td>
+                          <td>
+                            {canViewStock() ? (
+                              <button
+                                className="ppe-item-name-btn"
+                                onClick={() => toggleHistory(item.id)}
+                                title="Click to view transaction history"
+                              >
+                                <span className="ppe-expand-icon">
+                                  {expanded ? "▼" : "▶"}
+                                </span>
+                                {item.item_name}
+                              </button>
                             ) : (
-                              <>
-                                <table className="ppe-history-table">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Date</th>
-                                      <th>Type</th>
-                                      <th>Quantity</th>
-                                      <th>Notes</th>
-                                      <th>Recorded by</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {history.map((tx, i) => (
-                                      <tr
-                                        key={tx.id}
-                                        className={
-                                          tx.transaction_type === "received"
-                                            ? "tx-received"
-                                            : tx.transaction_type === "issued"
-                                              ? "tx-issued"
-                                              : "tx-stocktake"
-                                        }
-                                      >
-                                        <td>{i + 1}</td>
-                                        <td>{formatDate(tx.date)}</td>
-                                        <td>
-                                          <span
-                                            className={`tx-badge ${
-                                              tx.transaction_type === "received"
-                                                ? "tx-badge-in"
-                                                : tx.transaction_type ===
-                                                    "issued"
-                                                  ? "tx-badge-out"
-                                                  : "tx-badge-stocktake"
-                                            }`}
-                                          >
-                                            {tx.transaction_type === "received"
-                                              ? "▲ Received"
-                                              : tx.transaction_type === "issued"
-                                                ? "▼ Issued"
-                                                : "📦 Stock Take"}
-                                          </span>
-                                        </td>
-                                        <td>
-                                          <strong
-                                            className={
-                                              tx.transaction_type === "received"
-                                                ? "qty-in"
-                                                : "qty-out"
-                                            }
-                                          >
-                                            {tx.transaction_type === "received"
-                                              ? `+${tx.quantity}`
-                                              : `-${tx.quantity}`}
-                                          </strong>{" "}
-                                          {item.unit_of_measure}
-                                        </td>
-                                        <td>{tx.notes || "—"}</td>
-                                        <td>{tx.recorded_by}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-
-                                {/* Running balance summary */}
-                                <div className="ppe-history-summary">
-                                  <span>
-                                    Total received:{" "}
-                                    <strong className="qty-in">
-                                      +
-                                      {history
-                                        .filter(
-                                          (t) =>
-                                            t.transaction_type === "received",
-                                        )
-                                        .reduce(
-                                          (sum, t) => sum + Number(t.quantity),
-                                          0,
-                                        )}{" "}
-                                      {item.unit_of_measure}
-                                    </strong>
-                                  </span>
-                                  <span>
-                                    Total issued:{" "}
-                                    <strong className="qty-out">
-                                      -
-                                      {history
-                                        .filter(
-                                          (t) =>
-                                            t.transaction_type === "issued",
-                                        )
-                                        .reduce(
-                                          (sum, t) => sum + Number(t.quantity),
-                                          0,
-                                        )}{" "}
-                                      {item.unit_of_measure}
-                                    </strong>
-                                  </span>
-                                  <span>
-                                    Current balance:{" "}
-                                    <strong>
-                                      {item.current_stock}{" "}
-                                      {item.unit_of_measure}
-                                    </strong>
-                                  </span>
-                                </div>
-                              </>
+                              <span>{item.item_name}</span>
                             )}
-                          </div>
+                          </td>
+                          <td>{item.size_spec}</td>
+                          <td>{item.unit_of_measure}</td>
+                          {canViewStock() && (
+                            <td>
+                              <strong>
+                                {item.current_stock -
+                                  (item.reserved_stock || 0)}
+                              </strong>
+                            </td>
+                          )}
+                          {canViewReserved() && (
+                            <td>{item.reserved_stock || 0}</td>
+                          )}
+                          <td>
+                            {canAddItem() ? (
+                              editingReorder &&
+                              editingReorder.itemId === item.id ? (
+                                <div className="ppe-reorder-edit">
+                                  <input
+                                    className="ppe-reorder-input"
+                                    type="number"
+                                    min="0"
+                                    value={editingReorder.value}
+                                    onChange={(e) =>
+                                      setEditingReorder({
+                                        ...editingReorder,
+                                        value: e.target.value,
+                                      })
+                                    }
+                                    autoFocus
+                                  />
+                                  <button
+                                    className="ppe-btn-xs primary"
+                                    onClick={() => handleReorderSave(item.id)}
+                                  >
+                                    ✓
+                                  </button>
+                                  <button
+                                    className="ppe-btn-xs"
+                                    onClick={() => setEditingReorder(null)}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <span
+                                  className="ppe-reorder-display"
+                                  title="Click to edit reorder level"
+                                  onClick={() =>
+                                    setEditingReorder({
+                                      itemId: item.id,
+                                      value: String(item.reorder_level || 0),
+                                    })
+                                  }
+                                >
+                                  {item.reorder_level || "—"}
+                                  <span className="ppe-edit-hint"> ✎</span>
+                                </span>
+                              )
+                            ) : (
+                              <span>{item.reorder_level || "—"}</span>
+                            )}
+                          </td>
+                          <td>
+                            <span className={badge.className}>
+                              {badge.text}
+                            </span>
+                          </td>
+                          <td>
+                            {canRecordTransaction() && (
+                              <button
+                                className="ppe-btn-sm"
+                                onClick={() => {
+                                  setTxForm({
+                                    ...txForm,
+                                    ppe_item_id: String(item.id),
+                                  });
+                                  setErrors({});
+                                  setModalType("transaction");
+                                }}
+                              >
+                                {item.current_stock === 0
+                                  ? "Receive"
+                                  : "Issue / Receive"}
+                              </button>
+                            )}
+                            {canAddItem() && (
+                              <button
+                                className="ppe-btn-sm"
+                                style={{
+                                  color: "#c0392b",
+                                  borderColor: "#c0392b",
+                                  marginLeft: "6px",
+                                }}
+                                onClick={() => handleDeleteItem(item.id)}
+                              >
+                                🗑
+                              </button>
+                            )}
+                            {!canRecordTransaction() && !canAddItem() && "—"}
+                          </td>
+                        </tr>
+
+                        {/* Transaction history — expands below the item row */}
+                        {expanded && canViewStock() && (
+                          <tr
+                            key={`history-${item.id}`}
+                            className="ppe-history-row"
+                          >
+                            <tr className="ppe-history-row">
+                              <td colSpan={canViewStock() ? 8 : 7}>
+                                <div className="ppe-history-wrap">
+                                  <div className="ppe-history-title">
+                                    📋 Transaction history — {item.item_name} (
+                                    {item.size_spec})
+                                  </div>
+
+                                  {history.length === 0 ? (
+                                    <div className="ppe-history-empty">
+                                      No transactions recorded yet for this
+                                      item. Use "Record transaction" to add
+                                      stock movements.
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <table className="ppe-history-table">
+                                        <thead>
+                                          <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Quantity</th>
+                                            <th>Notes</th>
+                                            <th>Recorded by</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {history.map((tx, i) => (
+                                            <tr
+                                              key={tx.id}
+                                              className={
+                                                tx.transaction_type ===
+                                                "received"
+                                                  ? "tx-received"
+                                                  : tx.transaction_type ===
+                                                      "issued"
+                                                    ? "tx-issued"
+                                                    : "tx-stocktake"
+                                              }
+                                            >
+                                              <td>{i + 1}</td>
+                                              <td>{formatDate(tx.date)}</td>
+                                              <td>
+                                                <span
+                                                  className={`tx-badge ${
+                                                    tx.transaction_type ===
+                                                    "received"
+                                                      ? "tx-badge-in"
+                                                      : tx.transaction_type ===
+                                                          "issued"
+                                                        ? "tx-badge-out"
+                                                        : "tx-badge-stocktake"
+                                                  }`}
+                                                >
+                                                  {tx.transaction_type ===
+                                                  "received"
+                                                    ? "▲ Received"
+                                                    : tx.transaction_type ===
+                                                        "issued"
+                                                      ? "▼ Issued"
+                                                      : "📦 Stock Take"}
+                                                </span>
+                                              </td>
+                                              <td>
+                                                <strong
+                                                  className={
+                                                    tx.transaction_type ===
+                                                    "received"
+                                                      ? "qty-in"
+                                                      : "qty-out"
+                                                  }
+                                                >
+                                                  {tx.transaction_type ===
+                                                  "received"
+                                                    ? `+${tx.quantity}`
+                                                    : `-${tx.quantity}`}
+                                                </strong>{" "}
+                                                {item.unit_of_measure}
+                                              </td>
+                                              <td>{tx.notes || "—"}</td>
+                                              <td>{tx.recorded_by}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+
+                                      {/* Running balance summary */}
+                                      <div className="ppe-history-summary">
+                                        <span>
+                                          Total received:{" "}
+                                          <strong className="qty-in">
+                                            +
+                                            {history
+                                              .filter(
+                                                (t) =>
+                                                  t.transaction_type ===
+                                                  "received",
+                                              )
+                                              .reduce(
+                                                (sum, t) =>
+                                                  sum + Number(t.quantity),
+                                                0,
+                                              )}{" "}
+                                            {item.unit_of_measure}
+                                          </strong>
+                                        </span>
+                                        <span>
+                                          Total issued:{" "}
+                                          <strong className="qty-out">
+                                            -
+                                            {history
+                                              .filter(
+                                                (t) =>
+                                                  t.transaction_type ===
+                                                  "issued",
+                                              )
+                                              .reduce(
+                                                (sum, t) =>
+                                                  sum + Number(t.quantity),
+                                                0,
+                                              )}{" "}
+                                            {item.unit_of_measure}
+                                          </strong>
+                                        </span>
+                                        <span>
+                                          Current balance:{" "}
+                                          <strong>
+                                            {item.current_stock}{" "}
+                                            {item.unit_of_measure}
+                                          </strong>
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Legend */}
+          {isFullAccess && (
+            <div className="ppe-legend">
+              <span>
+                <span
+                  className="ppe-legend-dot"
+                  style={{ background: "#fdebd0", border: "1px solid #e67e22" }}
+                ></span>
+                Low stock
+              </span>
+              <span>
+                <span
+                  className="ppe-legend-dot"
+                  style={{ background: "#fadbd8", border: "1px solid #c0392b" }}
+                ></span>
+                Out of stock
+              </span>
+              <span style={{ color: "#888" }}>
+                💡 Click an item name to view its transaction history
+              </span>
+            </div>
+          )}
+
+          {/* Requests List */}
+          <div className="ppe-table-wrap" style={{ marginTop: "30px" }}>
+            <h2 className="ppe-title" style={{ fontSize: "20px" }}>
+              PPE Requests
+            </h2>
+
+            {requests.length === 0 ? (
+              <p>No PPE requests submitted yet.</p>
+            ) : (
+              <table className="ppe-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Worker</th>
+                    <th>Department</th>
+                    <th>Requested By</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {requests.map((request) => {
+                    const item = items.find(
+                      (i) => Number(i.id) === Number(request.item_id),
+                    );
+
+                    return (
+                      <tr key={request.id}>
+                        <td>{formatDate(request.date)}</td>
+                        <td>
+                          {item
+                            ? `${item.item_name} (${item.size_spec})`
+                            : "Unknown Item"}
+                        </td>
+                        <td>{request.quantity}</td>
+                        <td>{request.worker_name}</td>
+                        <td>{request.department}</td>
+                        <td>{request.requested_by}</td>
+
+                        <td>
+                          <span
+                            className={`ppe-badge ${
+                              request.status === "fulfilled"
+                                ? "badge-ok"
+                                : request.status === "approved"
+                                  ? "badge-expiring"
+                                  : request.status === "rejected"
+                                    ? "badge-out"
+                                    : "badge-low"
+                            }`}
+                          >
+                            {request.status}
+                          </span>
+                        </td>
+
+                        <td>
+                          {request.status === "pending" && (
+                            <>
+                              {canApprove() && (
+                                <button
+                                  className="ppe-btn-sm"
+                                  onClick={() =>
+                                    handleApproveRequest(request.id)
+                                  }
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              {canReject() && (
+                                <button
+                                  className="ppe-btn-sm"
+                                  onClick={() =>
+                                    handleRejectRequest(request.id)
+                                  }
+                                  style={{ marginLeft: "6px" }}
+                                >
+                                  Reject
+                                </button>
+                              )}
+                              {!canApprove() && !canReject() && (
+                                <span
+                                  style={{ color: "#888", fontSize: "11px" }}
+                                >
+                                  Awaiting approval
+                                </span>
+                              )}
+                            </>
+                          )}
+
+                          {request.status === "approved" && (
+                            <>
+                              {canFulfill() && (
+                                <button
+                                  className="ppe-btn-sm"
+                                  onClick={() =>
+                                    handleFulfillRequest(request.id)
+                                  }
+                                >
+                                  Fulfill
+                                </button>
+                              )}
+                              {!canFulfill() && (
+                                <span
+                                  style={{ color: "#27ae60", fontSize: "11px" }}
+                                >
+                                  ✓ Approved
+                                </span>
+                              )}
+                            </>
+                          )}
+
+                          {request.status === "fulfilled" && (
+                            <span>✓ Completed</span>
+                          )}
+
+                          {request.status === "rejected" && (
+                            <div>
+                              <span style={{ color: "#c0392b" }}>
+                                ✕ Rejected
+                              </span>
+                              {request.reject_reason && (
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#888",
+                                    marginTop: "3px",
+                                  }}
+                                >
+                                  Reason: {request.reject_reason}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {canAddItem() && (
+                            <button
+                              className="ppe-btn-sm"
+                              style={{
+                                color: "#c0392b",
+                                borderColor: "#c0392b",
+                                marginLeft: "6px",
+                              }}
+                              onClick={() => handleDeleteRequest(request.id)}
+                            >
+                              🗑
+                            </button>
+                          )}
                         </td>
                       </tr>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      )}
 
-      {/* Legend */}
-      <div className="ppe-legend">
-        <span>
-          <span
-            className="ppe-legend-dot"
-            style={{ background: "#fdebd0", border: "1px solid #e67e22" }}
-          ></span>
-          Low stock
-        </span>
-        <span>
-          <span
-            className="ppe-legend-dot"
-            style={{ background: "#fadbd8", border: "1px solid #c0392b" }}
-          ></span>
-          Out of stock
-        </span>
-        <span style={{ color: "#888" }}>
-          💡 Click an item name to view its transaction history
-        </span>
-      </div>
+      {activeTab === "matrix" && (
+        <div className="ppe-matrix-wrap">
+          {canAddItem() && (
+            <div className="ppe-matrix-controls">
+              <div className="ppe-matrix-add">
+                <input
+                  className="ppe-form-input"
+                  placeholder="New department..."
+                  value={newDepartment}
+                  onChange={(e) => setNewDepartment(e.target.value)}
+                />
+                <button
+                  className="ppe-btn-primary"
+                  onClick={handleAddDepartment}
+                >
+                  + Add Department
+                </button>
+              </div>
+              <div className="ppe-matrix-add">
+                <input
+                  className="ppe-form-input"
+                  placeholder="New PPE item..."
+                  value={newPPEItem}
+                  onChange={(e) => setNewPPEItem(e.target.value)}
+                />
+                <button className="ppe-btn-primary" onClick={handleAddPPEItem}>
+                  + Add PPE Item
+                </button>
+              </div>
+            </div>
+          )}
 
-      {/* Requests List */}
-      <div className="ppe-table-wrap" style={{ marginTop: "30px" }}>
-        <h2 className="ppe-title" style={{ fontSize: "20px" }}>
-          PPE Requests
-        </h2>
-
-        {requests.length === 0 ? (
-          <p>No PPE requests submitted yet.</p>
-        ) : (
-          <table className="ppe-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Worker</th>
-                <th>Department</th>
-                <th>Requested By</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {requests.map((request) => {
-                const item = items.find(
-                  (i) => Number(i.id) === Number(request.item_id),
-                );
-
-                return (
-                  <tr key={request.id}>
-                    <td>{formatDate(request.date)}</td>
-                    <td>
-                      {item
-                        ? `${item.item_name} (${item.size_spec})`
-                        : "Unknown Item"}
-                    </td>
-                    <td>{request.quantity}</td>
-                    <td>{request.worker_name}</td>
-                    <td>{request.department}</td>
-                    <td>{request.requested_by}</td>
-
-                    <td>
-                      <span
-                        className={`ppe-badge ${
-                          request.status === "fulfilled"
-                            ? "badge-ok"
-                            : request.status === "approved"
-                              ? "badge-expiring"
-                              : request.status === "rejected"
-                                ? "badge-out"
-                                : "badge-low"
-                        }`}
-                      >
-                        {request.status}
-                      </span>
-                    </td>
-
-                    <td>
-                      {request.status === "pending" && (
-                        <>
-                          {canApprove() && (
-                            <button
-                              className="ppe-btn-sm"
-                              onClick={() => handleApproveRequest(request.id)}
-                            >
-                              Approve
-                            </button>
-                          )}
-                          {canReject() && (
-                            <button
-                              className="ppe-btn-sm"
-                              onClick={() => handleRejectRequest(request.id)}
-                              style={{ marginLeft: "6px" }}
-                            >
-                              Reject
-                            </button>
-                          )}
-                          {!canApprove() && !canReject() && (
-                            <span style={{ color: "#888", fontSize: "11px" }}>
-                              Awaiting approval
-                            </span>
-                          )}
-                        </>
-                      )}
-
-                      {request.status === "approved" && (
-                        <>
-                          {canFulfill() && (
-                            <button
-                              className="ppe-btn-sm"
-                              onClick={() => handleFulfillRequest(request.id)}
-                            >
-                              Fulfill
-                            </button>
-                          )}
-                          {!canFulfill() && (
-                            <span
-                              style={{ color: "#27ae60", fontSize: "11px" }}
-                            >
-                              ✓ Approved
-                            </span>
-                          )}
-                        </>
-                      )}
-
-                      {request.status === "fulfilled" && (
-                        <span>✓ Completed</span>
-                      )}
-
-                      {request.status === "rejected" && (
-                        <div>
-                          <span style={{ color: "#c0392b" }}>✕ Rejected</span>
-                          {request.reject_reason && (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#888",
-                                marginTop: "3px",
-                              }}
-                            >
-                              Reason: {request.reject_reason}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </td>
+          {matrixDepartments.length === 0 || matrixItems.length === 0 ? (
+            <div className="ppe-matrix-empty">
+              {canAddItem()
+                ? "No matrix data yet. Add departments and PPE items to get started."
+                : "No PPE matrix data available."}
+            </div>
+          ) : (
+            <div className="ppe-table-wrap">
+              <table className="ppe-table ppe-matrix-table">
+                <thead>
+                  <tr>
+                    <th>Department</th>
+                    {matrixItems.map((item) => (
+                      <th key={item}>
+                        {item}
+                        {canAddItem() && (
+                          <button
+                            className="ppe-matrix-del-btn"
+                            onClick={() => handleDeletePPEItem(item)}
+                            title="Remove PPE item"
+                          >
+                            ❌
+                          </button>
+                        )}
+                      </th>
+                    ))}
+                    {canAddItem() && <th>Actions</th>}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {matrixDepartments.map((dept) => (
+                    <tr key={dept}>
+                      <td>
+                        <strong>{dept}</strong>
+                      </td>
+                      {matrixItems.map((item) => {
+                        const value = getCellValue(dept, item);
+                        return (
+                          <td key={item} className="ppe-matrix-cell">
+                            {canAddItem() ? (
+                              <select
+                                className="ppe-matrix-select"
+                                value={value}
+                                onChange={(e) =>
+                                  handleCellChange(dept, item, e.target.value)
+                                }
+                              >
+                                <option value="none">—</option>
+                                <option value="mandatory">✓ Mandatory</option>
+                                <option value="recommended">
+                                  R Recommended
+                                </option>
+                              </select>
+                            ) : (
+                              <span
+                                className={`ppe-matrix-badge badge-${value}`}
+                              >
+                                {value === "mandatory"
+                                  ? "✓"
+                                  : value === "recommended"
+                                    ? "R"
+                                    : "—"}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                      {canAddItem() && (
+                        <td>
+                          <button
+                            className="ppe-matrix-del-btn"
+                            onClick={() => handleDeleteDepartment(dept)}
+                          >
+                            🗑 Remove
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── TRANSACTION MODAL ── */}
       {modalType === "transaction" && (

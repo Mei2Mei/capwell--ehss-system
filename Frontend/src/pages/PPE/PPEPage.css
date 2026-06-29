@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────
    PPEPage.css
-   Styles for the PPE Inventory page.
+   Styles for the PPE Management page.
    We use plain CSS — no external libraries needed.
    Every class name starts with "ppe-" so styles never
    accidentally affect other pages.
@@ -533,4 +533,109 @@
 .badge-rejected {
   background: #c0392b;
   color: #fff;
+}
+
+.ppe-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ppe-tab {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  color: #555;
+}
+
+.ppe-tab:hover { background: #f0f0f0; }
+
+.ppe-tab.active {
+  background: #1a5276;
+  color: #fff;
+  border-color: #1a5276;
+  font-weight: 500;
+}
+
+.ppe-matrix-wrap {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ppe-matrix-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ppe-matrix-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ppe-matrix-table th {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.ppe-matrix-cell {
+  text-align: center;
+}
+
+.ppe-matrix-table th,
+.ppe-matrix-table td {
+  min-width: 120px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ppe-matrix-table th:first-child,
+.ppe-matrix-table td:first-child {
+  text-align: left;
+  min-width: 150px;
+}
+
+.ppe-matrix-select {
+  font-size: 11px;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.ppe-matrix-del-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.ppe-matrix-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-mandatory { background: #27ae60; color: #fff; }
+.badge-recommended { background: #e67e22; color: #fff; }
+.badge-none { color: #aaa; }
+
+.ppe-matrix-empty {
+  padding: 40px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
 }
