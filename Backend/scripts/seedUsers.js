@@ -9,7 +9,7 @@ async function seedUsers() {
     { full_name: 'Collins Bitok', email: 'collins@capwell.com', role_id: 6 },   // it_admin
     { full_name: 'QA Worker', email: 'qa@capwell.com', role_id: 5 },             // qa
     { full_name: 'Storekeeper', email: 'storekeeper@capwell.com', role_id: 2 },  // storekeeper
-    { full_name: 'Supervisor', email: 'supervisor@capwell.com', role_id: 3 },    // supervisor
+    { full_name: 'Department Supervisor', email: 'supervisor@capwell.com', role_id: 3 },    // supervisor
     { full_name: 'Production Manager', email: 'pm@capwell.com', role_id: 4 },    // production_manager
   ];
 

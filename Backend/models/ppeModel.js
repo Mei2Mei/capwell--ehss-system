@@ -86,7 +86,18 @@ const fulfillRequest = async (requestId, fulfilledBy) => {
 };
 
 const getAllRequests = async () => {
-  const result = await pool.query('SELECT * FROM ppe_requests ORDER BY requested_at DESC');
+  const result = await pool.query(`
+    SELECT 
+      r.*,
+      u.full_name as requested_by_name,
+      a.full_name as approved_by_name,
+      f.full_name as fulfilled_by_name
+    FROM ppe_requests r
+    LEFT JOIN users u ON r.requested_by = u.id
+    LEFT JOIN users a ON r.approved_by = a.id
+    LEFT JOIN users f ON r.fulfilled_by = f.id
+    ORDER BY r.requested_at DESC
+  `);
   return result.rows;
 };
 

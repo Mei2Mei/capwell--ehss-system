@@ -11,11 +11,11 @@ const getActionById = async (id) => {
 };
 
 const createAction = async (data) => {
-  const { concern, action, responsible, date_raised, target_date, progress, status } = data;
+  const { concern, action, responsible, date_raised, target_date, progress, status, raised_by } = data;
   const result = await pool.query(
-    `INSERT INTO action_tracker (concern, action, responsible, date_raised, target_date, progress, status)
-     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-    [concern, action, responsible, date_raised, target_date, progress, status]
+    `INSERT INTO action_tracker (concern, action, responsible, date_raised, target_date, progress, status, raised_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+    [concern, action, responsible, date_raised, target_date, progress, status, raised_by]
   );
   return result.rows[0];
 };
