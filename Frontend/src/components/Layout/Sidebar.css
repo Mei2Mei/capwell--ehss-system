@@ -183,3 +183,15 @@
   background: rgba(255,255,255,0.15);
   color: #fff;
 }
+
+.sidebar-logo-img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.sidebar-logo-img-sm {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}

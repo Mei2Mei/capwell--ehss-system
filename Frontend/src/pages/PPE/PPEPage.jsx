@@ -61,13 +61,11 @@ function PPEPage() {
 
   const canViewStock = () => ["ehss_officer", "it_admin"].includes(role);
 
-  const canViewReserved = () =>
-    ["ehss_officer", "it_admin", "storekeeper"].includes(role);
+  const canViewReserved = () => ["ehss_officer", "it_admin"].includes(role);
 
   const canAddItem = () => ["ehss_officer", "it_admin"].includes(role);
 
-  const canRecordTransaction = () =>
-    ["ehss_officer", "it_admin"].includes(role);
+  const canRecordTransaction = () => ["ehss_officer"].includes(role);
 
   const canCreateRequest = () =>
     ["supervisor", "ehss_officer", "it_admin"].includes(role);
@@ -78,10 +76,13 @@ function PPEPage() {
 
   const canReject = () => ["ehss_officer"].includes(role);
 
-  const isFullAccess = ["ehss_officer", "it_admin"].includes(role);
+  const isFullAccess = [
+    "ehss_officer",
+    "it_admin",
+    "production_manager",
+  ].includes(role);
   const isStorekeeper = role === "storekeeper";
   const isSupervisor = role === "supervisor";
-  const isProductionManager = role === "production_manager";
 
   const [activeTab, setActiveTab] = useState("inventory");
   const [matrix, setMatrix] = useState([]);
@@ -1248,7 +1249,11 @@ function PPEPage() {
                         <td>{request.quantity}</td>
                         <td>{request.worker_name}</td>
                         <td>{request.department}</td>
-                        <td>{request.requested_by}</td>
+                        <td>
+                          {request.requested_by_name ||
+                            request.requested_by ||
+                            "—"}
+                        </td>
 
                         <td>
                           <span

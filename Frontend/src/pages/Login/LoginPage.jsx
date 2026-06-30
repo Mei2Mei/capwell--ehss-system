@@ -44,7 +44,11 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-logo">🛡️</div>
+        <img
+          src="/src/assets/Capwell logo.png"
+          alt="Capwell EHSS"
+          className="login-logo-img"
+        />
         <h1 className="login-title">EHSS Management System</h1>
         <p className="login-subtitle">Capwell Industries</p>
 

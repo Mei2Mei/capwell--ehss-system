@@ -117,3 +117,10 @@
   padding: 0;
   line-height: 1;
 }
+
+.login-logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 12px;
+}

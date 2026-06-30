@@ -64,7 +64,14 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       id: "action-tracker",
       label: "Action Tracker",
       icon: "📌",
-      roles: ["ehss_officer", "it_admin"],
+      roles: [
+        "ehss_officer",
+        "it_admin",
+        "qa",
+        "storekeeper",
+        "supervisor",
+        "production_manager",
+      ],
     },
     {
       id: "reports",
@@ -103,7 +110,20 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   return (
     <div className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
       <div className="sidebar-logo">
-        {!collapsed && <div className="sidebar-logo-icon">🛡️</div>}
+        {!collapsed && (
+          <img
+            src="/src/assets/Capwell logo.png"
+            alt="Capwell"
+            className="sidebar-logo-img"
+          />
+        )}
+        {collapsed && (
+          <img
+            src="/src/assets/capwell-logo.png"
+            alt="Capwell"
+            className="sidebar-logo-img-sm"
+          />
+        )}
         {!collapsed && (
           <div className="sidebar-logo-text">
             <div className="sidebar-logo-title">EHSS</div>

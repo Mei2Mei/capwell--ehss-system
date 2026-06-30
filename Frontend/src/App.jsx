@@ -83,10 +83,10 @@ function App() {
       "action-tracker",
       "reports",
     ],
-    qa: ["compliance"],
-    storekeeper: ["ppe"],
-    supervisor: ["ppe"],
-    production_manager: ["ppe"],
+    qa: ["compliance", "action-tracker"],
+    storekeeper: ["ppe", "action-tracker"],
+    supervisor: ["ppe", "action-tracker"],
+    production_manager: ["ppe", "action-tracker"],
   };
 
   function renderPage() {
