@@ -83,7 +83,7 @@ function App() {
       "action-tracker",
       "reports",
     ],
-    qa: ["compliance", "action-tracker"],
+    qa: ["compliance", "ppe", "action-tracker"],
     storekeeper: ["ppe", "action-tracker"],
     supervisor: ["ppe", "action-tracker"],
     production_manager: ["ppe", "action-tracker"],

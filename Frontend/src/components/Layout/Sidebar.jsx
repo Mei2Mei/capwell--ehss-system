@@ -50,6 +50,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       roles: [
         "ehss_officer",
         "it_admin",
+        "qa",
         "storekeeper",
         "supervisor",
         "production_manager",

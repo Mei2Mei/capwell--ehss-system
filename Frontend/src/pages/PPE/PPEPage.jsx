@@ -75,6 +75,25 @@ function PPEPage() {
 
   const canReject = () => ["ehss_officer"].includes(role);
 
+  const canViewInventory = () =>
+    [
+      "ehss_officer",
+      "it_admin",
+      "storekeeper",
+      "supervisor",
+      "production_manager",
+    ].includes(role);
+
+  const canViewMatrix = () =>
+    [
+      "qa",
+      "ehss_officer",
+      "it_admin",
+      "production_manager",
+      "storekeeper",
+      "supervisor",
+    ].includes(role);
+
   const isFullAccess = [
     "ehss_officer",
     "it_admin",
@@ -83,7 +102,9 @@ function PPEPage() {
   const isStorekeeper = role === "storekeeper";
   const isSupervisor = role === "supervisor";
 
-  const [activeTab, setActiveTab] = useState("inventory");
+  const [activeTab, setActiveTab] = useState(
+    role === "qa" ? "matrix" : "inventory",
+  );
   const [matrix, setMatrix] = useState([]);
   const [matrixDepartments, setMatrixDepartments] = useState([]);
   const [matrixItems, setMatrixItems] = useState([]);
@@ -777,18 +798,23 @@ function PPEPage() {
 
       {/* Tabs */}
       <div className="ppe-tabs">
-        <button
-          className={`ppe-tab ${activeTab === "inventory" ? "active" : ""}`}
-          onClick={() => setActiveTab("inventory")}
-        >
-          📦 Inventory
-        </button>
-        <button
-          className={`ppe-tab ${activeTab === "matrix" ? "active" : ""}`}
-          onClick={() => setActiveTab("matrix")}
-        >
-          📋 PPE Matrix
-        </button>
+        {canViewInventory() && (
+          <button
+            className={`ppe-tab ${activeTab === "inventory" ? "active" : ""}`}
+            onClick={() => setActiveTab("inventory")}
+          >
+            📦 Inventory
+          </button>
+        )}
+
+        {canViewMatrix() && (
+          <button
+            className={`ppe-tab ${activeTab === "matrix" ? "active" : ""}`}
+            onClick={() => setActiveTab("matrix")}
+          >
+            📋 PPE Matrix
+          </button>
+        )}
       </div>
 
       {activeTab === "inventory" && (
