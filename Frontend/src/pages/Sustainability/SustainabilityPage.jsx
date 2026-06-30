@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import "./SustainabilityPage.css";
 import apiFetch from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = `/sustainability`;
 
@@ -48,6 +49,9 @@ const emptyForm = {
 };
 
 export default function SustainabilityPage() {
+  const { user } = useAuth();
+  const role = user?.role_name;
+  const isFullAccess = ["ehss_officer", "it_admin"].includes(role);
   const [records, setRecords] = useState([]);
   const [emissionFactors, setEmissionFactors] = useState({
     petrol: 0,
@@ -61,6 +65,9 @@ export default function SustainabilityPage() {
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
 
   useEffect(() => {
     apiFetch(API_URL)
@@ -226,19 +233,42 @@ export default function SustainabilityPage() {
     };
 
     try {
-      const res = await apiFetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const newRecord = await res.json();
+      if (editingId) {
+        const res = await apiFetch(`${API_URL}/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const text = await res.text();
+        const updated = text ? JSON.parse(text) : null;
+        if (updated) {
+          setRecords(
+            records.map((r) =>
+              r.id === editingId
+                ? { ...updated, period: updated.period?.split("T")[0] }
+                : r,
+            ),
+          );
+        }
+        setEditingId(null);
+      } else {
+        const res = await apiFetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const text = await res.text();
+        const newRecord = text ? JSON.parse(text) : null;
+        if (newRecord) {
+          setRecords(
+            [
+              ...records,
+              { ...newRecord, period: newRecord.period?.split("T")[0] },
+            ].sort((a, b) => new Date(a.period) - new Date(b.period)),
+          );
+        }
+      }
 
-      setRecords(
-        [
-          ...records,
-          { ...newRecord, period: newRecord.period?.split("T")[0] },
-        ].sort((a, b) => new Date(a.period) - new Date(b.period)),
-      );
       setShowModal(false);
       setForm(emptyForm);
       setErrors({});
@@ -246,6 +276,52 @@ export default function SustainabilityPage() {
       setTimeout(() => setShowSuccess(false), 4000);
     } catch (err) {
       console.error("Failed to save sustainability record:", err);
+    }
+  }
+
+  function openEdit(record) {
+    setEditingId(record.id);
+    setForm({
+      period: record.period?.slice(0, 7),
+      water_consumption_m3: record.water_consumption_m3,
+      water_recycled_m3: record.water_recycled_m3,
+      electricity_kwh: record.electricity_kwh,
+      solar_kwh: record.solar_kwh,
+      firewood_tonnes: record.firewood_tonnes,
+      diesel_litres: record.diesel_litres,
+      petrol_litres: record.petrol_litres,
+      lpg_kg: record.lpg_kg,
+      paper_waste_kg: record.paper_waste_kg,
+      plastic_packaging_kg: record.plastic_packaging_kg,
+      hazardous_waste_kg: record.hazardous_waste_kg,
+      recyclable_plastic_kg: record.recyclable_plastic_kg,
+    });
+    setErrors({});
+    setShowModal(true);
+  }
+
+  function handleDeleteOpen(record) {
+    setDeleteReason("");
+    setDeleteModal(record);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteReason.trim()) {
+      setErrors({ deleteReason: "Deletion reason is required." });
+      return;
+    }
+    try {
+      await apiFetch(`${API_URL}/${deleteModal.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      });
+      setRecords(records.filter((r) => r.id !== deleteModal.id));
+      setDeleteModal(null);
+      setDeleteReason("");
+      setErrors({});
+    } catch (err) {
+      console.error("Failed to delete sustainability record:", err);
     }
   }
 
@@ -599,6 +675,52 @@ export default function SustainabilityPage() {
         </div>
       )}
 
+      {/*EDIT AND DELETE*/}
+      {isFullAccess && (
+        <div className="ehss-table-wrapper">
+          <div style={{ marginTop: "24px" }}>
+            <h3
+              style={{
+                fontSize: "14px",
+                color: "#1a5276",
+                marginBottom: "10px",
+              }}
+            >
+              ✅Manage records
+            </h3>
+            <table className="ehss-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((r) => (
+                  <tr key={r.id}>
+                    <td>{formatMonth(r.period)}</td>
+                    <td>
+                      <button
+                        className="ehss-btn-sm ehss-edit-btn"
+                        onClick={() => openEdit(r)}
+                      >
+                        ✎ Edit
+                      </button>
+                      <button
+                        className="ehss-btn-sm ehss-delete-btn"
+                        onClick={() => handleDeleteOpen(r)}
+                      >
+                        🗑 Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* ── MODAL ── */}
       {showModal && (
         <div className="sust-modal-overlay">
@@ -823,6 +945,36 @@ export default function SustainabilityPage() {
               </button>
               <button className="sust-btn-primary" onClick={handleSave}>
                 Save data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*DELETE MODAL*/}
+      {deleteModal && (
+        <div className="ehss-modal-overlay">
+          <div className="ehss-modal" style={{ maxWidth: "400px" }}>
+            <h2 className="ehss-modal-title">Delete Record</h2>
+            <p>You must provide a reason before deleting this record.</p>
+            <input
+              className="ehss-form-input"
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Reason for deletion..."
+            />
+            {errors.deleteReason && (
+              <div className="ehss-field-error">{errors.deleteReason}</div>
+            )}
+            <div className="ehss-modal-buttons">
+              <button
+                className="ehss-btn-secondary"
+                onClick={() => setDeleteModal(null)}
+              >
+                Cancel
+              </button>
+              <button className="ehss-btn-danger" onClick={handleDeleteConfirm}>
+                Confirm Delete
               </button>
             </div>
           </div>

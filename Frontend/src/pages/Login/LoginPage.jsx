@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./LoginPage.css";
+import capwellLogo from "../../assets/capwell-logo.png";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -44,11 +45,7 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <img
-          src="/src/assets/Capwell logo.png"
-          alt="Capwell EHSS"
-          className="login-logo-img"
-        />
+        <img src={capwellLogo} alt="Capwell" className="sidebar-logo-img" />
         <h1 className="login-title">EHSS Management System</h1>
         <p className="login-subtitle">Capwell Industries</p>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
+import capwellLogo from "../../assets/capwell-logo.png";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();
@@ -111,15 +112,11 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     <div className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
       <div className="sidebar-logo">
         {!collapsed && (
-          <img
-            src="/src/assets/Capwell logo.png"
-            alt="Capwell"
-            className="sidebar-logo-img"
-          />
+          <img src={capwellLogo} alt="Capwell" className="sidebar-logo-img" />
         )}
         {collapsed && (
           <img
-            src="/src/assets/capwell-logo.png"
+            src={capwellLogo}
             alt="Capwell"
             className="sidebar-logo-img-sm"
           />

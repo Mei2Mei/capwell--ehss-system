@@ -55,7 +55,6 @@ function formatDate(dateStr) {
 // ── Main component ────────────────────────────────────────────
 
 function PPEPage() {
-  console.log("PPEPage loaded");
   const { user } = useAuth();
   const role = user?.role_name;
 
