@@ -207,7 +207,9 @@ export default function SustainabilityPage() {
   function validate() {
     const e = {};
     if (!form.period) e.period = "Please select a month.";
-    const dup = records.find((r) => r.period === form.period + "-01");
+    const dup = records.find(
+      (r) => r.period?.slice(0, 7) === form.period && r.id !== editingId,
+    );
     if (dup) e.period = "A record for this month already exists.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -726,7 +728,7 @@ export default function SustainabilityPage() {
         <div className="sust-modal-overlay">
           <div className="sust-modal">
             <h2 className="sust-modal-title">
-              Enter monthly sustainability data
+              {editingId ? "Edit Record" : "Add Record"}
             </h2>
 
             {/* Live emission preview */}
@@ -944,7 +946,7 @@ export default function SustainabilityPage() {
                 Cancel
               </button>
               <button className="sust-btn-primary" onClick={handleSave}>
-                Save data
+                {editingId ? "Update" : "Save"}
               </button>
             </div>
           </div>

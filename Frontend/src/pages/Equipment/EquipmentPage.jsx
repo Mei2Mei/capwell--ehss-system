@@ -69,6 +69,7 @@ export default function EquipmentPage() {
   const [form, setForm] = useState({
     name: "",
     category: "",
+    location: "",
     capacity: "",
     status: "Available",
     lastInspection: "",
@@ -104,9 +105,9 @@ export default function EquipmentPage() {
     const payload = {
       name: form.name,
       category: form.category,
+      location: form.location || "",
       capacity: form.capacity,
       status: form.status,
-      location: form.location || "",
       last_inspection: form.lastInspection || null,
       next_inspection: form.nextInspection || null,
     };
@@ -156,6 +157,7 @@ export default function EquipmentPage() {
       setForm({
         name: "",
         category: "",
+        location: "",
         capacity: "",
         status: "Available",
         lastInspection: "",
@@ -174,6 +176,7 @@ export default function EquipmentPage() {
     setForm({
       name: item.name,
       category: item.category,
+      location: item.location || "",
       capacity: item.capacity,
       status: item.status,
       lastInspection: item.lastInspection,
@@ -232,6 +235,7 @@ export default function EquipmentPage() {
               setForm({
                 name: "",
                 category: "",
+                location: "",
                 capacity: "",
                 status: "Available",
                 lastInspection: "",
@@ -410,6 +414,21 @@ export default function EquipmentPage() {
                   value={form.category}
                   onChange={(e) =>
                     setForm({ ...form, category: e.target.value })
+                  }
+                />
+              </div>
+
+              {/*LOCATION*/}
+              <div className="equipment-form-group">
+                <label className="equipment-form-label">
+                  Location <span className="required">*</span>{" "}
+                </label>
+                <input
+                  className="equipment-form-input"
+                  name="location"
+                  value={form.location || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, location: e.target.value })
                   }
                 />
               </div>
