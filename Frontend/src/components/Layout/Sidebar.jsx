@@ -21,7 +21,7 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     },
     {
       id: "costs",
-      label: "Dept. costs",
+      label: "Deptartmental costs",
       icon: "🧾",
       roles: ["ehss_officer", "it_admin"],
     },
