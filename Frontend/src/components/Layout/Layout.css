@@ -1,4 +1,4 @@
-/* Outer wrapper — full screen, side by side */
+/* Outer wrapper */
 .layout {
   display: block;
   min-height: 100vh;
@@ -6,8 +6,7 @@
   color-scheme: light;
 }
 
-/* Main content area — sits to the right of the sidebar */
-/* margin-left: 220px pushes it right to make room for sidebar */
+/* Main content — sits right of sidebar on desktop */
 .layout-content {
   margin-left: 220px;
   min-height: 100vh;
@@ -18,4 +17,13 @@
 
 .layout-content-collapsed {
   margin-left: 60px;
+}
+
+/* Mobile — content takes full width, sidebar overlays on top */
+@media (max-width: 768px) {
+  .layout-content,
+  .layout-content-collapsed {
+    margin-left: 0 !important;
+    padding-top: 60px; /* clears the hamburger button */
+  }
 }

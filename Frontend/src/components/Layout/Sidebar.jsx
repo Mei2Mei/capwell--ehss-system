@@ -5,6 +5,7 @@ import capwellLogo from "../../assets/capwell-logo.png";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const allNavItems = [
     {
@@ -15,13 +16,13 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     },
     {
       id: "safety",
-      label: "Safety metrics",
+      label: "Safety Metrics",
       icon: "🛡️",
       roles: ["ehss_officer", "it_admin"],
     },
     {
       id: "costs",
-      label: "Deptartmental costs",
+      label: "Departmental Costs",
       icon: "🧾",
       roles: ["ehss_officer", "it_admin"],
     },
@@ -33,13 +34,13 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
     },
     {
       id: "calendar",
-      label: "EHSS Training calendar",
+      label: "EHSS Calendar",
       icon: "📅",
       roles: ["ehss_officer", "it_admin"],
     },
     {
       id: "equipment",
-      label: "Lifting equipment",
+      label: "Lifting Equipment",
       icon: "🏗️",
       roles: ["ehss_officer", "it_admin"],
     },
@@ -81,14 +82,20 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       icon: "📊",
       roles: ["ehss_officer", "it_admin"],
     },
+    {
+      id: "public-actions",
+      label: "Public Portal",
+      icon: "🌐",
+      roles: ["ehss_officer", "it_admin"],
+    },
+    { id: "users", label: "User Management", icon: "👥", roles: ["it_admin"] },
+    { id: "audit-logs", label: "Audit Logs", icon: "📋", roles: ["it_admin"] },
   ];
 
-  // Filter nav items based on user role
   const navItems = allNavItems.filter((item) =>
     item.roles.includes(user?.role_name),
   );
 
-  // Get initials from full name
   const initials = user?.full_name
     ? user.full_name
         .split(" ")
@@ -98,7 +105,6 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
         .slice(0, 2)
     : "??";
 
-  // Friendly role label
   const roleLabel =
     {
       ehss_officer: "EHSS Officer",
@@ -109,65 +115,86 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       production_manager: "Production Manager",
     }[user?.role_name] || user?.role_name;
 
+  const handleNavigate = (id) => {
+    onNavigate(id);
+    setMobileOpen(false); // close on mobile after clicking
+  };
+
   return (
-    <div className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
-      <div className="sidebar-logo">
-        {!collapsed && (
-          <img src={capwellLogo} alt="Capwell" className="sidebar-logo-img" />
-        )}
-        {collapsed && (
-          <img
-            src={capwellLogo}
-            alt="Capwell"
-            className="sidebar-logo-img-sm"
-          />
-        )}
-        {!collapsed && (
-          <div className="sidebar-logo-text">
-            <div className="sidebar-logo-title">EHSS</div>
-            <div className="sidebar-logo-sub">Management System</div>
-          </div>
-        )}
-        <button className="sidebar-toggle" onClick={onToggle}>
-          {collapsed ? "▶" : "◀"}
-        </button>
-      </div>
+    <>
+      {/* Hamburger — mobile only */}
+      <button className="sidebar-hamburger" onClick={() => setMobileOpen(true)}>
+        ☰
+      </button>
 
-      <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            className={`sidebar-nav-item ${activePage === item.id ? "active" : ""}`}
-            onClick={() => onNavigate(item.id)}
-            title={collapsed ? item.label : ""}
-          >
-            <span className="sidebar-nav-icon">{item.icon}</span>
-            {!collapsed && (
-              <span className="sidebar-nav-label">{item.label}</span>
-            )}
-          </button>
-        ))}
-      </nav>
+      {/* Overlay — mobile only */}
+      <div
+        className={`sidebar-overlay ${mobileOpen ? "visible" : ""}`}
+        onClick={() => setMobileOpen(false)}
+      />
 
-      <div className="sidebar-footer">
-        {!collapsed && (
-          <div className="sidebar-user">
-            <div className="sidebar-user-avatar">{initials}</div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">
-                {user?.full_name || "User"}
-              </div>
-              <div className="sidebar-user-role">{roleLabel}</div>
+      {/* Sidebar */}
+      <div
+        className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}
+      >
+        <div className="sidebar-logo">
+          {!collapsed && (
+            <img src={capwellLogo} alt="Capwell" className="sidebar-logo-img" />
+          )}
+          {collapsed && (
+            <img
+              src={capwellLogo}
+              alt="Capwell"
+              className="sidebar-logo-img-sm"
+            />
+          )}
+          {!collapsed && (
+            <div className="sidebar-logo-text">
+              <div className="sidebar-logo-title">EHSS</div>
+              <div className="sidebar-logo-sub">Management System</div>
             </div>
-          </div>
-        )}
-        {!collapsed && (
-          <button className="sidebar-logout" onClick={logout}>
-            Logout
+          )}
+          <button className="sidebar-toggle" onClick={onToggle}>
+            {collapsed ? "▶" : "◀"}
           </button>
-        )}
+        </div>
+
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              className={`sidebar-nav-item ${activePage === item.id ? "active" : ""}`}
+              onClick={() => handleNavigate(item.id)}
+              title={collapsed ? item.label : ""}
+            >
+              <span className="sidebar-nav-icon">{item.icon}</span>
+              {!collapsed && (
+                <span className="sidebar-nav-label">{item.label}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          {!collapsed && (
+            <div className="sidebar-user">
+              <div className="sidebar-user-avatar">{initials}</div>
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">
+                  {user?.full_name || "User"}
+                </div>
+                <div className="sidebar-user-role">{roleLabel}</div>
+              </div>
+            </div>
+          )}
+          {!collapsed && (
+            <button className="sidebar-logout" onClick={logout}>
+              Logout
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

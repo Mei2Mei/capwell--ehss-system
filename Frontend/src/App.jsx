@@ -26,10 +26,14 @@ import PPEPage from "./pages/PPE/PPEPage";
 import SustainabilityPage from "./pages/Sustainability/SustainabilityPage";
 import ReportsPage from "./pages/Reports/ReportsPage";
 import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
+import UserManagementPage from "./pages/UserManagement/UserManagementPage";
+import PublicActionPortalPage from "./pages/PublicActionPortal/PublicActionPortalPage";
+import AuditLogsPage from "./pages/AuditLogs/AuditLogsPage";
 
 function App() {
   // Track which page is active — starts on dashboard
   const { user, loading } = useAuth();
+  console.log("USER ROLE:", user?.role_name);
   // Set default page based on role
   const getDefaultPage = (role) => {
     switch (role) {
@@ -70,6 +74,7 @@ function App() {
       "sustainability",
       "action-tracker",
       "reports",
+      "public-actions",
     ],
     it_admin: [
       "dashboard",
@@ -82,6 +87,9 @@ function App() {
       "sustainability",
       "action-tracker",
       "reports",
+      "users",
+      "audit-logs",
+      "public-actions",
     ],
     qa: ["compliance", "ppe", "action-tracker"],
     storekeeper: ["ppe", "action-tracker"],
@@ -114,6 +122,12 @@ function App() {
         return <ReportsPage />;
       case "action-tracker":
         return <ActionTrackerPage />;
+      case "users":
+        return <UserManagementPage />;
+      case "audit-logs":
+        return <AuditLogsPage />;
+      case "public-actions":
+        return <PublicActionPortalPage />;
       default:
         return <PPEPage />;
     }

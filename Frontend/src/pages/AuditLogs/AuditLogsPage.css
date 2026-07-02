@@ -1,0 +1,137 @@
+.al-page {
+  padding: 28px;
+  font-family: Arial, sans-serif;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+.al-header {
+  margin-bottom: 20px;
+}
+.al-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a5276;
+  margin: 0 0 4px 0;
+}
+.al-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Filter bar */
+.al-filters {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.al-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.al-filter-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.al-filter-input {
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  color: #333;
+  background: #fff;
+}
+.al-filter-input:focus {
+  outline: none;
+  border-color: #1a5276;
+}
+.al-btn-primary {
+  background: #1a5276;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  height: fit-content;
+}
+.al-btn-primary:hover { background: #154360; }
+
+/* Table */
+.al-table-wrap {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.al-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.al-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #1a5276;
+  color: #fff;
+  font-weight: 500;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.al-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #222;
+  vertical-align: middle;
+}
+.al-table tr:last-child td { border-bottom: none; }
+.al-table tr:hover td { background: #f8fafc; }
+
+/* Action badges */
+.al-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.al-badge.CREATE { background: #eafaf1; color: #27ae60; }
+.al-badge.UPDATE { background: #eaf2fb; color: #1a5276; }
+.al-badge.DELETE { background: #fdecea; color: #c0392b; }
+
+.al-details {
+  font-size: 11px;
+  color: #999;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.al-table-name {
+  font-family: monospace;
+  font-size: 11px;
+  background: #f0f0f0;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #555;
+}
+.al-empty {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+  font-size: 13px;
+}
