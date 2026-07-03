@@ -20,6 +20,7 @@
   align-items: center;
   gap: 12px;
 }
+.pap-logo-img    { height: 36px; width: auto; object-fit: contain; }
 .pap-logo-dot {
   width: 32px;
   height: 32px;

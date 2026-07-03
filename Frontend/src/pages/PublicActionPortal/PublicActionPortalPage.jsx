@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PublicActionPortalPage.css";
+import capwellLogo from "../../assets/capwell-logo.png";
 
 const BASE = import.meta.env.VITE_API_URL;
 
@@ -18,6 +19,7 @@ const DEPARTMENTS = [
   "Maintenance",
   "IT",
   "Production",
+  "Sales",
 ];
 
 export default function PublicActionPortal() {
@@ -34,7 +36,7 @@ export default function PublicActionPortal() {
 
   useEffect(() => {
     axios
-      .get(`${BASE}/api/public/actions`)
+      .get(`${BASE}/public/actions`)
       .then((r) => setActions(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -43,7 +45,7 @@ export default function PublicActionPortal() {
   const handleSubmit = async () => {
     if (!form.description) return setError("Please describe the issue.");
     try {
-      await axios.post(`${BASE}/api/public/actions/submit`, form);
+      await axios.post(`${BASE}/public/actions/submit`, form);
       setSubmitted(true);
       setError("");
     } catch (err) {
@@ -58,7 +60,7 @@ export default function PublicActionPortal() {
       {/* Header */}
       <div className="pap-topbar">
         <div className="pap-logo-area">
-          <div className="pap-logo-dot" />
+          <img src={capwellLogo} alt="Capwell" className="pap-logo-img" />
           <div>
             <div className="pap-logo-title">Capwell Industries</div>
             <div className="pap-logo-sub">EHSS Management System</div>
