@@ -88,6 +88,7 @@ function DashboardPage() {
   const [calendarActivities, setCalendarActivities] = useState([]);
   const [costRecords, setCostRecords] = useState([]);
   const [ppeItems, setPpeItems] = useState([]);
+  const [actionData, setActionData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,8 +98,9 @@ function DashboardPage() {
       apiFetch(`/calendar`).then((r) => r.json()),
       apiFetch(`/costs`).then((r) => r.json()),
       apiFetch(`/ppe`).then((r) => r.json()),
+      apiFetch(`/actionTracker`).then((r) => r.json()),
     ])
-      .then(([safety, compliance, calendar, costs, ppe]) => {
+      .then(([safety, compliance, calendar, costs, ppe, actions]) => {
         // Safety — calculate TRIFR/LTIFR per month
         setSafetyData(
           safety.map((r) => {
@@ -142,6 +144,9 @@ function DashboardPage() {
 
         // PPE
         setPpeItems(ppe);
+
+        // Action Tracker
+        setActionData(actions);
 
         setLoading(false);
       })
@@ -221,6 +226,14 @@ function DashboardPage() {
     (c) => c.daysLeft >= 0 && c.daysLeft <= 30,
   ).length;
   const expiredCount = complianceAlerts.filter((c) => c.daysLeft < 0).length;
+
+  // Action Tracker
+  const openActions = actionData.filter(
+    (a) => a.status === "Pending" || a.status === "In Progress",
+  ).length;
+  const highPriorityActions = actionData.filter(
+    (a) => a.priority === "High" && a.status !== "Completed",
+  ).length;
 
   if (loading)
     return (
@@ -313,6 +326,25 @@ function DashboardPage() {
             </div>
           </div>
         </div>
+
+        <div
+          className={`dash-card ${highPriorityActions > 0 ? "card-warn" : ""}`}
+        >
+          <div className="dash-card-icon" style={{ background: "#FDECEA" }}>
+            📌
+          </div>
+          <div className="dash-card-body">
+            <div className="dash-card-label">Open Actions</div>
+            <div
+              className={`dash-card-value ${highPriorityActions > 0 ? "red" : "green"}`}
+            >
+              {openActions}
+            </div>
+            <div className="dash-card-sub">
+              {highPriorityActions} high priority
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── Two column section ── */}
@@ -395,6 +427,12 @@ function DashboardPage() {
               onClick={() => setAlertTab("calendar")}
             >
               📅 Upcoming
+            </button>
+            <button
+              className={`dash-tab ${alertTab === "actions" ? "active" : ""}`}
+              onClick={() => setAlertTab("actions")}
+            >
+              📌 Actions
             </button>
           </div>
 
@@ -495,6 +533,34 @@ function DashboardPage() {
               ).length === 0 && (
                 <div className="dash-empty">
                   No upcoming activities scheduled.
+                </div>
+              )}
+            </div>
+          )}
+
+          {alertTab === "actions" && (
+            <div className="dash-alert-list">
+              {actionData
+                .filter(
+                  (a) => a.status !== "Completed" && a.priority === "High",
+                )
+                .slice(0, 6)
+                .map((a, i) => (
+                  <div key={i} className="dash-alert-item alert-expired">
+                    <div className="dash-alert-name">{a.concern}</div>
+                    <div className="dash-alert-meta">
+                      <span>
+                        {a.responsible || "Unassigned"} · {a.department || "—"}
+                      </span>
+                      <span className="comp-badge expired">High Priority</span>
+                    </div>
+                  </div>
+                ))}
+              {actionData.filter(
+                (a) => a.status !== "Completed" && a.priority === "High",
+              ).length === 0 && (
+                <div className="dash-empty">
+                  ✓ No high priority open actions.
                 </div>
               )}
             </div>

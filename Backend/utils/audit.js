@@ -11,8 +11,8 @@ async function logAudit({ userId, userName, action, tableName, recordId, oldValu
        ip || null]
     );
   } catch (err) {
-    console.error('Audit log failed:', err.message);
-  }
+  console.error('Audit log failed:', err.message, err.stack);
+}
 }
 
 module.exports = logAudit;

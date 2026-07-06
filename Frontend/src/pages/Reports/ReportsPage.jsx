@@ -2342,10 +2342,32 @@ export default function ReportsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+              <div
+                style={{ height: 200, minHeight: 200, marginBottom: "14px" }}
+              >
+                <div className="rep-section-title">Actions by Priority</div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={["High", "Medium", "Low"].map((p) => ({
+                      name: p,
+                      count: actionTrackerData.filter((a) => a.priority === p)
+                        .length,
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#1a5276" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
               <table className="rep-table">
                 <thead>
                   <tr>
                     <th>Concern</th>
+                    <th>Department</th>
+                    <th>Priority</th>
                     <th>Action</th>
                     <th>Responsible</th>
                     <th>Target Date</th>
@@ -2357,6 +2379,20 @@ export default function ReportsPage() {
                   {actionTrackerData.map((a, i) => (
                     <tr key={i}>
                       <td>{a.concern}</td>
+                      <td>{a.department || "—"}</td>
+                      <td
+                        style={{
+                          fontWeight: 600,
+                          color:
+                            a.priority === "High"
+                              ? "#e74c3c"
+                              : a.priority === "Low"
+                                ? "#27ae60"
+                                : "#e67e22",
+                        }}
+                      >
+                        {a.priority || "—"}
+                      </td>
                       <td>{a.action}</td>
                       <td>{a.responsible}</td>
                       <td>{a.targetDate}</td>

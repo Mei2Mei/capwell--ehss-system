@@ -1,21 +1,9 @@
-// ─────────────────────────────────────────────────────────────
-// App.jsx
-// The root of the EHSS application.
-// Controls which page is shown based on what the user clicks
-// in the sidebar navigation.
-//
-// How navigation works:
-// - "activePage" stores which page is currently showing
-// - When the user clicks a sidebar item, setActivePage updates
-// - The renderPage function returns the correct page component
-// ─────────────────────────────────────────────────────────────
-
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout/Layout";
 import LoginPage from "./pages/Login/LoginPage";
 
-// Import all pages
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import SafetyPage from "./pages/Safety/SafetyPage";
 import CostsPage from "./pages/Costs/CostsPage";
@@ -30,72 +18,65 @@ import UserManagementPage from "./pages/UserManagement/UserManagementPage";
 import PublicActionPortalPage from "./pages/PublicActionPortal/PublicActionPortalPage";
 import AuditLogsPage from "./pages/AuditLogs/AuditLogsPage";
 
-function App() {
-  // Track which page is active — starts on dashboard
-  const { user, loading } = useAuth();
-  console.log("USER ROLE:", user?.role_name);
-  // Set default page based on role
-  const getDefaultPage = (role) => {
-    switch (role) {
-      case "storekeeper":
-      case "supervisor":
-      case "production_manager":
-        return "ppe";
-      case "qa":
-        return "compliance";
-      default:
-        return "dashboard";
-    }
-  };
+const allowedPages = {
+  ehss_officer: [
+    "dashboard",
+    "safety",
+    "costs",
+    "compliance",
+    "calendar",
+    "equipment",
+    "ppe",
+    "sustainability",
+    "action-tracker",
+    "reports",
+    "public-actions",
+  ],
+  it_admin: [
+    "dashboard",
+    "safety",
+    "costs",
+    "compliance",
+    "calendar",
+    "equipment",
+    "ppe",
+    "sustainability",
+    "action-tracker",
+    "reports",
+    "users",
+    "audit-logs",
+    "public-actions",
+  ],
+  qa: ["compliance", "ppe", "action-tracker"],
+  storekeeper: ["ppe", "action-tracker"],
+  supervisor: ["ppe", "action-tracker"],
+  production_manager: ["ppe", "action-tracker"],
+};
 
+const getDefaultPage = (role) => {
+  switch (role) {
+    case "storekeeper":
+    case "supervisor":
+    case "production_manager":
+      return "ppe";
+    case "qa":
+      return "compliance";
+    default:
+      return "dashboard";
+  }
+};
+
+function MainApp() {
+  const { user, loading } = useAuth();
   const [activePage, setActivePage] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setActivePage(getDefaultPage(user.role_name));
-    }
+    if (user) setActivePage(getDefaultPage(user.role_name));
   }, [user?.role_name]);
 
   if (loading) return <div style={{ padding: "28px" }}>Loading...</div>;
-
   if (!user) return <LoginPage />;
-
-  // Returns the correct page component based on activePage
-  const allowedPages = {
-    ehss_officer: [
-      "dashboard",
-      "safety",
-      "costs",
-      "compliance",
-      "calendar",
-      "equipment",
-      "ppe",
-      "sustainability",
-      "action-tracker",
-      "reports",
-      "public-actions",
-    ],
-    it_admin: [
-      "dashboard",
-      "safety",
-      "costs",
-      "compliance",
-      "calendar",
-      "equipment",
-      "ppe",
-      "sustainability",
-      "action-tracker",
-      "reports",
-      "users",
-      "audit-logs",
-      "public-actions",
-    ],
-    qa: ["compliance", "ppe", "action-tracker"],
-    storekeeper: ["ppe", "action-tracker"],
-    supervisor: ["ppe", "action-tracker"],
-    production_manager: ["ppe", "action-tracker"],
-  };
 
   function renderPage() {
     const allowed = allowedPages[user?.role_name] || ["dashboard"];
@@ -134,9 +115,6 @@ function App() {
   }
 
   return (
-    // Layout wraps everything — sidebar + content
-    // activePage tells the sidebar which item to highlight
-    // setActivePage is called when user clicks a nav item
     <Layout
       activePage={activePage}
       onNavigate={setActivePage}
@@ -145,6 +123,15 @@ function App() {
     >
       {renderPage()}
     </Layout>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/public/actions" element={<PublicActionPortalPage />} />
+      <Route path="*" element={<MainApp />} />
+    </Routes>
   );
 }
 

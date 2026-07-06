@@ -71,7 +71,7 @@ const getRequests = async (req, res) => {
 const createItem = async (req, res) => {
   try {
     const item = await ppeModel.createPPEItem(req.body);
-     await logAudit({ userId: req.user?.id, userName: req.user?.name, action: 'CREATE', tableName: 'ppe_inventory', recordId: item.id, newValue: item, ip: req.ip });
+     await logAudit({ userId: req.user?.id, userName: req.user?.full_name, action: 'CREATE', tableName: 'ppe_inventory', recordId: item.id, newValue: item, ip: req.ip });
     res.status(201).json(item);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -79,7 +79,7 @@ const createItem = async (req, res) => {
 const updateItem = async (req, res) => {
   try {
     const item = await ppeModel.updatePPEItem(req.params.id, req.body);
-    await logAudit({ userId: req.user?.id, userName: req.user?.name, action: 'UPDATE', tableName: 'ppe_inventory', recordId: item.id, newValue: item, ip: req.ip });
+    await logAudit({ userId: req.user?.id, userName: req.user?.full_name, action: 'UPDATE', tableName: 'ppe_inventory', recordId: item.id, newValue: item, ip: req.ip });
     res.json(item);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -89,7 +89,7 @@ const deleteItem = async (req, res) => {
     const { reason } = req.body;
     if (!reason) return res.status(400).json({ error: 'Deletion reason is required.' });
     const deleted = await ppeModel.softDeletePPEItem(req.params.id, reason);
-    await logAudit({ userId: req.user?.id, userName: req.user?.name, action: 'DELETE', tableName: 'ppe_inventory', recordId: deleted.id, ip: req.ip });
+    await logAudit({ userId: req.user?.id, userName: req.user?.full_name, action: 'DELETE', tableName: 'ppe_inventory', recordId: deleted.id, ip: req.ip });
     res.json(deleted);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
