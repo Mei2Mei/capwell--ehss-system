@@ -28,14 +28,14 @@ CREATE TABLE permissions (
   id SERIAL PRIMARY KEY,
   role_id INTEGER REFERENCES roles(id),
   module_name VARCHAR(50) NOT NULL,
-  -- e.g. ppe_inventory, compliance, safety, costs, sustainability, calendar, action_tracker, equipment, reports
+  -- e.g. ppe_management, compliance, safety, costs, sustainability, calendar, action_tracker, equipment, reports
   access_level VARCHAR(20) NOT NULL CHECK (access_level IN ('full', 'edit', 'view', 'none')),
   can_delete BOOLEAN DEFAULT FALSE,
   UNIQUE(role_id, module_name)
 );
 
 -- ---------------------------------------------------------
--- PPE INVENTORY
+-- PPE MANAGEMENT
 -- ---------------------------------------------------------
 
 CREATE TABLE ppe_items (

@@ -15,20 +15,20 @@ INSERT INTO roles (role_name) VALUES
 -- EHSS Officer (Linda) - full access + delete everywhere
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
 SELECT id, module, 'full', TRUE FROM roles, 
-  unnest(ARRAY['ppe_inventory','compliance','safety','costs','sustainability','calendar','action_tracker','equipment','reports']) AS module
+  unnest(ARRAY['ppe_management','compliance','safety','costs','sustainability','calendar','action_tracker','equipment','reports']) AS module
 WHERE role_name = 'ehss_officer';
 
--- Storekeeper - PPE fulfill (edit access on ppe_inventory)
+-- Storekeeper - PPE fulfill (edit access on ppe_management)
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
-SELECT id, 'ppe_inventory', 'edit', FALSE FROM roles WHERE role_name = 'storekeeper';
+SELECT id, 'ppe_management', 'edit', FALSE FROM roles WHERE role_name = 'storekeeper';
 
 -- Supervisor - PPE request (edit access, no delete)
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
-SELECT id, 'ppe_inventory', 'edit', FALSE FROM roles WHERE role_name = 'supervisor';
+SELECT id, 'ppe_management', 'edit', FALSE FROM roles WHERE role_name = 'supervisor';
 
 -- Production Manager - PPE view only
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
-SELECT id, 'ppe_inventory', 'view', FALSE FROM roles WHERE role_name = 'production_manager';
+SELECT id, 'ppe_management', 'view', FALSE FROM roles WHERE role_name = 'production_manager';
 
 -- QA - Compliance add/edit/view (no delete)
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
@@ -37,7 +37,7 @@ SELECT id, 'compliance', 'edit', FALSE FROM roles WHERE role_name = 'qa';
 -- IT Admin - delete rights on sensitive modules
 INSERT INTO permissions (role_id, module_name, access_level, can_delete)
 SELECT id, module, 'full', TRUE FROM roles,
-  unnest(ARRAY['ppe_inventory','compliance','safety','costs']) AS module
+  unnest(ARRAY['ppe_management','compliance','safety','costs']) AS module
 WHERE role_name = 'it_admin';
 
 

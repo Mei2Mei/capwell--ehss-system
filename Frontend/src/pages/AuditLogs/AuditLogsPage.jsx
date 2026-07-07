@@ -5,7 +5,7 @@ import "./AuditLogsPage.css";
 const TABLES = [
   "",
   "users",
-  "ppe_inventory",
+  "ppe_management",
   "action_tracker",
   "equipment",
   "compliance_matrix",
@@ -18,7 +18,7 @@ const ACTIONS = ["", "CREATE", "UPDATE", "DELETE"];
 
 const TABLE_LABELS = {
   users: "Users",
-  ppe_inventory: "PPE Inventory",
+  ppe_management: "PPE Management",
   action_tracker: "Action Tracker",
   equipment: "Equipment",
   compliance_matrix: "Compliance",

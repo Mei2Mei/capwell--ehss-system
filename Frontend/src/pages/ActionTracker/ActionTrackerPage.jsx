@@ -98,7 +98,10 @@ export default function ActionTracker() {
     const matchesSearch =
       item.concern.toLowerCase().includes(search.toLowerCase()) ||
       item.action.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "All" ? true : item.status === filter;
+    const matchesFilter =
+      filter === "All"
+        ? true
+        : item.status?.toLowerCase() === filter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
@@ -451,7 +454,7 @@ export default function ActionTracker() {
                   </td>
                   <td>
                     <span
-                      className={`ehss-badge ${item.status?.toLowerCase().replace(" ", "-")}`}
+                      className={`ehss-badge ${(item.status || "").toLowerCase().replace(" ", "-")}`}
                     >
                       {item.status}
                     </span>
