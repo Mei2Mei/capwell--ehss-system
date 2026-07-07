@@ -195,3 +195,13 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.ehss-table-wrapper,
+.safety-table-wrap,
+.equipment-table-wrap,
+.comp-table-wrap,
+.costs-table-wrap,
+.um-table-wrap,
+.al-table-wrap {
+  overflow-x: auto;
+}

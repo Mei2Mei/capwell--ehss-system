@@ -70,6 +70,7 @@ export default function ReportsPage() {
   const [costRecords, setCostRecords] = useState([]);
   const [complianceItems, setComplianceItems] = useState([]);
   const [ppeItems, setPpeItems] = useState([]);
+  const [ppeRequests, setPpeRequests] = useState([]);
   const [sustainabilityRecords, setSustainabilityRecords] = useState([]);
   const [emissionFactors, setEmissionFactors] = useState({
     petrol: 0,
@@ -176,6 +177,7 @@ export default function ReportsPage() {
           costs,
           compliance,
           ppe,
+          ppeReqs,
           sustainability,
           factors,
           actions,
@@ -186,6 +188,7 @@ export default function ReportsPage() {
           apiFetch(`/costs`).then((r) => r.json()),
           apiFetch(`/compliance`).then((r) => r.json()),
           apiFetch(`/ppe`).then((r) => r.json()),
+          apiFetch(`/ppe/requests`).then((r) => r.json()),
           apiFetch(`/sustainability`).then((r) => r.json()),
           apiFetch(`/sustainability/factors`).then((r) => r.json()),
           apiFetch(`/actionTracker`).then((r) => r.json()),
@@ -210,6 +213,7 @@ export default function ReportsPage() {
           })),
         );
         setPpeItems(ppe);
+        setPpeRequests(ppeReqs);
         setSelectedPPE(ppe[0]?.id || "");
         setSustainabilityRecords(
           sustainability.map((r) => ({
@@ -265,8 +269,12 @@ export default function ReportsPage() {
       }
 
       if (reportType === "ppe" || reportType === "ppe_trend") {
-        const data = await apiFetch(`/ppe`).then((r) => r.json());
+        const [data, reqs] = await Promise.all([
+          apiFetch(`/ppe`).then((r) => r.json()),
+          apiFetch(`/ppe/requests`).then((r) => r.json()),
+        ]);
         setPpeItems(data);
+        setPpeRequests(reqs);
         if (!selectedPPE && data.length > 0) setSelectedPPE(data[0].id);
       }
 
@@ -1889,6 +1897,78 @@ export default function ReportsPage() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+              <div className="rep-section-title" style={{ marginTop: 20 }}>
+                PPE Request Summary
+              </div>
+              <div className="rep-summary-cards" style={{ marginBottom: 16 }}>
+                <div className="rep-card">
+                  <div className="rep-card-label">Total Requests</div>
+                  <div className="rep-card-value">{ppeRequests.length}</div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Approved</div>
+                  <div className="rep-card-value green">
+                    {ppeRequests.filter((r) => r.status === "approved").length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Pending</div>
+                  <div className="rep-card-value amber">
+                    {ppeRequests.filter((r) => r.status === "pending").length}
+                  </div>
+                </div>
+                <div className="rep-card">
+                  <div className="rep-card-label">Rejected</div>
+                  <div className="rep-card-value red">
+                    {ppeRequests.filter((r) => r.status === "rejected").length}
+                  </div>
+                </div>
+              </div>
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Requested By</th>
+                    <th>Worker</th>
+                    <th>Department</th>
+                    <th>Qty</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ppeRequests.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{ textAlign: "center", color: "#aaa" }}
+                      >
+                        No requests found.
+                      </td>
+                    </tr>
+                  ) : (
+                    ppeRequests.map((r, i) => (
+                      <tr key={i}>
+                        <td>
+                          {r.item_name
+                            ? `${r.item_name} (${r.size_spec})`
+                            : "—"}
+                        </td>
+                        <td>{r.requested_by_name || "—"}</td>
+                        <td>{r.worker_name || "—"}</td>
+                        <td>{r.department || "—"}</td>
+                        <td>{r.quantity}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${r.status === "approved" ? "badge-valid" : r.status === "rejected" ? "badge-expired" : "badge-expiring"}`}
+                          >
+                            {r.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </>

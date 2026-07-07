@@ -91,11 +91,14 @@ const getAllRequests = async () => {
       r.*,
       u.full_name as requested_by_name,
       a.full_name as approved_by_name,
-      f.full_name as fulfilled_by_name
+      f.full_name as fulfilled_by_name,
+      p.item_name,
+      p.size_spec
     FROM ppe_requests r
     LEFT JOIN users u ON r.requested_by = u.id
     LEFT JOIN users a ON r.approved_by = a.id
     LEFT JOIN users f ON r.fulfilled_by = f.id
+    LEFT JOIN ppe_items p ON r.ppe_item_id = p.id
     ORDER BY r.requested_at DESC
   `);
   return result.rows;

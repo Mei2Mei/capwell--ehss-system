@@ -370,7 +370,7 @@ export default function ActionTracker() {
       </div>
 
       {/* TABLE */}
-      <div className="ehss-table-wrap">
+      <div className="ehss-table-wrapper">
         <table className="ehss-table">
           <thead>
             <tr>

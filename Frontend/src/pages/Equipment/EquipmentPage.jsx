@@ -317,69 +317,71 @@ export default function EquipmentPage() {
       </div>
 
       {/* TABLE */}
-      <table className="equipment-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Location</th>
-            <th>Capacity</th>
-            <th>Status</th>
-            <th>Last Inspection</th>
-            <th>Next Inspection</th>
-            <th>Inspection status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      <div className="equipment-table-wrap">
+        <table className="equipment-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th>Last Inspection</th>
+              <th>Next Inspection</th>
+              <th>Inspection status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {filtered.map((e) => {
-            const inspection = getInspectionStatus(e.nextInspection);
+          <tbody>
+            {filtered.map((e) => {
+              const inspection = getInspectionStatus(e.nextInspection);
 
-            return (
-              <tr key={e.id}>
-                <td>{e.id}</td>
-                <td>{e.name}</td>
-                <td>{e.category}</td>
-                <td>{e.location}</td>
-                <td>{e.capacity}</td>
-                <td>
-                  <span
-                    className={`equipment-status ${e.status
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    {e.status}
-                  </span>
-                </td>
-                <td>{e.lastInspection}</td>
-                <td>{e.nextInspection}</td>
-                <td>
-                  <span className={`equipment-status ${inspection.cls}`}>
-                    {inspection.text}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className="equipment-btn-sm equipment-edit-btn"
-                    onClick={() => handleEdit(e)}
-                  >
-                    ✎ Edit
-                  </button>
+              return (
+                <tr key={e.id}>
+                  <td>{e.id}</td>
+                  <td>{e.name}</td>
+                  <td>{e.category}</td>
+                  <td>{e.location}</td>
+                  <td>{e.capacity}</td>
+                  <td>
+                    <span
+                      className={`equipment-status ${e.status
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
+                      {e.status}
+                    </span>
+                  </td>
+                  <td>{e.lastInspection}</td>
+                  <td>{e.nextInspection}</td>
+                  <td>
+                    <span className={`equipment-status ${inspection.cls}`}>
+                      {inspection.text}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="equipment-btn-sm equipment-edit-btn"
+                      onClick={() => handleEdit(e)}
+                    >
+                      ✎ Edit
+                    </button>
 
-                  <button
-                    className="equipment-btn-sm equipment-delete-btn"
-                    onClick={() => handleDeleteOpen(e)}
-                  >
-                    🗑 Delete
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                    <button
+                      className="equipment-btn-sm equipment-delete-btn"
+                      onClick={() => handleDeleteOpen(e)}
+                    >
+                      🗑 Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* MODAL */}
       {showModal && (

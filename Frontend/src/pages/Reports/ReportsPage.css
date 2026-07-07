@@ -95,6 +95,7 @@
 .rep-card-value.red   { color: #c0392b; }
 .rep-card-value.amber { color: #e67e22; }
 .rep-card-value.green { color: #27ae60; }
+.rep-table-wrap {overflow-x: auto;}
 .rep-table {
   width: 100%;
   border-collapse: collapse;

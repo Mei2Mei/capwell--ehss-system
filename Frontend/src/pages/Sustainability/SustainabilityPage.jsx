@@ -414,32 +414,34 @@ export default function SustainabilityPage() {
             </div>
             <div className="sust-panel">
               <div className="sust-panel-title">💧 Water data table</div>
-              <table className="sust-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Consumed (m³)</th>
-                    <th>Recycled (m³)</th>
-                    <th>Recycled %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => (
-                    <tr key={r.id}>
-                      <td>{formatMonth(r.period)}</td>
-                      <td>{r.water_consumption_m3}</td>
-                      <td>{r.water_recycled_m3}</td>
-                      <td>
-                        {(
-                          (r.water_recycled_m3 / r.water_consumption_m3) *
-                          100
-                        ).toFixed(1)}
-                        %
-                      </td>
+              <div className="sust-table-wrap">
+                <table className="sust-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Consumed (m³)</th>
+                      <th>Recycled (m³)</th>
+                      <th>Recycled %</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {records.map((r) => (
+                      <tr key={r.id}>
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{r.water_consumption_m3}</td>
+                        <td>{r.water_recycled_m3}</td>
+                        <td>
+                          {(
+                            (r.water_recycled_m3 / r.water_consumption_m3) *
+                            100
+                          ).toFixed(1)}
+                          %
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -482,32 +484,34 @@ export default function SustainabilityPage() {
           </div>
           <div className="sust-panel" style={{ marginTop: "14px" }}>
             <div className="sust-panel-title">⚡ Energy data table</div>
-            <table className="sust-table">
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Electricity (kWh)</th>
-                  <th>Solar (kWh)</th>
-                  <th>Firewood (t)</th>
-                  <th>Diesel (L)</th>
-                  <th>Petrol (L)</th>
-                  <th>LPG (kg)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr key={r.id}>
-                    <td>{formatMonth(r.period)}</td>
-                    <td>{r.electricity_kwh.toLocaleString()}</td>
-                    <td>{r.solar_kwh.toLocaleString()}</td>
-                    <td>{r.firewood_tonnes}</td>
-                    <td>{r.diesel_litres.toLocaleString()}</td>
-                    <td>{r.petrol_litres.toLocaleString()}</td>
-                    <td>{r.lpg_kg}</td>
+            <div className="sust-table-wrap">
+              <table className="sust-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Electricity (kWh)</th>
+                    <th>Solar (kWh)</th>
+                    <th>Firewood (t)</th>
+                    <th>Diesel (L)</th>
+                    <th>Petrol (L)</th>
+                    <th>LPG (kg)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {records.map((r) => (
+                    <tr key={r.id}>
+                      <td>{formatMonth(r.period)}</td>
+                      <td>{r.electricity_kwh.toLocaleString()}</td>
+                      <td>{r.solar_kwh.toLocaleString()}</td>
+                      <td>{r.firewood_tonnes}</td>
+                      <td>{r.diesel_litres.toLocaleString()}</td>
+                      <td>{r.petrol_litres.toLocaleString()}</td>
+                      <td>{r.lpg_kg}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -541,28 +545,30 @@ export default function SustainabilityPage() {
             </div>
             <div className="sust-panel">
               <div className="sust-panel-title">🗑 Waste data table</div>
-              <table className="sust-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Paper (kg)</th>
-                    <th>Plastic (kg)</th>
-                    <th>Hazardous (kg)</th>
-                    <th>Recyclable (kg)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => (
-                    <tr key={r.id}>
-                      <td>{formatMonth(r.period)}</td>
-                      <td>{r.paper_waste_kg.toLocaleString()}</td>
-                      <td>{r.plastic_packaging_kg}</td>
-                      <td>{r.hazardous_waste_kg}</td>
-                      <td>{r.recyclable_plastic_kg}</td>
+              <div className="sust-table-wrap">
+                <table className="sust-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Paper (kg)</th>
+                      <th>Plastic (kg)</th>
+                      <th>Hazardous (kg)</th>
+                      <th>Recyclable (kg)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {records.map((r) => (
+                      <tr key={r.id}>
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{r.paper_waste_kg.toLocaleString()}</td>
+                        <td>{r.plastic_packaging_kg}</td>
+                        <td>{r.hazardous_waste_kg}</td>
+                        <td>{r.recyclable_plastic_kg}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -625,54 +631,56 @@ export default function SustainabilityPage() {
           </div>
           <div className="sust-panel" style={{ marginTop: "14px" }}>
             <div className="sust-panel-title">🌿 Emissions data table</div>
-            <table className="sust-table">
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Petrol (kgCO₂e)</th>
-                  <th>Diesel (kgCO₂e)</th>
-                  <th>Firewood (kgCO₂e)</th>
-                  <th>LPG (kgCO₂e)</th>
-                  <th>Scope 1 total</th>
-                  <th>Scope 2 (elec)</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => {
-                  const petrol = (
-                    r.petrol_litres * emissionFactors.petrol
-                  ).toFixed(3);
-                  const diesel = (
-                    r.diesel_litres * emissionFactors.diesel
-                  ).toFixed(3);
-                  const firewood = (
-                    r.firewood_tonnes * emissionFactors.firewood
-                  ).toFixed(3);
-                  const lpg = (r.lpg_kg * emissionFactors.lpg).toFixed(3);
-                  const scope1 = calcScope1(r);
-                  const scope2 = calcScope2(r);
-                  return (
-                    <tr key={r.id}>
-                      <td>{formatMonth(r.period)}</td>
-                      <td>{petrol}</td>
-                      <td>{diesel}</td>
-                      <td>{firewood}</td>
-                      <td>{lpg}</td>
-                      <td>
-                        <strong>{scope1.toFixed(3)}</strong>
-                      </td>
+            <div className="sust-table-wrap">
+              <table className="sust-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Petrol (kgCO₂e)</th>
+                    <th>Diesel (kgCO₂e)</th>
+                    <th>Firewood (kgCO₂e)</th>
+                    <th>LPG (kgCO₂e)</th>
+                    <th>Scope 1 total</th>
+                    <th>Scope 2 (elec)</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((r) => {
+                    const petrol = (
+                      r.petrol_litres * emissionFactors.petrol
+                    ).toFixed(3);
+                    const diesel = (
+                      r.diesel_litres * emissionFactors.diesel
+                    ).toFixed(3);
+                    const firewood = (
+                      r.firewood_tonnes * emissionFactors.firewood
+                    ).toFixed(3);
+                    const lpg = (r.lpg_kg * emissionFactors.lpg).toFixed(3);
+                    const scope1 = calcScope1(r);
+                    const scope2 = calcScope2(r);
+                    return (
+                      <tr key={r.id}>
+                        <td>{formatMonth(r.period)}</td>
+                        <td>{petrol}</td>
+                        <td>{diesel}</td>
+                        <td>{firewood}</td>
+                        <td>{lpg}</td>
+                        <td>
+                          <strong>{scope1.toFixed(3)}</strong>
+                        </td>
 
-                      <td>{scope2.toFixed(3)}</td>
+                        <td>{scope2.toFixed(3)}</td>
 
-                      <td>
-                        <strong>{(scope1 + scope2).toFixed(3)}</strong>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td>
+                          <strong>{(scope1 + scope2).toFixed(3)}</strong>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -166,6 +166,7 @@
   border-radius: 8px;
   overflow-x: auto;
   margin-bottom: 12px;
+  display: block;
 }
 
 .equipment-table {
