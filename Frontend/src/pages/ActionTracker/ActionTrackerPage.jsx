@@ -271,82 +271,86 @@ export default function ActionTracker() {
       </div>
 
       {/* STATS */}
-      <div className="ehss-cards">
-        <div className="ehss-card">
-          <div className="ehss-card-label">Total Actions</div>
-          <div className="ehss-card-value">{total}</div>
+      {isFullAccess && (
+        <div className="ehss-cards">
+          <div className="ehss-card">
+            <div className="ehss-card-label">Total Actions</div>
+            <div className="ehss-card-value">{total}</div>
+          </div>
+          <div className="ehss-card">
+            <div className="ehss-card-label">Completed</div>
+            <div className="ehss-card-value green">{completed}</div>
+          </div>
+          <div className="ehss-card">
+            <div className="ehss-card-label">In Progress</div>
+            <div className="ehss-card-value amber">{inProgress}</div>
+          </div>
+          <div className="ehss-card">
+            <div className="ehss-card-label">Pending</div>
+            <div className="ehss-card-value red">{pending}</div>
+          </div>
+          <div className="ehss-card">
+            <div className="ehss-card-label">Completion Rate</div>
+            <div className="ehss-card-value">{completionRate}%</div>
+          </div>
         </div>
-        <div className="ehss-card">
-          <div className="ehss-card-label">Completed</div>
-          <div className="ehss-card-value green">{completed}</div>
-        </div>
-        <div className="ehss-card">
-          <div className="ehss-card-label">In Progress</div>
-          <div className="ehss-card-value amber">{inProgress}</div>
-        </div>
-        <div className="ehss-card">
-          <div className="ehss-card-label">Pending</div>
-          <div className="ehss-card-value red">{pending}</div>
-        </div>
-        <div className="ehss-card">
-          <div className="ehss-card-label">Completion Rate</div>
-          <div className="ehss-card-value">{completionRate}%</div>
-        </div>
-      </div>
+      )}
 
       {/* CHARTS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-          marginBottom: 20,
-        }}
-      >
-        <div className="ehss-card">
-          <div className="ehss-card-label" style={{ marginBottom: 8 }}>
-            Status Breakdown
+      {isFullAccess && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+            marginBottom: 20,
+          }}
+        >
+          <div className="ehss-card">
+            <div className="ehss-card-label" style={{ marginBottom: 8 }}>
+              Status Breakdown
+            </div>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={statusPieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={70}
+                  label
+                >
+                  {statusPieData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie
-                data={statusPieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                label
+          <div className="ehss-card">
+            <div className="ehss-card-label" style={{ marginBottom: 8 }}>
+              Actions by Priority
+            </div>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart
+                data={PRIORITIES.map((p) => ({
+                  name: p,
+                  count: visibleActions.filter((a) => a.priority === p).length,
+                }))}
               >
-                {statusPieData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="ehss-card">
-          <div className="ehss-card-label" style={{ marginBottom: 8 }}>
-            Actions by Priority
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#1a5276" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart
-              data={PRIORITIES.map((p) => ({
-                name: p,
-                count: visibleActions.filter((a) => a.priority === p).length,
-              }))}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#1a5276" />
-            </BarChart>
-          </ResponsiveContainer>
         </div>
-      </div>
+      )}
 
       {/* FILTERS */}
       <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
