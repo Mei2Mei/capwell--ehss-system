@@ -79,5 +79,8 @@ app.use('/api/public/actions', publicActionsRouter);
 const auditLogsRouter = require('./routes/auditLogs');
 app.use('/api/audit-logs', auditLogsRouter);
 
+const publicPPEMatrixRouter = require('./routes/publicPPEMatrix');
+app.use('/api/public/ppe-matrix', publicPPEMatrixRouter);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
