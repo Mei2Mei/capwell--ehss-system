@@ -16,8 +16,9 @@ ORDER BY date_raised DESC NULLS LAST`
 );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  console.error('PUBLIC SUBMIT ERROR:', err.message, err.stack);
+  res.status(500).json({ error: err.message });
+}
 });
 
 // Public submit — external parties raise an action item
@@ -44,8 +45,9 @@ router.post("/submit", async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  console.error('PUBLIC SUBMIT ERROR:', err.message, err.stack);
+  res.status(500).json({ error: err.message });
+}
 });
 
 module.exports = router;
