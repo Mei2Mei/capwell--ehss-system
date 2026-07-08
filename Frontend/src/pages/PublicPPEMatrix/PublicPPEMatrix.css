@@ -1,0 +1,62 @@
+.ppm-page {
+  font-family: Arial, sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.ppm-topbar {
+  background: #1a5276;
+  color: #fff;
+  padding: 14px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ppm-logo-area { display: flex; align-items: center; gap: 12px; }
+.ppm-logo-dot { width: 32px; height: 32px; border-radius: 50%; background: #f39c12; }
+.ppm-logo-title { font-size: 16px; font-weight: 700; }
+.ppm-logo-sub { font-size: 11px; opacity: 0.75; }
+.ppm-portal-label { font-size: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px; border-radius: 20px; }
+
+.ppm-content { max-width: 1100px; margin: 28px auto; padding: 0 20px; width: 100%; flex: 1; }
+
+.ppm-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 24px 28px; }
+.ppm-card-title { font-size: 16px; font-weight: 600; color: #1a5276; margin: 0 0 6px 0; }
+.ppm-card-sub { font-size: 12px; color: #888; margin: 0 0 16px 0; }
+
+.ppm-legend { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+.ppm-table-wrap { overflow-x: auto; display: block; }
+.ppm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ppm-table th {
+  text-align: center;
+  padding: 10px 12px;
+  background: #1a5276;
+  color: #fff;
+  font-weight: 500;
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 110px;
+}
+.ppm-table th:first-child { text-align: left; min-width: 150px; }
+.ppm-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center; }
+.ppm-table td:first-child { text-align: left; }
+.ppm-table tr:last-child td { border-bottom: none; }
+.ppm-table tr:hover td { background: #f8fafc; }
+.ppm-cell { text-align: center; }
+
+.ppm-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-mandatory { background: #27ae60; color: #fff; }
+.badge-recommended { background: #e67e22; color: #fff; }
+.badge-none { color: #aaa; background: #f0f0f0; }
+
+.ppm-empty { text-align: center; padding: 40px; color: #aaa; font-size: 13px; }
+.ppm-error { color: #c0392b; padding: 16px; font-size: 13px; }
+.ppm-footer { text-align: center; padding: 16px; font-size: 11px; color: #aaa; }

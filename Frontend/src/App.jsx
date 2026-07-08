@@ -16,6 +16,7 @@ import ReportsPage from "./pages/Reports/ReportsPage";
 import ActionTrackerPage from "./pages/ActionTracker/ActionTrackerPage";
 import UserManagementPage from "./pages/UserManagement/UserManagementPage";
 import PublicActionPortalPage from "./pages/PublicActionPortal/PublicActionPortalPage";
+import PublicPPEMatrix from "./pages/PublicPPEMatrix/PublicPPEMatrix";
 import AuditLogsPage from "./pages/AuditLogs/AuditLogsPage";
 
 const allowedPages = {
@@ -130,6 +131,7 @@ function App() {
   return (
     <Routes>
       <Route path="/public/actions" element={<PublicActionPortalPage />} />
+      <Route path="/public/ppe-matrix" element={<PublicPPEMatrix />} />
       <Route path="*" element={<MainApp />} />
     </Routes>
   );
