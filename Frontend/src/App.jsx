@@ -31,7 +31,6 @@ const allowedPages = {
     "sustainability",
     "action-tracker",
     "reports",
-    "public-actions",
   ],
   it_admin: [
     "dashboard",
@@ -46,7 +45,6 @@ const allowedPages = {
     "reports",
     "users",
     "audit-logs",
-    "public-actions",
   ],
   qa: ["compliance", "ppe", "action-tracker"],
   storekeeper: ["ppe", "action-tracker"],
@@ -108,8 +106,6 @@ function MainApp() {
         return <UserManagementPage />;
       case "audit-logs":
         return <AuditLogsPage />;
-      case "public-actions":
-        return <PublicActionPortalPage />;
       default:
         return <PPEPage />;
     }

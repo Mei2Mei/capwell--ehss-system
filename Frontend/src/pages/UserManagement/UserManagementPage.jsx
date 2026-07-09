@@ -45,6 +45,9 @@ export default function UserManagement() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
+  const [resetModal, setResetModal] = useState(false);
+  const [resetUser, setResetUser] = useState(null);
+  const [resetPw, setResetPw] = useState("");
 
   const load = async () => {
     try {
@@ -215,6 +218,17 @@ export default function UserManagement() {
                     >
                       Delete
                     </button>
+                    <button
+                      className="um-btn-sm"
+                      onClick={() => {
+                        setResetUser(u);
+                        setResetPw("");
+                        setResetModal(true);
+                      }}
+                      style={{ color: "#8e44ad", borderColor: "#8e44ad" }}
+                    >
+                      Reset PW
+                    </button>
                   </td>
                 </tr>
               ))
@@ -327,6 +341,47 @@ export default function UserManagement() {
               </button>
               <button className="um-btn-primary" onClick={handleSubmit}>
                 Save User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*RESET PW MODAL*/}
+      {resetModal && (
+        <div className="um-modal-overlay">
+          <div className="um-modal">
+            <h2 className="um-modal-title">
+              Reset Password — {resetUser?.name}
+            </h2>
+            <div className="um-form-group">
+              <label className="um-form-label">New Password</label>
+              <input
+                className="um-form-input"
+                type="password"
+                value={resetPw}
+                onChange={(e) => setResetPw(e.target.value)}
+                placeholder="Enter new password"
+              />
+            </div>
+            <div className="um-modal-buttons">
+              <button
+                className="um-btn-secondary"
+                onClick={() => setResetModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="um-btn-primary"
+                onClick={async () => {
+                  if (!resetPw) return;
+                  await api.put(`/users/${resetUser.id}/reset-password`, {
+                    new_password: resetPw,
+                  });
+                  setResetModal(false);
+                }}
+              >
+                Reset
               </button>
             </div>
           </div>

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
+import ChangePasswordModal from "./ChangePasswordModal";
 import capwellLogo from "../../assets/capwell-logo.png";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showChangePw, setShowChangePw] = useState(false);
 
   const allNavItems = [
     {
@@ -80,12 +82,6 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       id: "reports",
       label: "Reports",
       icon: "📊",
-      roles: ["ehss_officer", "it_admin"],
-    },
-    {
-      id: "public-actions",
-      label: "Public Portal",
-      icon: "🌐",
       roles: ["ehss_officer", "it_admin"],
     },
     { id: "users", label: "User Management", icon: "👥", roles: ["it_admin"] },
@@ -188,12 +184,25 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
             </div>
           )}
           {!collapsed && (
+            <button
+              className="sidebar-logout"
+              onClick={() => setShowChangePw(true)}
+              style={{ marginBottom: 6, background: "rgba(255,255,255,0.05)" }}
+            >
+              🔑 Change Password
+            </button>
+          )}
+
+          {!collapsed && (
             <button className="sidebar-logout" onClick={logout}>
               Logout
             </button>
           )}
         </div>
       </div>
+      {showChangePw && (
+        <ChangePasswordModal onClose={() => setShowChangePw(false)} />
+      )}
     </>
   );
 }
