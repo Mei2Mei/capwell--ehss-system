@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'capwell_ehss_secret_key';
-const JWT_EXPIRES = '9h'; // token expires after 9 hours (one work day)
+const JWT_EXPIRES = '8h'; // token expires after 9 hours (one work day)
 
 const generateToken = (user) => {
   return jwt.sign(
