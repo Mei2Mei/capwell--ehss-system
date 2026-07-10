@@ -38,8 +38,10 @@ export default function PublicPPEMatrix() {
         <div className="ppm-logo-area">
           <img src={logo} alt="EHSS" className="pap-logo-img" />
           <div>
-            <div className="ppm-logo-title">EHSS</div>
-            <div className="ppm-logo-sub">Management System</div>
+            <div className="ppm-logo-title">EHSS Management System</div>
+            <div className="ppm-logo-sub">
+              Environmental, Health, Safety & Sustainability
+            </div>
           </div>
         </div>
         <div className="ppm-portal-label">PPE Matrix — Public View</div>

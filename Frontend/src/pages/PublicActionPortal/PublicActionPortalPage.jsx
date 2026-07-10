@@ -62,8 +62,10 @@ export default function PublicActionPortal() {
         <div className="pap-logo-area">
           <img src={logo} alt="EHSS" className="pap-logo-img" />
           <div>
-            <div className="pap-logo-title">EHSS</div>
-            <div className="pap-logo-sub">Management System</div>
+            <div className="pap-logo-title">EHSS Management System</div>
+            <div className="pap-logo-sub">
+              Environmental, Health, Safety & Sustainability
+            </div>
           </div>
         </div>
         <div className="pap-portal-label">Public Action Tracker Portal</div>
