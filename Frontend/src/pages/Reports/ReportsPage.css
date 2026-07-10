@@ -131,3 +131,29 @@
 
 .badge-valid { background: #27ae60; color: #fff; }
 .badge-pending { background: #95a5a6; color: #fff; }
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+  
+  /* Prevent charts cutting across pages */
+  .recharts-wrapper,
+  .rep-chart-wrap,
+  canvas {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent tables cutting awkwardly */
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Section breaks */
+  .rep-section {
+    page-break-before: auto;
+    break-before: auto;
+  }
+}

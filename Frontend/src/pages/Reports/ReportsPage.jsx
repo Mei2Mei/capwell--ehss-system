@@ -417,6 +417,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -424,38 +425,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1025,6 +1015,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1032,38 +1023,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1182,6 +1162,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1189,38 +1170,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1325,6 +1295,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1332,38 +1303,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1492,6 +1452,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1499,38 +1460,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1629,6 +1579,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1636,38 +1587,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1782,6 +1722,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1789,38 +1730,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -1992,6 +1922,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -1999,38 +1930,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -2101,6 +2021,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -2108,38 +2029,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
@@ -2295,6 +2205,7 @@ export default function ReportsPage() {
                   onClick={async () => {
                     const btn = document.getElementById("hide-on-export");
                     btn.style.display = "none";
+
                     const element = document.querySelector(".rep-preview");
                     const canvas = await html2canvas(element, {
                       scale: 2,
@@ -2302,38 +2213,27 @@ export default function ReportsPage() {
                       logging: false,
                     });
 
+                    btn.style.display = "";
+
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
-                    const imgWidth = pageWidth;
+                    const imgWidth = pageWidth - 20;
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                    let heightLeft = imgHeight;
-                    let position = 0;
-
-                    pdf.addImage(
-                      imgData,
-                      "PNG",
-                      0,
-                      position,
-                      imgWidth,
-                      imgHeight,
-                    );
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft > 0) {
-                      position = heightLeft - imgHeight;
-                      pdf.addPage();
+                    const totalPages = Math.ceil(imgHeight / (pageHeight - 20));
+                    for (let i = 0; i < totalPages; i++) {
+                      if (i > 0) pdf.addPage();
+                      const yOffset = -(i * (pageHeight - 20)) + 10;
                       pdf.addImage(
                         imgData,
                         "PNG",
-                        0,
-                        position,
+                        10,
+                        yOffset,
                         imgWidth,
                         imgHeight,
                       );
-                      heightLeft -= pageHeight;
                     }
 
                     pdf.save(
