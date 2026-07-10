@@ -29,7 +29,10 @@ const updateActionItem = async (req, res) => {
     const item = await actionTrackerModel.updateAction(req.params.id, req.body);
     await logAudit({ userId: req.user?.id, userName: req.user?.full_name, action: 'UPDATE', tableName: 'action_tracker', recordId: item.id, newValue: item, ip: req.ip });
     res.json(item);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { 
+  console.error('UPDATE ACTION ERROR:', err.message);
+  res.status(500).json({ error: err.message }); 
+}
 };
 
 const deleteActionItem = async (req, res) => {

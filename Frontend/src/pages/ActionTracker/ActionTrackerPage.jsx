@@ -256,7 +256,7 @@ export default function ActionTracker() {
   };
 
   return (
-    <div className="ehss-page">
+    <div className="ehss-container">
       {/* HEADER */}
       <div className="ehss-header">
         <div>
@@ -276,25 +276,25 @@ export default function ActionTracker() {
       {/* STATS */}
       {isFullAccess && (
         <div className="ehss-cards">
-          <div className="ehss-card">
+          <div className="ehss-card ehss-card-primary">
             <div className="ehss-card-label">Total Actions</div>
-            <div className="ehss-card-value">{total}</div>
+            <h3>{total}</h3>
           </div>
-          <div className="ehss-card">
+          <div className="ehss-card ehss-card-success">
             <div className="ehss-card-label">Completed</div>
-            <div className="ehss-card-value green">{completed}</div>
+            <h3 className="green">{completed}</h3>
           </div>
-          <div className="ehss-card">
+          <div className="ehss-card ehss-card-warning">
             <div className="ehss-card-label">In Progress</div>
-            <div className="ehss-card-value amber">{inProgress}</div>
+            <h3 className="amber">{inProgress}</h3>
           </div>
-          <div className="ehss-card">
+          <div className="ehss-card ehss-card-danger">
             <div className="ehss-card-label">Pending</div>
-            <div className="ehss-card-value red">{pending}</div>
+            <h3 className="red">{pending}</h3>
           </div>
           <div className="ehss-card">
             <div className="ehss-card-label">Completion Rate</div>
-            <div className="ehss-card-value">{completionRate}%</div>
+            <h3 className="grey"> {completionRate}%</h3>
           </div>
         </div>
       )}
@@ -387,6 +387,7 @@ export default function ActionTracker() {
               <th>Action</th>
               <th>Responsible</th>
               <th>Date Raised</th>
+              <th>Days Elapsed</th>
               <th>Target Date</th>
               <th>Progress</th>
               <th>Status</th>
@@ -422,6 +423,14 @@ export default function ActionTracker() {
                   <td>{item.action}</td>
                   <td>{item.responsible || "—"}</td>
                   <td>{item.dateRaised || "—"}</td>
+                  <td>
+                    {item.dateRaised
+                      ? Math.floor(
+                          (new Date() - new Date(item.dateRaised)) /
+                            (1000 * 60 * 60 * 24),
+                        )
+                      : "—"}
+                  </td>
                   <td>{item.targetDate || "—"}</td>
                   <td>
                     <div

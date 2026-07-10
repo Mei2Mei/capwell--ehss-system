@@ -49,42 +49,46 @@
 }
 
 .ehss-card-primary {
-    border-left: 5px solid #95a5a6;
+  border-left-color: #95a5a6;
 }
 
 .ehss-card-success {
-  border-left: 5px solid #27ae60;
+  border-left-color: #27ae60;
 }
 
 .ehss-card-info {
-  border-left: 5px solid #2980b9;
+  border-left-color: #2980b9;
 }
 
 .ehss-card-warning {
-  border-left: 5px solid #e67e22;
+  border-left-color: #e67e22;
 }
 
 .ehss-card-danger {
-  border-left: 5px solid #c0392b;
+  border-left-color: #c0392b;
 }
 
 .ehss-card-completionrate { 
-    border-left: 5px solid #95a5a6; 
+  border-left-color: #95a5a6; 
 }
 
 .ehss-card-label {
   font-size: 11px;
   color: #888;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .ehss-card h3 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: #111;
 }
+.ehss-card h3.green { color: #27ae60; }
+.ehss-card h3.amber { color: #e67e22; }
+.ehss-card h3.red   { color: #c0392b; }
+.ehss-card h3.grey  { color: #95a5a6; }
 
 /* ─────────────────────────────
    CONTROLS

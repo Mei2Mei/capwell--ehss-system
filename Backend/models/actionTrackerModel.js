@@ -31,7 +31,7 @@ const updateAction = async (id, data) => {
     `UPDATE action_tracker 
      SET concern=$1, action=$2, responsible=$3, date_raised=$4, target_date=$5, 
          progress=$6, status=$7, department=$8, priority=$9, updated_at=NOW()
-     WHERE id=$10  RETURNING *, TO_CHAR(date_raised, 'YYYY-MM-DD') as date_raised, TO_CHAR(target_date, 'YYYY-MM-DD') as target_date *`,
+     WHERE id=$10  RETURNING *, TO_CHAR(date_raised, 'YYYY-MM-DD') as date_raised, TO_CHAR(target_date, 'YYYY-MM-DD') as target_date`,
     [concern, action, responsible, date_raised, target_date, progress, status, department || null, priority || 'Medium', id]
   );
   return result.rows[0];

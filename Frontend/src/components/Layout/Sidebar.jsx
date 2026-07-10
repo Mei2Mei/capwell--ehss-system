@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
 import ChangePasswordModal from "./ChangePasswordModal";
-import capwellLogo from "../../assets/capwell-logo.png";
+import logo from "../../assets/logo.jpg";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();
@@ -135,14 +135,10 @@ function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
       >
         <div className="sidebar-logo">
           {!collapsed && (
-            <img src={capwellLogo} alt="Capwell" className="sidebar-logo-img" />
+            <img src={logo} alt="EHSS" className="sidebar-logo-img" />
           )}
           {collapsed && (
-            <img
-              src={capwellLogo}
-              alt="Capwell"
-              className="sidebar-logo-img-sm"
-            />
+            <img src={logo} alt="EHSS" className="sidebar-logo-img-sm" />
           )}
           {!collapsed && (
             <div className="sidebar-logo-text">

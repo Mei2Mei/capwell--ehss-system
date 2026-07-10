@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PublicPPEMatrix.css";
-import capwellLogo from "../../assets/capwell-logo.png";
+import logo from "../../assets/logo.jpg";
 
 const BASE = import.meta.env.VITE_API_URL;
 
@@ -36,10 +36,10 @@ export default function PublicPPEMatrix() {
       {/* Header */}
       <div className="ppm-topbar">
         <div className="ppm-logo-area">
-          <img src={capwellLogo} alt="Capwell" className="pap-logo-img" />
+          <img src={logo} alt="EHSS" className="pap-logo-img" />
           <div>
-            <div className="ppm-logo-title">Capwell Industries</div>
-            <div className="ppm-logo-sub">EHSS Management System</div>
+            <div className="ppm-logo-title">EHSS</div>
+            <div className="ppm-logo-sub">Management System</div>
           </div>
         </div>
         <div className="ppm-portal-label">PPE Matrix — Public View</div>
@@ -108,7 +108,7 @@ export default function PublicPPEMatrix() {
       </div>
 
       <div className="ppm-footer">
-        © {new Date().getFullYear()} Capwell Industries · EHSS Management System
+        © {new Date().getFullYear()} EHSS Management System
       </div>
     </div>
   );

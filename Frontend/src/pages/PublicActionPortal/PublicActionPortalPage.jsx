@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PublicActionPortalPage.css";
-import capwellLogo from "../../assets/capwell-logo.png";
+import logo from "../../assets/logo.jpg";
 
 const BASE = import.meta.env.VITE_API_URL;
 
@@ -60,10 +60,10 @@ export default function PublicActionPortal() {
       {/* Header */}
       <div className="pap-topbar">
         <div className="pap-logo-area">
-          <img src={capwellLogo} alt="Capwell" className="pap-logo-img" />
+          <img src={logo} alt="EHSS" className="pap-logo-img" />
           <div>
-            <div className="pap-logo-title">Capwell Industries</div>
-            <div className="pap-logo-sub">EHSS Management System</div>
+            <div className="pap-logo-title">EHSS</div>
+            <div className="pap-logo-sub">Management System</div>
           </div>
         </div>
         <div className="pap-portal-label">Public Action Tracker Portal</div>
@@ -219,7 +219,7 @@ export default function PublicActionPortal() {
       </div>
 
       <div className="pap-footer">
-        © {new Date().getFullYear()} Capwell Industries · EHSS Management System
+        © {new Date().getFullYear()} EHSS Management System
       </div>
     </div>
   );
