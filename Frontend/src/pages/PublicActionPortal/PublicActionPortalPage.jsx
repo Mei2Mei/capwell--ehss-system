@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import "./PublicActionPortalPage.css";
 import logo from "../../assets/Logo.png";
 
 const BASE = import.meta.env.VITE_API_URL;
-
-const STATUS_CLASS = {
-  Open: "pap-badge open",
-  "In Progress": "pap-badge inprogress",
-  Closed: "pap-badge closed",
-};
 
 const DEPARTMENTS = [
   "HR",
@@ -20,10 +14,11 @@ const DEPARTMENTS = [
   "IT",
   "Production",
   "Sales",
+  "Engineering",
+  "QA",
 ];
 
 export default function PublicActionPortal() {
-  const [actions, setActions] = useState([]);
   const [form, setForm] = useState({
     description: "",
     department: "",
@@ -31,21 +26,20 @@ export default function PublicActionPortal() {
     reporter_email: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [referenceId, setReferenceId] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    axios
-      .get(`${BASE}/public/actions`)
-      .then((r) => setActions(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  // Check status
+  const [refInput, setRefInput] = useState("");
+  const [statusResult, setStatusResult] = useState(null);
+  const [statusError, setStatusError] = useState("");
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!form.description) return setError("Please describe the issue.");
     try {
-      await axios.post(`${BASE}/public/actions/submit`, form);
+      const res = await axios.post(`${BASE}/public/actions/submit`, form);
+      setReferenceId(res.data.id);
       setSubmitted(true);
       setError("");
     } catch (err) {
@@ -55,9 +49,35 @@ export default function PublicActionPortal() {
     }
   };
 
+  const handleCheckStatus = async () => {
+    if (!refInput.trim())
+      return setStatusError("Please enter a reference number.");
+    setStatusLoading(true);
+    setStatusError("");
+    setStatusResult(null);
+    try {
+      const res = await axios.get(
+        `${BASE}/public/actions/status/${refInput.trim()}`,
+      );
+      setStatusResult(res.data);
+    } catch (err) {
+      setStatusError("No submission found with that reference number.");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  const STATUS_COLOR = {
+    Pending: { bg: "#f3f4f6", color: "#6b7280" },
+    Open: { bg: "#fef9e7", color: "#e67e22" },
+    "In Progress": { bg: "#eaf2fb", color: "#1a5276" },
+    Completed: { bg: "#eafaf1", color: "#27ae60" },
+    Closed: { bg: "#eafaf1", color: "#27ae60" },
+  };
+
   return (
     <div className="pap-page">
-      {/* Header */}
+      {/* Topbar */}
       <div className="pap-topbar">
         <div className="pap-logo-area">
           <img src={logo} alt="EHSS" className="pap-logo-img" />
@@ -116,6 +136,7 @@ export default function PublicActionPortal() {
             </div>
           </div>
         </div>
+
         {/* Submit form */}
         <div className="pap-card">
           <h2 className="pap-card-title">🚩 Report a Safety Issue or Action</h2>
@@ -126,9 +147,50 @@ export default function PublicActionPortal() {
           </p>
 
           {submitted ? (
-            <div className="pap-success">
-              ✓ Your report has been submitted successfully. The EHSS team will
-              review it shortly.
+            <div className="pap-success-wrap">
+              <div className="pap-success">
+                <span style={{ fontSize: 28 }}>✅</span>
+                <div>
+                  <div
+                    style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}
+                  >
+                    Report submitted successfully!
+                  </div>
+                  <div style={{ fontSize: 13, opacity: 0.9 }}>
+                    The EHSS team will review your report shortly.
+                  </div>
+                </div>
+              </div>
+
+              {referenceId && (
+                <div className="pap-reference">
+                  <div className="pap-reference-label">
+                    Your Reference Number
+                  </div>
+                  <div className="pap-reference-number">#{referenceId}</div>
+                  <div className="pap-reference-hint">
+                    Save this number. Use it below to check the status of your
+                    report at any time.
+                  </div>
+                </div>
+              )}
+
+              <button
+                className="pap-btn-submit"
+                style={{ marginTop: 8 }}
+                onClick={() => {
+                  setSubmitted(false);
+                  setForm({
+                    description: "",
+                    department: "",
+                    reporter_name: "",
+                    reporter_email: "",
+                  });
+                  setReferenceId(null);
+                }}
+              >
+                Submit Another Report
+              </button>
             </div>
           ) : (
             <>
@@ -193,74 +255,96 @@ export default function PublicActionPortal() {
           )}
         </div>
 
-        {/* Open actions */}
+        {/* Check status */}
         <div className="pap-card">
-          <h2 className="pap-card-title">📋 Open Action Items</h2>
+          <h2 className="pap-card-title">🔍 Check Your Submission Status</h2>
           <p className="pap-card-sub">
-            Currently tracked open and in-progress actions.
+            Enter the reference number you received after submitting your
+            report.
           </p>
-          <div className="pap-table-wrap">
-            {loading ? (
-              <div className="pap-empty">Loading...</div>
-            ) : (
-              <table className="pap-table">
-                <thead>
-                  <tr>
-                    {[
-                      "ID",
-                      "Description",
-                      "Department",
-                      "Assigned To",
-                      "Due Date",
-                      "Priority",
-                      "Status",
-                    ].map((h) => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {actions.length === 0 ? (
-                    <tr>
-                      <td colSpan={7}>
-                        <div className="pap-empty">
-                          No open action items at this time.
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    actions.map((a) => (
-                      <tr key={a.id}>
-                        <td>#{a.id}</td>
-                        <td className="pap-desc">{a.description}</td>
-                        <td>{a.department || "—"}</td>
-                        <td>{a.assigned_to || "—"}</td>
-                        <td>
-                          {a.due_date
-                            ? new Date(a.due_date).toLocaleDateString()
-                            : "—"}
-                        </td>
-                        <td>
-                          <span
-                            className={`pap-priority pap-priority-${(a.priority || "").toLowerCase()}`}
-                          >
-                            {a.priority || "—"}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={STATUS_CLASS[a.status] || "pap-badge"}
-                          >
-                            {a.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            )}
+
+          <div className="pap-status-row">
+            <input
+              className="pap-form-input"
+              placeholder="e.g. 27"
+              value={refInput}
+              onChange={(e) =>
+                setRefInput(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              style={{ flex: 1 }}
+            />
+            <button
+              className="pap-btn-submit"
+              onClick={handleCheckStatus}
+              disabled={statusLoading}
+            >
+              {statusLoading ? "Checking..." : "Check Status"}
+            </button>
           </div>
+
+          {statusError && (
+            <div className="pap-error" style={{ marginTop: 12 }}>
+              {statusError}
+            </div>
+          )}
+
+          {statusResult && (
+            <div className="pap-status-result">
+              <div className="pap-status-ref">Reference #{statusResult.id}</div>
+              <div className="pap-status-concern">{statusResult.concern}</div>
+              <div className="pap-status-row-info">
+                <div>
+                  <span className="pap-status-meta-label">Department</span>
+                  <span className="pap-status-meta-value">
+                    {statusResult.department || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="pap-status-meta-label">Date Raised</span>
+                  <span className="pap-status-meta-value">
+                    {statusResult.date_raised
+                      ? new Date(statusResult.date_raised).toLocaleDateString()
+                      : "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="pap-status-meta-label">Assigned To</span>
+                  <span className="pap-status-meta-value">
+                    {statusResult.responsible || "Pending"}
+                  </span>
+                </div>
+                <div>
+                  <span className="pap-status-meta-label">Target Date</span>
+                  <span className="pap-status-meta-value">
+                    {statusResult.target_date
+                      ? new Date(statusResult.target_date).toLocaleDateString()
+                      : "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="pap-status-meta-label">Status</span>
+                  <span
+                    className="pap-status-badge"
+                    style={{
+                      background:
+                        STATUS_COLOR[statusResult.status]?.bg || "#f3f4f6",
+                      color: STATUS_COLOR[statusResult.status]?.color || "#333",
+                    }}
+                  >
+                    {statusResult.status}
+                  </span>
+                </div>
+              </div>
+              {statusResult.action && (
+                <div className="pap-status-action">
+                  <span className="pap-status-meta-label">
+                    Action being taken
+                  </span>
+                  <span>{statusResult.action}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

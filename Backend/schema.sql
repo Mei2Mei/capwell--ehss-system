@@ -1,5 +1,5 @@
 -- =========================================================
--- Capwell EHSS System - Database Schema
+-- EHSS System - Database Schema
 -- Generated from frontend data files (Phase 4 reverse-engineering)
 -- =========================================================
 

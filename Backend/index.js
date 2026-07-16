@@ -7,7 +7,7 @@ app.use(cors({
   origin: function(origin, callback) {
     const allowed = [
       'http://localhost:5173',
-      'https://capwell-ehss-system.vercel.app',
+      'https://ehss-system.vercel.app',
     ];
     if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Capwell EHSS Backend API running');
+  res.send('EHSS Backend API running');
 });
 
 const { requireAuth } = require('./middleware/auth');

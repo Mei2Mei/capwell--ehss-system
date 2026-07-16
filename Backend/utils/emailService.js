@@ -23,13 +23,13 @@ const sendPublicActionAlert = async ({ description, department, reporter_name, r
     : 'Anonymous';
 
   const mailOptions = {
-    from: `"Capwell EHSS System" <${process.env.SMTP_USER}>`,
+    from: `"EHSS System" <${process.env.SMTP_USER}>`,
     to: process.env.LINDA_EMAIL, // e.g. linda@capwell.com
     subject: '⚠️ New Safety Issue Reported — Action Required',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #1a5276; padding: 20px 24px; border-radius: 8px 8px 0 0;">
-          <h2 style="color: #fff; margin: 0; font-size: 18px;">Capwell EHSS — New Action Submitted</h2>
+          <h2 style="color: #fff; margin: 0; font-size: 18px;">EHSS — New Action Submitted</h2>
         </div>
         <div style="background: #f5f7fa; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
           <p style="margin: 0 0 16px; color: #333;">A new safety issue or action has been submitted via the Public Action Portal.</p>
@@ -55,7 +55,7 @@ const sendPublicActionAlert = async ({ description, department, reporter_name, r
 
           <p style="margin: 20px 0 0; font-size: 12px; color: #888;">
             Please log in to the EHSS system to review and assign this action item.<br/>
-            This is an automated notification from the Capwell EHSS Management System.
+            This is an automated notification from the EHSS Management System.
           </p>
         </div>
       </div>

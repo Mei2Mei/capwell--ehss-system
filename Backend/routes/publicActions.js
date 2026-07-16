@@ -50,4 +50,20 @@ router.post("/submit", async (req, res) => {
 }
 });
 
+// GET status by reference number
+router.get('/status/:id', async (req, res) => {
+  try {
+    const result = await pool.query(
+   `SELECT id, concern, action, responsible, date_raised, target_date, status, department
+   FROM action_tracker WHERE id = $1`,
+  [req.params.id]
+);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+  console.error('STATUS ERROR:', err.message, err.stack);
+  res.status(500).json({ error: err.message });
+}
+});
+
 module.exports = router;
