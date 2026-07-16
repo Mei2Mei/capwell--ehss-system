@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./LoginPage.css";
-import logo from "../../assets/logo.jpg";
+import logo from "../../assets/Logo.png";
 
 export default function LoginPage() {
   const { login } = useAuth();

@@ -48,6 +48,7 @@ export default function UserManagement() {
   const [resetModal, setResetModal] = useState(false);
   const [resetUser, setResetUser] = useState(null);
   const [resetPw, setResetPw] = useState("");
+  const [showResetPw, setShowResetPw] = useState(false);
 
   const load = async () => {
     try {
@@ -356,13 +357,48 @@ export default function UserManagement() {
             </h2>
             <div className="um-form-group">
               <label className="um-form-label">New Password</label>
-              <input
-                className="um-form-input"
-                type="password"
-                value={resetPw}
-                onChange={(e) => setResetPw(e.target.value)}
-                placeholder="Enter new password"
-              />
+              <div style={{ display: "flex", gap: 6 }}>
+                <input
+                  className="um-form-input"
+                  type={showResetPw ? "text" : "password"}
+                  value={resetPw}
+                  onChange={(e) => setResetPw(e.target.value)}
+                  placeholder="Enter new password"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  title={showResetPw ? "Hide password" : "Show password"}
+                  onClick={() => setShowResetPw(!showResetPw)}
+                  style={{
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 6,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showResetPw ? "🙈" : "👁️"}
+                </button>
+                <button
+                  type="button"
+                  title="Copy password"
+                  onClick={() => {
+                    if (resetPw) {
+                      navigator.clipboard.writeText(resetPw);
+                    }
+                  }}
+                  style={{
+                    padding: "8px 10px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 6,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  📋
+                </button>
+              </div>
             </div>
             <div className="um-modal-buttons">
               <button

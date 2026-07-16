@@ -4,7 +4,7 @@
 
 .equipment-container {
   padding: 20px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 
 .equipment-container * {
@@ -22,7 +22,7 @@
 .equipment-title {
   font-size: 22px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
   margin: 0;
 }
 
@@ -45,14 +45,14 @@
 
 .equipment-card {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   padding: 16px 20px;
 }
 
 .equipment-card-label {
   font-size: 11px;
-  color: #888;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -82,7 +82,7 @@
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-xl);
   border: 1px solid #ccc;
 }
 
@@ -113,14 +113,14 @@
 .equipment-form-select {
    padding: 8px 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
 }
 
 .equipment-form-input:focus,
 .equipment-form-select:focus {
   outline: none;
-  border-color: #1a5276;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(26,82,118,0.15);
 }
 
@@ -133,11 +133,11 @@
 
 /* BUTTONS */
 .equipment-btn-primary {
-  background: #1a5276;
+  background: var(--color-primary);
   color: white;
   border: none;
   padding: 9px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 500;
 }
@@ -150,20 +150,20 @@
   background: white;
   border: 1px solid #ccc;
   padding: 8px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
 .required {
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 
 /* TABLE */
 .equipment-table-wrap {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   overflow-x: auto;
   margin-bottom: 12px;
   display: block;
@@ -179,7 +179,7 @@
 .equipment-table th {
   text-align: left;
   padding: 12px 14px;
-  background-color: #1a5276;
+  background-color: var(--color-primary);
   color: #ffffff;
   font-weight: 500;
   font-size: 12px;
@@ -237,7 +237,7 @@
 .equipment-modal-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
   margin-bottom: 16px;
 }
 
@@ -250,11 +250,11 @@
 
 /* ── Primary action button ── */
 .add-btn {
-  background: #1a5276;
+  background: var(--color-primary);
   color: #ffffff;
   border: none;
   padding: 9px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 500;
   position: relative;
@@ -271,7 +271,7 @@
   margin-bottom: 10px;
   font-size: 18px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
 }
 
 .modal-actions {
@@ -284,7 +284,7 @@
   background: white;
   border: 1px solid #ccc;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
@@ -293,7 +293,7 @@
   color: white;
   border: none;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
@@ -303,7 +303,7 @@
 
 .equipment-btn-sm {
   border: 1px solid #d0d7de;
-  background: #ffffff;
+  background: var(--color-surface);
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
@@ -316,13 +316,13 @@
 }
 
 .equipment-edit-btn {
-  color: #1a5276;
-  border-color: #1a5276;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .equipment-delete-btn {
-  color: #c0392b;
-  border-color: #c0392b;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 
@@ -334,7 +334,7 @@
 .equipment-box {
   width: 260px;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid #ccc;
   font-size: 13px;
 }
@@ -362,26 +362,26 @@
   padding: 6px 12px;
   border: 1px solid #d0d7de;
   background: white;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 12px;
   transition: all 0.2s ease;
 }
 
 .equipment-tab:hover {
-  border-color: #1a5276;
-  color: #1a5276;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .equipment-tab.active {
-  background: #1a5276;
+  background: var(--color-primary);
   color: white;
-  border-color: #1a5276;
+  border-color: var(--color-primary);
 }
 
 .equipment-search {
   padding: 9px 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   width: 260px;
 }

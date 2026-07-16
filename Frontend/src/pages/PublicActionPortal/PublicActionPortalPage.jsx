@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PublicActionPortalPage.css";
-import logo from "../../assets/logo.jpg";
+import logo from "../../assets/Logo.png";
 
 const BASE = import.meta.env.VITE_API_URL;
 
@@ -71,7 +71,51 @@ export default function PublicActionPortal() {
         <div className="pap-portal-label">Public Action Tracker Portal</div>
       </div>
 
+      {/* Hero */}
+      <div className="pap-hero">
+        <h1 className="pap-hero-title">Safety Issue Reporting Portal</h1>
+        <p className="pap-hero-sub">
+          Report workplace hazards, non-conformances, or request corrective
+          action
+        </p>
+      </div>
+
       <div className="pap-content">
+        {/* Info strip */}
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            margin: "0 0 4px 0",
+            padding: "14px 20px",
+            background: "linear-gradient(135deg, #eaf2fb, #e8f8f5)",
+            borderRadius: 10,
+            border: "1px solid #d4e6f1",
+          }}
+        >
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1a5276" }}>
+              24/7
+            </div>
+            <div style={{ fontSize: 11, color: "#888" }}>Available</div>
+          </div>
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#27ae60" }}>
+              Anonymous
+            </div>
+            <div style={{ fontSize: 11, color: "#888" }}>
+              Submissions accepted
+            </div>
+          </div>
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1a5276" }}>
+              EHSS
+            </div>
+            <div style={{ fontSize: 11, color: "#888" }}>
+              Team reviews all reports
+            </div>
+          </div>
+        </div>
         {/* Submit form */}
         <div className="pap-card">
           <h2 className="pap-card-title">🚩 Report a Safety Issue or Action</h2>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./PublicPPEMatrix.css";
-import logo from "../../assets/logo.jpg";
+import logo from "../../assets/Logo.png";
 
 const BASE = import.meta.env.VITE_API_URL;
 
@@ -45,6 +45,14 @@ export default function PublicPPEMatrix() {
           </div>
         </div>
         <div className="ppm-portal-label">PPE Matrix — Public View</div>
+      </div>
+
+      {/* Hero */}
+      <div className="ppm-hero">
+        <h1 className="ppm-hero-title">PPE Requirements Matrix</h1>
+        <p className="ppm-hero-sub">
+          Personal Protective Equipment requirements by department
+        </p>
       </div>
 
       <div className="ppm-content">

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
 import ChangePasswordModal from "./ChangePasswordModal";
-import logo from "../../assets/logo.jpg";
+import logo from "../../assets/Logo.png";
 
 function Sidebar({ activePage, onNavigate, collapsed, onToggle }) {
   const { user, logout } = useAuth();

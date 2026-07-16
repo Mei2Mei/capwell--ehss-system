@@ -267,70 +267,125 @@ function DashboardPage() {
             🧾
           </div>
           <div className="dash-card-body">
-            <div className="dash-card-label">Total YTD cost</div>
-            <div className="dash-card-value">KES 1.15M</div>
-            <div className="dash-card-sub">All in budget · 2026</div>
+            <div className="dash-card-label">Total YTD Cost</div>
+            <div
+              className="dash-card-value"
+              style={{ color: "var(--color-primary)" }}
+            >
+              KES 1.15M
+            </div>
+            <div className="dash-card-sub">📈 All in budget · 2026</div>
           </div>
         </div>
 
         <div
-          className={`dash-card ${expiredCount > 0 ? "card-danger" : expiringCount > 0 ? "card-warn" : ""}`}
+          className={`dash-card ${expiredCount > 0 ? "card-danger" : expiringCount > 0 ? "card-warn" : "card-ok"}`}
         >
-          <div className="dash-card-icon" style={{ background: "#FCEBEB" }}>
+          <div
+            className="dash-card-icon"
+            style={{
+              background:
+                expiredCount > 0
+                  ? "var(--color-danger-bg)"
+                  : expiringCount > 0
+                    ? "var(--color-warning-bg)"
+                    : "var(--color-success-bg)",
+            }}
+          >
             ✅
           </div>
           <div className="dash-card-body">
-            <div className="dash-card-label">Compliance alerts</div>
+            <div className="dash-card-label">Compliance Alerts</div>
             <div
-              className={`dash-card-value ${expiredCount > 0 ? "red" : "amber"}`}
+              className={`dash-card-value ${expiredCount > 0 ? "red" : expiringCount > 0 ? "amber" : "green"}`}
             >
-              {expiredCount > 0 ? expiredCount : expiringCount}
+              {expiredCount > 0
+                ? expiredCount
+                : expiringCount > 0
+                  ? expiringCount
+                  : "✓"}
             </div>
             <div className="dash-card-sub">
               {expiredCount > 0
-                ? `${expiredCount} expired`
-                : `${expiringCount} expiring within 30 days`}
+                ? `⚠ ${expiredCount} expired`
+                : expiringCount > 0
+                  ? `⏰ ${expiringCount} expiring soon`
+                  : "All compliant"}
             </div>
           </div>
         </div>
 
-        <div className={`dash-card ${totalIncidents > 0 ? "card-warn" : ""}`}>
-          <div className="dash-card-icon" style={{ background: "#FAEEDA" }}>
+        <div
+          className={`dash-card ${totalIncidents > 0 ? "card-warn" : "card-ok"}`}
+        >
+          <div
+            className="dash-card-icon"
+            style={{
+              background:
+                totalIncidents > 0
+                  ? "var(--color-warning-bg)"
+                  : "var(--color-success-bg)",
+            }}
+          >
             🛡️
           </div>
           <div className="dash-card-body">
-            <div className="dash-card-label">Safety incidents YTD</div>
+            <div className="dash-card-label">Safety Incidents YTD</div>
             <div
               className={`dash-card-value ${totalIncidents > 0 ? "amber" : "green"}`}
             >
               {totalIncidents}
             </div>
-            <div className="dash-card-sub">Months with recorded incidents</div>
+            <div className="dash-card-sub">
+              {totalIncidents === 0
+                ? "✓ No incidents recorded"
+                : "Months with recorded incidents"}
+            </div>
           </div>
         </div>
 
-        <div className={`dash-card ${ppeLowCount > 0 ? "card-warn" : ""}`}>
-          <div className="dash-card-icon" style={{ background: "#EAF3DE" }}>
+        <div
+          className={`dash-card ${ppeLowCount > 0 ? "card-warn" : "card-ok"}`}
+        >
+          <div
+            className="dash-card-icon"
+            style={{
+              background:
+                ppeLowCount > 0
+                  ? "var(--color-warning-bg)"
+                  : "var(--color-success-bg)",
+            }}
+          >
             🦺
           </div>
           <div className="dash-card-body">
-            <div className="dash-card-label">PPE needing attention</div>
+            <div className="dash-card-label">PPE Attention</div>
             <div
               className={`dash-card-value ${ppeLowCount > 0 ? "amber" : "green"}`}
             >
               {ppeLowCount}
             </div>
             <div className="dash-card-sub">
-              {outOfStockItems.length} out of stock · {lowStockItems.length} low
-              stock
+              {outOfStockItems.length > 0
+                ? `🔴 ${outOfStockItems.length} out of stock`
+                : "✓ Stock OK"}{" "}
+              · {lowStockItems.length} low
             </div>
           </div>
         </div>
 
         <div
-          className={`dash-card ${highPriorityActions > 0 ? "card-warn" : ""}`}
+          className={`dash-card ${highPriorityActions > 0 ? "card-danger" : "card-ok"}`}
         >
-          <div className="dash-card-icon" style={{ background: "#FDECEA" }}>
+          <div
+            className="dash-card-icon"
+            style={{
+              background:
+                highPriorityActions > 0
+                  ? "var(--color-danger-bg)"
+                  : "var(--color-success-bg)",
+            }}
+          >
             📌
           </div>
           <div className="dash-card-body">
@@ -341,7 +396,9 @@ function DashboardPage() {
               {openActions}
             </div>
             <div className="dash-card-sub">
-              {highPriorityActions} high priority
+              {highPriorityActions > 0
+                ? `🔴 ${highPriorityActions} high priority`
+                : "✓ No urgent actions"}
             </div>
           </div>
         </div>

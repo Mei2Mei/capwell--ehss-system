@@ -1,15 +1,15 @@
 .cal-page {
   padding: 28px;
-  font-family: Arial, sans-serif;
-  background: #f5f7fa;
+  font-family: var(--font-family);
+  background: var(--color-bg);
   min-height: 100vh;
 }
 .cal-success-banner {
   background: #eaf3de;
   border: 1px solid #27ae60;
-  color: #27ae60;
+  color: var(--color-success);
   padding: 10px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 16px;
   font-size: 13px;
   font-weight: 500;
@@ -23,25 +23,25 @@
 .cal-title {
   font-size: 22px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
   margin: 0 0 4px 0;
 }
 .cal-subtitle {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
   font-style: italic;
 }
 .cal-btn-primary {
-  background: #1a5276;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   padding: 9px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 .cal-btn-primary:hover { background: #154360; }
 .cal-btn-secondary {
@@ -49,10 +49,10 @@
   color: #555;
   border: 1px solid #ccc;
   padding: 9px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 .cal-btn-secondary:hover { background: #f0f0f0; }
 .cal-btn-sm {
@@ -62,7 +62,7 @@
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 .cal-btn-sm:hover { background: #f0f0f0; }
 .cal-cards {
@@ -73,18 +73,18 @@
 }
 .cal-card {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   padding: 14px 16px;
   border-left: 4px solid #e0e0e0;
 }
-.cal-card.card-completed { border-left-color: #27ae60; }
-.cal-card.card-overdue   { border-left-color: #c0392b; }
-.cal-card-label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.cal-card.card-completed { border-left-color: var(--color-success); }
+.cal-card.card-overdue   { border-left-color: var(--color-danger); }
+.cal-card-label { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
 .cal-card-value { font-size: 26px; font-weight: 700; color: #111; }
-.cal-card-value.green { color: #27ae60; }
-.cal-card-value.red   { color: #c0392b; }
-.cal-card-value.amber { color: #e67e22; }
+.cal-card-value.green { color: var(--color-success); }
+.cal-card-value.red   { color: var(--color-danger); }
+.cal-card-value.amber { color: var(--color-warning); }
 .cal-filter-row {
   display: flex;
   justify-content: space-between;
@@ -106,10 +106,10 @@
   font-size: 12px;
   color: #555;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
 }
 .cal-tab:hover { background: #f0f0f0; }
-.cal-tab.active { background: #1a5276; color: #fff; border-color: #1a5276; font-weight: 500; }
+.cal-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); font-weight: 500; }
 .cal-filter-right {
   display: flex;
   gap: 8px;
@@ -118,9 +118,9 @@
 .cal-select {
   padding: 7px 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 12px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   background: #fff;
   color: #111;
   color-scheme: light;
@@ -128,9 +128,9 @@
 .cal-search {
   padding: 7px 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 12px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   background: #fff;
   color: #111;
   color-scheme: light;
@@ -138,8 +138,8 @@
 }
 .cal-table-wrap {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   overflow-x: auto;
 }
 .cal-table {
@@ -151,7 +151,7 @@
 .cal-table th {
   text-align: left;
   padding: 11px 12px;
-  background: #1a5276;
+  background: var(--color-primary);
   color: #fff;
   font-weight: 500;
   font-size: 11px;
@@ -165,7 +165,7 @@
 .row-overdue   { background: #f5cba7; }
 .row-completed { background: #d5f5e3; }
 .cal-activity-name { font-weight: 500; max-width: 180px; }
-.cal-notes { font-size: 11px; color: #888; font-style: italic; max-width: 120px; }
+.cal-notes { font-size: 11px; color: var(--color-text-muted); font-style: italic; max-width: 120px; }
 .cal-badge {
   display: inline-block;
   padding: 3px 8px;
@@ -177,7 +177,7 @@
 .badge-statutory     { background: #e6f1fb; color: #0c447c; }
 .badge-practice      { background: #eaf3de; color: #27500a; }
 .badge-bbs           { background: #eeedfe; color: #3c3489; }
-.badge-scheduled     { background: #d6eaf8; color: #1a5276; }
+.badge-scheduled     { background: #d6eaf8; color: var(--color-primary); }
 .badge-completed     { background: #27ae60; color: #fff; }
 .badge-overdue       { background: #c0392b; color: #fff; }
 .badge-notconducted  { background: #e67e22; color: #fff; }
@@ -191,7 +191,7 @@
   background: #fff;
   color: #111;
   color-scheme: light;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   cursor: pointer;
 }
 .cal-modal-overlay {
@@ -217,7 +217,7 @@
 .cal-modal-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
   margin-bottom: 16px;
 }
 .cal-form-grid {
@@ -229,25 +229,25 @@
 .cal-form-group { display: flex; flex-direction: column; }
 .cal-form-group.full { grid-column: span 2; }
 .cal-form-label { font-size: 12px; color: #555; margin-bottom: 4px; font-weight: 500; }
-.required { color: #c0392b; margin-left: 2px; }
+.required { color: var(--color-danger); margin-left: 2px; }
 .cal-form-input,
 .cal-form-select {
   padding: 8px 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   color: #111;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   background: #fff;
   color-scheme: light;
 }
 .cal-form-input:focus,
 .cal-form-select:focus {
   outline: none;
-  border-color: #1a5276;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(26,82,118,0.15);
 }
-.cal-field-error { color: #c0392b; font-size: 11px; margin-top: 3px; }
+.cal-field-error { color: var(--color-danger); font-size: 11px; margin-top: 3px; }
 .cal-modal-buttons {
   display: flex;
   gap: 10px;
@@ -256,11 +256,11 @@
 }
 
 .cal-edit-btn {
-  color: #1a5276;
-  border-color: #1a5276;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .cal-delete-btn {
-  color: #c0392b;
-  border-color: #c0392b;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
 }

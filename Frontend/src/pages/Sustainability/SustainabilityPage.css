@@ -1,15 +1,15 @@
 .sust-page { 
     padding: 28px; 
-    font-family: Arial, sans-serif; 
-    background: #f5f7fa; 
+    font-family: var(--font-family); 
+    background: var(--color-bg); 
     min-height: 100vh; 
 }
 
 .sust-banner { 
     background: #eaf3de; 
     border: 1px solid #27ae60; 
-    color: #27ae60; padding: 10px 16px;
-    border-radius: 6px;
+    color: var(--color-success); padding: 10px 16px;
+    border-radius: var(--radius-md);
  margin-bottom: 16px; 
  font-size: 13px;
  font-weight: 500;
@@ -25,26 +25,26 @@
 .sust-title { 
     font-size: 22px; 
     font-weight: 600; 
-    color: #1a5276;
+    color: var(--color-primary);
     margin: 0 0 4px 0; 
 }
 .sust-subtitle { 
     font-size: 12px; 
-    color: #888;
+    color: var(--color-text-muted);
     margin: 0; 
     font-style: italic;
 }
 
 .sust-btn-primary { 
-    background: #1a5276;
+    background: var(--color-primary);
     color: #fff; 
     border: none; 
     padding: 9px 18px;    
-    border-radius: 6px;
+    border-radius: var(--radius-md);
  font-size: 13px; 
  font-weight: 500;
  cursor: pointer;
- font-family: Arial, sans-serif;
+ font-family: var(--font-family);
 }
 .sust-btn-primary:hover {
  background: #154360;
@@ -55,10 +55,10 @@
  color: #555; 
  border: 1px solid #ccc; 
  padding: 9px 18px; 
- border-radius: 6px; 
+ border-radius: var(--radius-md); 
  font-size: 13px; 
  cursor: pointer; 
- font-family: Arial, sans-serif; 
+ font-family: var(--font-family); 
 }
 
 .sust-cards { 
@@ -68,13 +68,13 @@
 }
 .sust-card { 
     background: #fff; 
-    border: 1px solid #e0e0e0; 
-    border-radius: 8px; 
+    border: 1px solid var(--color-border); 
+    border-radius: var(--radius-xl); 
     padding: 16px 20px; 
 }
 .sust-card-label { 
     font-size: 11px; 
-    color: #888; 
+    color: var(--color-text-muted); 
     margin-bottom: 6px; 
     text-transform: uppercase; 
     letter-spacing: 0.04em; 
@@ -85,7 +85,7 @@
     color: #111; 
 }
 .sust-card-value.amber { 
-    color: #e67e22; 
+    color: var(--color-warning); 
 }
 
 .sust-tabs { 
@@ -102,12 +102,12 @@
     font-size: 13px; 
     color: #555; 
     cursor: pointer; 
-    font-family: Arial, sans-serif; 
+    font-family: var(--font-family); 
 }
 .sust-tab.active { 
-    background: #1a5276; 
+    background: var(--color-primary); 
     color: #fff; 
-    border-color: #1a5276; 
+    border-color: var(--color-primary); 
     font-weight: 500; 
 }
 .sust-tab-content 
@@ -120,21 +120,21 @@
 
 .sust-panel { 
     background: #fff; 
-    border: 1px solid #e0e0e0; 
-    border-radius: 8px; 
+    border: 1px solid var(--color-border); 
+    border-radius: var(--radius-xl); 
     padding: 16px 20px; 
 }
 .sust-panel-title { 
     font-size: 13px; 
     font-weight: 600; 
-    color: #1a5276; 
+    color: var(--color-primary); 
     margin-bottom: 12px; 
 }
 
 .sust-table-wrap {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   overflow-x: auto;
   margin-bottom: 12px;
 }
@@ -146,7 +146,7 @@
 .sust-table th { 
     text-align: left; 
     padding: 9px 10px; 
-    background: #1a5276; 
+    background: var(--color-primary); 
     color: #fff; 
     font-size: 11px; 
     font-weight: 500; 
@@ -185,16 +185,16 @@
 .sust-modal-title { 
     font-size: 16px; 
     font-weight: 600; 
-    color: #1a5276; 
+    color: var(--color-primary); 
     margin-bottom: 14px; 
 }
 .sust-calc-preview { 
     background: #f0f6fc; 
     border: 1px solid #aed6f1; 
-    border-radius: 6px; 
+    border-radius: var(--radius-md); 
     padding: 10px 14px; 
     font-size: 12px; 
-    color: #1a5276; 
+    color: var(--color-primary); 
     margin-bottom: 14px; 
     display: flex; 
     gap: 20px; 
@@ -221,35 +221,35 @@
 }
 
 .required { 
-    color: #c0392b; 
+    color: var(--color-danger); 
     margin-left: 2px; 
 }
 
 .sust-form-input { 
     padding: 8px 12px; 
     border: 1px solid #ccc; 
-    border-radius: 6px; 
+    border-radius: var(--radius-md); 
     font-size: 13px; 
     color: #111; 
-    font-family: Arial, sans-serif; 
+    font-family: var(--font-family); 
     background: #fff; 
     color-scheme: light; 
 }
 .sust-form-input:focus { 
     outline: none; 
-    border-color: #1a5276; 
+    border-color: var(--color-primary); 
     box-shadow: 0 0 0 2px rgba(26,82,118,0.15); 
 }
 .sust-form-readonly { 
     padding: 8px 12px; 
-    border: 1px solid #e0e0e0; 
-    border-radius: 6px; 
-    font-size: 13px; color: #1a5276; 
+    border: 1px solid var(--color-border); 
+    border-radius: var(--radius-md); 
+    font-size: 13px; color: var(--color-primary); 
     background: #f5f5f5; 
     font-weight: 500; 
 }
 .sust-field-error { 
-    color: #c0392b; 
+    color: var(--color-danger); 
     font-size: 11px; 
     margin-top: 3px; 
 }

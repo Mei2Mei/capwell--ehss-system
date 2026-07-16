@@ -1,62 +1,153 @@
+/* PublicPPEMatrix.css — Upgraded */
+
 .ppm-page {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   background: #f0f4f8;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
+
+/* ── Topbar ── */
 .ppm-topbar {
-  background: #1a5276;
+  background: linear-gradient(135deg, #1a5276 0%, #2471a3 100%);
   color: #fff;
-  padding: 14px 32px;
+  padding: 16px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 12px rgba(26,82,118,0.3);
 }
-.ppm-logo-area { display: flex; align-items: center; gap: 12px; }
-.ppm-logo-dot { width: 32px; height: 32px; border-radius: 50%; background: #f39c12; }
-.ppm-logo-title { font-size: 16px; font-weight: 700; }
-.ppm-logo-sub { font-size: 11px; opacity: 0.75; }
-.ppm-portal-label { font-size: 12px; background: rgba(255,255,255,0.15); padding: 5px 14px; border-radius: 20px; }
+.ppm-logo-area { display: flex; align-items: center; gap: 14px; }
+.ppm-logo-dot  {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.ppm-logo-title { font-size: 17px; font-weight: 700; }
+.ppm-logo-sub   { font-size: 11px; opacity: 0.8; margin-top: 1px; }
+.ppm-portal-label {
+  font-size: 12px; font-weight: 500;
+  background: rgba(255,255,255,0.18);
+  padding: 6px 16px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
 
-.ppm-content { max-width: 1100px; margin: 28px auto; padding: 0 20px; width: 100%; flex: 1; }
+/* ── Hero ── */
+.ppm-hero {
+  background: linear-gradient(135deg, #1a5276 0%, #2471a3 60%, #1abc9c 100%);
+  padding: 40px 40px 60px;
+  color: #fff; text-align: center;
+  position: relative; overflow: hidden;
+}
+.ppm-hero::before {
+  content: ''; position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.ppm-hero-title { font-size: 28px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+.ppm-hero-sub   { font-size: 14px; opacity: 0.85; margin: 0; }
 
-.ppm-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 24px 28px; }
-.ppm-card-title { font-size: 16px; font-weight: 600; color: #1a5276; margin: 0 0 6px 0; }
-.ppm-card-sub { font-size: 12px; color: #888; margin: 0 0 16px 0; }
+/* ── Content ── */
+.ppm-content {
+  max-width: 1100px;
+  margin: -32px auto 40px;
+  padding: 0 24px;
+  width: 100%;
+  flex: 1;
+  position: relative; z-index: 1;
+}
 
-.ppm-legend { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+/* ── Card ── */
+.ppm-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: var(--shadow-md);
+}
+.ppm-card-title {
+  font-size: 16px; font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 6px 0;
+}
+.ppm-card-sub {
+  font-size: 12px; color: var(--color-text-muted);
+  margin: 0 0 16px 0; line-height: 1.6;
+}
 
-.ppm-table-wrap { overflow-x: auto; display: block; }
+/* ── Legend ── */
+.ppm-legend { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+
+/* ── Table ── */
+.ppm-table-wrap { overflow-x: auto; display: block; border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
 .ppm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .ppm-table th {
-  text-align: center;
-  padding: 10px 12px;
-  background: #1a5276;
-  color: #fff;
-  font-weight: 500;
-  font-size: 11px;
-  white-space: nowrap;
-  min-width: 110px;
+  text-align: center; padding: 12px 16px;
+  background: var(--color-primary);
+  color: #fff; font-weight: 600;
+  font-size: 11px; white-space: nowrap;
+  min-width: 110px; letter-spacing: 0.04em;
 }
-.ppm-table th:first-child { text-align: left; min-width: 150px; }
-.ppm-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center; }
-.ppm-table td:first-child { text-align: left; }
+.ppm-table th:first-child { text-align: left; min-width: 160px; }
+
+.ppm-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+  text-align: center;
+  transition: background var(--transition);
+}
+.ppm-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+}
 .ppm-table tr:last-child td { border-bottom: none; }
-.ppm-table tr:hover td { background: #f8fafc; }
+.ppm-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.ppm-table tbody tr:hover td { background: var(--color-primary-bg); }
 .ppm-cell { text-align: center; }
 
+/* ── Badges ── */
 .ppm-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 13px; font-weight: 700;
 }
-.badge-mandatory { background: #27ae60; color: #fff; }
-.badge-recommended { background: #e67e22; color: #fff; }
-.badge-none { color: #aaa; background: #f0f0f0; }
 
-.ppm-empty { text-align: center; padding: 40px; color: #aaa; font-size: 13px; }
-.ppm-error { color: #c0392b; padding: 16px; font-size: 13px; }
-.ppm-footer { text-align: center; padding: 16px; font-size: 11px; color: #aaa; }
+/* Legend badges — smaller pill style */
+.ppm-legend .ppm-badge {
+  width: auto;
+  height: auto;
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 11px;
+  display: inline-block;
+}
+
+.badge-mandatory   { background: var(--color-success); color: #fff; box-shadow: 0 2px 6px rgba(39,174,96,0.35); }
+.badge-recommended { background: var(--color-warning); color: #fff; box-shadow: 0 2px 6px rgba(230,126,34,0.35); }
+.badge-none { background: #f3f4f6; color: #9ca3af; font-size: 16px; }
+
+/* ── Empty/Error ── */
+.ppm-empty { text-align: center; padding: 48px; color: var(--color-text-muted); font-size: 13px; }
+.ppm-error { color: var(--color-danger); padding: 16px; font-size: 13px; }
+
+/* ── Footer ── */
+.ppm-footer {
+  text-align: center; padding: 20px;
+  font-size: 11px; color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  margin-top: 40px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ppm-topbar { padding: 12px 20px; }
+  .ppm-hero   { padding: 28px 20px 50px; }
+  .ppm-content { padding: 0 16px; }
+  .ppm-card { padding: 20px; }
+}

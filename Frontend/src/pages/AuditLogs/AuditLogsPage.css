@@ -1,7 +1,7 @@
 .al-page {
   padding: 28px;
-  font-family: Arial, sans-serif;
-  background: #f5f7fa;
+  font-family: var(--font-family);
+  background: var(--color-bg);
   min-height: 100vh;
 }
 .al-header {
@@ -10,12 +10,12 @@
 .al-title {
   font-size: 22px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--color-primary);
   margin: 0 0 4px 0;
 }
 .al-subtitle {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
   font-style: italic;
 }
@@ -23,8 +23,8 @@
 /* Filter bar */
 .al-filters {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   padding: 16px 20px;
   margin-bottom: 16px;
   display: grid;
@@ -39,33 +39,33 @@
 }
 .al-filter-label {
   font-size: 11px;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .al-filter-input {
   padding: 7px 10px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 12px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   color: #333;
   background: #fff;
 }
 .al-filter-input:focus {
   outline: none;
-  border-color: #1a5276;
+  border-color: var(--color-primary);
 }
 .al-btn-primary {
-  background: #1a5276;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   padding: 8px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   white-space: nowrap;
   height: fit-content;
 }
@@ -74,8 +74,8 @@
 /* Table */
 .al-table-wrap {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   overflow-x: auto;
 }
 .al-table {
@@ -86,7 +86,7 @@
 .al-table th {
   text-align: left;
   padding: 10px 12px;
-  background: #1a5276;
+  background: var(--color-primary);
   color: #fff;
   font-weight: 500;
   font-size: 11px;
@@ -109,9 +109,9 @@
   font-size: 11px;
   font-weight: 600;
 }
-.al-badge.CREATE { background: #eafaf1; color: #27ae60; }
-.al-badge.UPDATE { background: #eaf2fb; color: #1a5276; }
-.al-badge.DELETE { background: #fdecea; color: #c0392b; }
+.al-badge.CREATE { background: #eafaf1; color: var(--color-success); }
+.al-badge.UPDATE { background: #eaf2fb; color: var(--color-primary); }
+.al-badge.DELETE { background: #fdecea; color: var(--color-danger); }
 
 .al-details {
   font-size: 11px;
