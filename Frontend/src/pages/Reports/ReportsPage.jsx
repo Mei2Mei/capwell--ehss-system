@@ -609,30 +609,32 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Requirement</th>
-                    <th>Expires</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...expired, ...expiring].map((c, i) => (
-                    <tr key={i}>
-                      <td>{c.requirement}</td>
-                      <td>{c.date_of_expiry || "—"}</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${c.status === "Expired" ? "badge-expired" : "badge-expiring"}`}
-                        >
-                          {c.status}
-                        </span>
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Requirement</th>
+                      <th>Expires</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {[...expired, ...expiring].map((c, i) => (
+                      <tr key={i}>
+                        <td>{c.requirement}</td>
+                        <td>{c.date_of_expiry || "—"}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${c.status === "Expired" ? "badge-expired" : "badge-expiring"}`}
+                          >
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 PPE stock alerts
@@ -673,34 +675,38 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Size</th>
-                    <th>Stock</th>
-                    <th>Reorder</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStock.map((p, i) => (
-                    <tr key={i}>
-                      <td>{p.item_name}</td>
-                      <td>{p.size_spec}</td>
-                      <td>{p.current_stock}</td>
-                      <td>{p.reorder_level}</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : "badge-expiring"}`}
-                        >
-                          {p.current_stock === 0 ? "Out of stock" : "Low stock"}
-                        </span>
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Size</th>
+                      <th>Stock</th>
+                      <th>Reorder</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {lowStock.map((p, i) => (
+                      <tr key={i}>
+                        <td>{p.item_name}</td>
+                        <td>{p.size_spec}</td>
+                        <td>{p.current_stock}</td>
+                        <td>{p.reorder_level}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : "badge-expiring"}`}
+                          >
+                            {p.current_stock === 0
+                              ? "Out of stock"
+                              : "Low stock"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Sustainability
@@ -951,52 +957,56 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Next Inspection</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {equipmentData
-                    .filter((e) => {
-                      const due = e.next_inspection
-                        ? new Date(e.next_inspection)
-                        : null;
-                      const daysLeft = due
-                        ? Math.floor((due - new Date()) / (1000 * 60 * 60 * 24))
-                        : null;
-                      return daysLeft !== null && daysLeft <= 60;
-                    })
-                    .map((e, i) => {
-                      const due = new Date(e.next_inspection);
-                      const daysLeft = Math.floor(
-                        (due - new Date()) / (1000 * 60 * 60 * 24),
-                      );
-                      return (
-                        <tr
-                          key={i}
-                          className={daysLeft < 0 ? "row-incident" : ""}
-                        >
-                          <td>{e.name}</td>
-                          <td>{e.category}</td>
-                          <td>{e.status}</td>
-                          <td>
-                            {e.next_inspection}{" "}
-                            <span
-                              className={`rep-badge ${daysLeft < 0 ? "badge-expired" : "badge-expiring"}`}
-                            >
-                              {daysLeft < 0 ? "Overdue" : "Due soon"}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Status</th>
+                      <th>Next Inspection</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {equipmentData
+                      .filter((e) => {
+                        const due = e.next_inspection
+                          ? new Date(e.next_inspection)
+                          : null;
+                        const daysLeft = due
+                          ? Math.floor(
+                              (due - new Date()) / (1000 * 60 * 60 * 24),
+                            )
+                          : null;
+                        return daysLeft !== null && daysLeft <= 60;
+                      })
+                      .map((e, i) => {
+                        const due = new Date(e.next_inspection);
+                        const daysLeft = Math.floor(
+                          (due - new Date()) / (1000 * 60 * 60 * 24),
+                        );
+                        return (
+                          <tr
+                            key={i}
+                            className={daysLeft < 0 ? "row-incident" : ""}
+                          >
+                            <td>{e.name}</td>
+                            <td>{e.category}</td>
+                            <td>{e.status}</td>
+                            <td>
+                              {e.next_inspection}{" "}
+                              <span
+                                className={`rep-badge ${daysLeft < 0 ? "badge-expired" : "badge-expiring"}`}
+                              >
+                                {daysLeft < 0 ? "Overdue" : "Due soon"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1095,53 +1105,55 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Staff</th>
-                    <th>MTI</th>
-                    <th>LTI</th>
-                    <th>Days Away</th>
-                    <th>Training Hrs</th>
-                    <th>TRIFR</th>
-                    <th>LTIFR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safetyRecords.map((r, i) => {
-                    const wh = Number(r.worked_hours);
-                    const mti = Number(r.medical_treatment_incidents);
-                    const lti = Number(r.lost_time_incidents);
-                    const fat = Number(r.fatalities);
-                    const trifr = wh
-                      ? (((mti + lti + fat) * 1000000) / wh).toFixed(2)
-                      : "0.00";
-                    const ltifr = wh
-                      ? ((lti * 1000000) / wh).toFixed(2)
-                      : "0.00";
-                    return (
-                      <tr
-                        key={i}
-                        className={mti > 0 || lti > 0 ? "row-incident" : ""}
-                      >
-                        <td>{formatMonth(r.period)}</td>
-                        <td>{r.staff_numbers}</td>
-                        <td>{mti}</td>
-                        <td>{lti}</td>
-                        <td>{r.days_away_from_work}</td>
-                        <td>{r.hse_training_hours}</td>
-                        <td className={Number(trifr) > 0 ? "calc-alert" : ""}>
-                          {trifr}
-                        </td>
-                        <td className={Number(ltifr) > 0 ? "calc-alert" : ""}>
-                          {ltifr}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Staff</th>
+                      <th>MTI</th>
+                      <th>LTI</th>
+                      <th>Days Away</th>
+                      <th>Training Hrs</th>
+                      <th>TRIFR</th>
+                      <th>LTIFR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {safetyRecords.map((r, i) => {
+                      const wh = Number(r.worked_hours);
+                      const mti = Number(r.medical_treatment_incidents);
+                      const lti = Number(r.lost_time_incidents);
+                      const fat = Number(r.fatalities);
+                      const trifr = wh
+                        ? (((mti + lti + fat) * 1000000) / wh).toFixed(2)
+                        : "0.00";
+                      const ltifr = wh
+                        ? ((lti * 1000000) / wh).toFixed(2)
+                        : "0.00";
+                      return (
+                        <tr
+                          key={i}
+                          className={mti > 0 || lti > 0 ? "row-incident" : ""}
+                        >
+                          <td>{formatMonth(r.period)}</td>
+                          <td>{r.staff_numbers}</td>
+                          <td>{mti}</td>
+                          <td>{lti}</td>
+                          <td>{r.days_away_from_work}</td>
+                          <td>{r.hse_training_hours}</td>
+                          <td className={Number(trifr) > 0 ? "calc-alert" : ""}>
+                            {trifr}
+                          </td>
+                          <td className={Number(ltifr) > 0 ? "calc-alert" : ""}>
+                            {ltifr}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1249,34 +1261,36 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Requirement</th>
-                    <th>Organisation</th>
-                    <th>Reference</th>
-                    <th>Expiry</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {complianceWithStatus.map((c, i) => (
-                    <tr key={i}>
-                      <td>{c.requirement}</td>
-                      <td>{c.expert_organisation}</td>
-                      <td>{c.reference_number || "—"}</td>
-                      <td>{c.date_of_expiry || "—"}</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${c.status === "Expired" ? "badge-expired" : c.status === "Expiring soon" ? "badge-expiring" : c.status === "Valid" ? "badge-valid" : "badge-pending"}`}
-                        >
-                          {c.status}
-                        </span>
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Requirement</th>
+                      <th>Organisation</th>
+                      <th>Reference</th>
+                      <th>Expiry</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {complianceWithStatus.map((c, i) => (
+                      <tr key={i}>
+                        <td>{c.requirement}</td>
+                        <td>{c.expert_organisation}</td>
+                        <td>{c.reference_number || "—"}</td>
+                        <td>{c.date_of_expiry || "—"}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${c.status === "Expired" ? "badge-expired" : c.status === "Expiring soon" ? "badge-expiring" : c.status === "Valid" ? "badge-valid" : "badge-pending"}`}
+                          >
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1351,37 +1365,41 @@ export default function ReportsPage() {
                   <div className="rep-card-value">{formatKES(welfare)}</div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>PO</th>
-                    <th>Date</th>
-                    <th>Cost</th>
-                    <th>Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {costRecords.map((r, i) => (
-                    <tr key={i}>
-                      <td>{r.item_description}</td>
-                      <td style={{ fontFamily: "monospace", fontSize: "11px" }}>
-                        {r.po_number}
-                      </td>
-                      <td>{r.date}</td>
-                      <td style={{ fontWeight: 600 }}>
-                        {formatKES(r.cost_excl_vat)}
-                      </td>
-                      <td>{r.cost_type}</td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>PO</th>
+                      <th>Date</th>
+                      <th>Cost</th>
+                      <th>Type</th>
                     </tr>
-                  ))}
-                  <tr style={{ background: "#f0f6fc", fontWeight: 600 }}>
-                    <td colSpan="3">Total</td>
-                    <td>{formatKES(totalCost)}</td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {costRecords.map((r, i) => (
+                      <tr key={i}>
+                        <td>{r.item_description}</td>
+                        <td
+                          style={{ fontFamily: "monospace", fontSize: "11px" }}
+                        >
+                          {r.po_number}
+                        </td>
+                        <td>{r.date}</td>
+                        <td style={{ fontWeight: 600 }}>
+                          {formatKES(r.cost_excl_vat)}
+                        </td>
+                        <td>{r.cost_type}</td>
+                      </tr>
+                    ))}
+                    <tr style={{ background: "#f0f6fc", fontWeight: 600 }}>
+                      <td colSpan="3">Total</td>
+                      <td>{formatKES(totalCost)}</td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               {/* Cost per month bar chart */}
               <div className="dash-panel" style={{ marginBottom: "16px" }}>
                 <div className="dash-panel-title">
@@ -1527,38 +1545,40 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Activity</th>
-                    <th>Category</th>
-                    <th>Audience</th>
-                    <th>Month</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {calendarActivities.map((a, i) => (
-                    <tr key={i}>
-                      <td>{a.activity_name}</td>
-                      <td>{a.category}</td>
-                      <td>{a.target_audience}</td>
-                      <td>{formatMonth(a.scheduled_month)}</td>
-                      <td>{a.internal_external}</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${a.status === "completed" ? "badge-valid" : a.status === "not_conducted" ? "badge-expired" : "badge-expiring"}`}
-                        >
-                          {a.status}
-                        </span>
-                      </td>
-                      <td>{a.notes || "—"}</td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Activity</th>
+                      <th>Category</th>
+                      <th>Audience</th>
+                      <th>Month</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Notes</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {calendarActivities.map((a, i) => (
+                      <tr key={i}>
+                        <td>{a.activity_name}</td>
+                        <td>{a.category}</td>
+                        <td>{a.target_audience}</td>
+                        <td>{formatMonth(a.scheduled_month)}</td>
+                        <td>{a.internal_external}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${a.status === "completed" ? "badge-valid" : a.status === "not_conducted" ? "badge-expired" : "badge-expiring"}`}
+                          >
+                            {a.status}
+                          </span>
+                        </td>
+                        <td>{a.notes || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1648,62 +1668,64 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Capacity</th>
-                    <th>Status</th>
-                    <th>Location</th>
-                    <th>Last Inspection</th>
-                    <th>Next Inspection</th>
-                    <th>Inspection Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {equipmentData.map((e, i) => {
-                    const today = new Date();
-                    const due = e.next_inspection
-                      ? new Date(e.next_inspection)
-                      : null;
-                    const daysLeft = due
-                      ? Math.floor((due - today) / (1000 * 60 * 60 * 24))
-                      : null;
-                    const inspStatus =
-                      daysLeft === null
-                        ? "—"
-                        : daysLeft < 0
-                          ? "Overdue"
-                          : daysLeft <= 60
-                            ? "Due soon"
-                            : "OK";
-                    return (
-                      <tr
-                        key={i}
-                        className={
-                          inspStatus === "Overdue" ? "row-incident" : ""
-                        }
-                      >
-                        <td>{e.name}</td>
-                        <td>{e.category}</td>
-                        <td>{e.capacity}</td>
-                        <td>{e.status}</td>
-                        <td>{e.location}</td>
-                        <td>{e.last_inspection || "—"}</td>
-                        <td>{e.next_inspection || "—"}</td>
-                        <td>
-                          <span
-                            className={`rep-badge ${daysLeft < 0 ? "badge-expired" : daysLeft <= 60 ? "badge-expiring" : "badge-valid"}`}
-                          >
-                            {inspStatus}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Capacity</th>
+                      <th>Status</th>
+                      <th>Location</th>
+                      <th>Last Inspection</th>
+                      <th>Next Inspection</th>
+                      <th>Inspection Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {equipmentData.map((e, i) => {
+                      const today = new Date();
+                      const due = e.next_inspection
+                        ? new Date(e.next_inspection)
+                        : null;
+                      const daysLeft = due
+                        ? Math.floor((due - today) / (1000 * 60 * 60 * 24))
+                        : null;
+                      const inspStatus =
+                        daysLeft === null
+                          ? "—"
+                          : daysLeft < 0
+                            ? "Overdue"
+                            : daysLeft <= 60
+                              ? "Due soon"
+                              : "OK";
+                      return (
+                        <tr
+                          key={i}
+                          className={
+                            inspStatus === "Overdue" ? "row-incident" : ""
+                          }
+                        >
+                          <td>{e.name}</td>
+                          <td>{e.category}</td>
+                          <td>{e.capacity}</td>
+                          <td>{e.status}</td>
+                          <td>{e.location}</td>
+                          <td>{e.last_inspection || "—"}</td>
+                          <td>{e.next_inspection || "—"}</td>
+                          <td>
+                            <span
+                              className={`rep-badge ${daysLeft < 0 ? "badge-expired" : daysLeft <= 60 ? "badge-expiring" : "badge-valid"}`}
+                            >
+                              {inspStatus}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1797,38 +1819,40 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Size</th>
-                    <th>Stock</th>
-                    <th>Reorder</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ppeItems.map((p, i) => (
-                    <tr key={i}>
-                      <td>{p.item_name}</td>
-                      <td>{p.size_spec}</td>
-                      <td>{p.current_stock}</td>
-                      <td>{p.reorder_level}</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : p.current_stock <= p.reorder_level ? "badge-expiring" : "badge-valid"}`}
-                        >
-                          {p.current_stock === 0
-                            ? "Out of stock"
-                            : p.current_stock <= p.reorder_level
-                              ? "Low stock"
-                              : "OK"}
-                        </span>
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Size</th>
+                      <th>Stock</th>
+                      <th>Reorder</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ppeItems.map((p, i) => (
+                      <tr key={i}>
+                        <td>{p.item_name}</td>
+                        <td>{p.size_spec}</td>
+                        <td>{p.current_stock}</td>
+                        <td>{p.reorder_level}</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${p.current_stock === 0 ? "badge-expired" : p.current_stock <= p.reorder_level ? "badge-expiring" : "badge-valid"}`}
+                          >
+                            {p.current_stock === 0
+                              ? "Out of stock"
+                              : p.current_stock <= p.reorder_level
+                                ? "Low stock"
+                                : "OK"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <div className="rep-section-title" style={{ marginTop: 20 }}>
                 PPE Request Summary
               </div>
@@ -1856,51 +1880,53 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Requested By</th>
-                    <th>Worker</th>
-                    <th>Department</th>
-                    <th>Qty</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ppeRequests.length === 0 ? (
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
                     <tr>
-                      <td
-                        colSpan={6}
-                        style={{ textAlign: "center", color: "#aaa" }}
-                      >
-                        No requests found.
-                      </td>
+                      <th>Item</th>
+                      <th>Requested By</th>
+                      <th>Worker</th>
+                      <th>Department</th>
+                      <th>Qty</th>
+                      <th>Status</th>
                     </tr>
-                  ) : (
-                    ppeRequests.map((r, i) => (
-                      <tr key={i}>
-                        <td>
-                          {r.item_name
-                            ? `${r.item_name} (${r.size_spec})`
-                            : "—"}
-                        </td>
-                        <td>{r.requested_by_name || "—"}</td>
-                        <td>{r.worker_name || "—"}</td>
-                        <td>{r.department || "—"}</td>
-                        <td>{r.quantity}</td>
-                        <td>
-                          <span
-                            className={`rep-badge ${r.status === "approved" ? "badge-valid" : r.status === "rejected" ? "badge-expired" : "badge-expiring"}`}
-                          >
-                            {r.status}
-                          </span>
+                  </thead>
+                  <tbody>
+                    {ppeRequests.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          style={{ textAlign: "center", color: "#aaa" }}
+                        >
+                          No requests found.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      ppeRequests.map((r, i) => (
+                        <tr key={i}>
+                          <td>
+                            {r.item_name
+                              ? `${r.item_name} (${r.size_spec})`
+                              : "—"}
+                          </td>
+                          <td>{r.requested_by_name || "—"}</td>
+                          <td>{r.worker_name || "—"}</td>
+                          <td>{r.department || "—"}</td>
+                          <td>{r.quantity}</td>
+                          <td>
+                            <span
+                              className={`rep-badge ${r.status === "approved" ? "badge-valid" : r.status === "rejected" ? "badge-expired" : "badge-expiring"}`}
+                            >
+                              {r.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 
@@ -1961,29 +1987,31 @@ export default function ReportsPage() {
                   🖨 Print / Save as PDF
                 </button>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Stock level</th>
-                    <th>Restocked</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ppeMonthlyData.map((d, i) => (
-                    <tr
-                      key={i}
-                      className={d.restocked > 0 ? "row-incident" : ""}
-                    >
-                      <td>{d.month}</td>
-                      <td>{d.stock}</td>
-                      <td>
-                        {d.restocked > 0 ? `+${d.restocked} received` : "—"}
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Stock level</th>
+                      <th>Restocked</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ppeMonthlyData.map((d, i) => (
+                      <tr
+                        key={i}
+                        className={d.restocked > 0 ? "row-incident" : ""}
+                      >
+                        <td>{d.month}</td>
+                        <td>{d.stock}</td>
+                        <td>
+                          {d.restocked > 0 ? `+${d.restocked} received` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div style={{ height: 160, minHeight: 160, marginTop: "10px" }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -2060,36 +2088,38 @@ export default function ReportsPage() {
                   🖨 Print / Save as PDF
                 </button>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Water (m³)</th>
-                    <th>Electricity (kWh)</th>
-                    <th>Scope 1</th>
-                    <th>Scope 2</th>
-                    <th>Total emissions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sustainabilityRecords.map((r, i) => {
-                    const s1 = calcScope1(r, emissionFactors),
-                      s2 = calcScope2(r, emissionFactors);
-                    return (
-                      <tr key={i}>
-                        <td>{formatMonth(r.period)}</td>
-                        <td>{r.water_consumption_m3}</td>
-                        <td>{r.electricity_kwh.toLocaleString()}</td>
-                        <td>{s1.toFixed(2)}</td>
-                        <td>{s2.toFixed(2)}</td>
-                        <td>
-                          <strong>{(s1 + s2).toFixed(2)}</strong>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Water (m³)</th>
+                      <th>Electricity (kWh)</th>
+                      <th>Scope 1</th>
+                      <th>Scope 2</th>
+                      <th>Total emissions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sustainabilityRecords.map((r, i) => {
+                      const s1 = calcScope1(r, emissionFactors),
+                        s2 = calcScope2(r, emissionFactors);
+                      return (
+                        <tr key={i}>
+                          <td>{formatMonth(r.period)}</td>
+                          <td>{r.water_consumption_m3}</td>
+                          <td>{r.electricity_kwh.toLocaleString()}</td>
+                          <td>{s1.toFixed(2)}</td>
+                          <td>{s2.toFixed(2)}</td>
+                          <td>
+                            <strong>{(s1 + s2).toFixed(2)}</strong>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="rep-section-title" style={{ marginTop: "20px" }}>
                 Emissions (Scope 1 & 2)
@@ -2342,52 +2372,54 @@ export default function ReportsPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <table className="rep-table">
-                <thead>
-                  <tr>
-                    <th>Concern</th>
-                    <th>Department</th>
-                    <th>Priority</th>
-                    <th>Action</th>
-                    <th>Responsible</th>
-                    <th>Target Date</th>
-                    <th>Progress</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {actionTrackerData.map((a, i) => (
-                    <tr key={i}>
-                      <td>{a.concern}</td>
-                      <td>{a.department || "—"}</td>
-                      <td
-                        style={{
-                          fontWeight: 600,
-                          color:
-                            a.priority === "High"
-                              ? "#e74c3c"
-                              : a.priority === "Low"
-                                ? "#27ae60"
-                                : "#e67e22",
-                        }}
-                      >
-                        {a.priority || "—"}
-                      </td>
-                      <td>{a.action}</td>
-                      <td>{a.responsible}</td>
-                      <td>{a.targetDate}</td>
-                      <td>{a.progress}%</td>
-                      <td>
-                        <span
-                          className={`rep-badge ${a.status === "Completed" ? "badge-valid" : a.status === "In Progress" ? "badge-expiring" : "badge-expired"}`}
-                        >
-                          {a.status}
-                        </span>
-                      </td>
+              <div className="rep-table-wrap">
+                <table className="rep-table">
+                  <thead>
+                    <tr>
+                      <th>Concern</th>
+                      <th>Department</th>
+                      <th>Priority</th>
+                      <th>Action</th>
+                      <th>Responsible</th>
+                      <th>Target Date</th>
+                      <th>Progress</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {actionTrackerData.map((a, i) => (
+                      <tr key={i}>
+                        <td>{a.concern}</td>
+                        <td>{a.department || "—"}</td>
+                        <td
+                          style={{
+                            fontWeight: 600,
+                            color:
+                              a.priority === "High"
+                                ? "#e74c3c"
+                                : a.priority === "Low"
+                                  ? "#27ae60"
+                                  : "#e67e22",
+                          }}
+                        >
+                          {a.priority || "—"}
+                        </td>
+                        <td>{a.action}</td>
+                        <td>{a.responsible}</td>
+                        <td>{a.targetDate}</td>
+                        <td>{a.progress}%</td>
+                        <td>
+                          <span
+                            className={`rep-badge ${a.status === "Completed" ? "badge-valid" : a.status === "In Progress" ? "badge-expiring" : "badge-expired"}`}
+                          >
+                            {a.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
         </div>

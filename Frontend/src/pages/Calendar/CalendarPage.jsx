@@ -298,7 +298,7 @@ function CalendarPage() {
       {/* Header */}
       <div className="cal-header">
         <div>
-          <h1 className="cal-title">EHSS Training Calendar 2026</h1>
+          <h1 className="cal-title">EHSS Training Calendar</h1>
           <p className="cal-subtitle">
             Activities past their scheduled month with status "Scheduled" are
             automatically flagged as overdue.
