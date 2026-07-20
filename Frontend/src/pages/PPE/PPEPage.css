@@ -111,6 +111,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
+  height: calc(100vh - 280px);
   overflow-x: auto;
   display: block;
   margin-bottom: var(--space-md);
@@ -128,6 +129,9 @@
   font-size: var(--font-size-xs);
   white-space: nowrap;
   letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .ppe-table td {
@@ -295,7 +299,9 @@
 .ppe-history-empty { font-size: var(--font-size-sm); color: var(--color-text-muted); font-style: italic; padding: 8px 0; }
 
 .ppe-history-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); margin-bottom: var(--space-md); background: var(--color-surface); border-radius: var(--radius-md); overflow: hidden; }
-.ppe-history-table th { text-align: left; padding: 8px 12px; background: var(--color-primary-light); color: #fff; font-weight: 500; font-size: var(--font-size-xs); }
+.ppe-history-table th { text-align: left; padding: 8px 12px; background: var(--color-primary-light); color: #fff; font-weight: 500; font-size: var(--font-size-xs);   position: sticky;
+  top: 0;
+  z-index: 10; }
 .ppe-history-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border-light); }
 .ppe-history-table tr:last-child td { border-bottom: none; }
 
@@ -329,7 +335,9 @@
 .ppe-matrix-add { display: flex; gap: var(--space-sm); align-items: center; }
 .ppe-matrix-table th, .ppe-matrix-table td { min-width: 120px; text-align: center; vertical-align: middle; }
 .ppe-matrix-table th:first-child, .ppe-matrix-table td:first-child { text-align: left; min-width: 150px; }
-.ppe-matrix-table th { font-size: var(--font-size-xs); white-space: nowrap; }
+.ppe-matrix-table th { font-size: var(--font-size-xs); white-space: nowrap;   position: sticky;
+  top: 0;
+  z-index: 10;}
 .ppe-matrix-cell { text-align: center; }
 .ppe-matrix-select { font-size: var(--font-size-xs); padding: 3px 6px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); cursor: pointer; font-family: var(--font-family); }
 .ppe-matrix-del-btn { background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: var(--font-size-xs); padding: 2px 6px; }

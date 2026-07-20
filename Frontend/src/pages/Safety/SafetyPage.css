@@ -86,6 +86,7 @@
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
+  height: calc(100vh - 280px);
   overflow-x: auto;
   margin-bottom: 12px;
 }
@@ -103,6 +104,9 @@
   font-weight: 500;
   font-size: 11px;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .safety-table td {
   padding: 8px 8px;

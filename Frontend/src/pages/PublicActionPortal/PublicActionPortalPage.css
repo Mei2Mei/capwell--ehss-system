@@ -175,7 +175,7 @@
 }
 
 /* ── Table ── */
-.pap-table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
+.pap-table-wrap { overflow-x: auto; height: calc(100vh - 280px); border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
 .pap-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .pap-table th {
   text-align: left; padding: 11px 14px;
@@ -183,6 +183,9 @@
   color: #fff; font-weight: 600;
   font-size: 11px; white-space: nowrap;
   letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .pap-table td { padding: 11px 14px; border-bottom: 1px solid var(--color-border-light); color: var(--color-text); }
 .pap-table tr:last-child td { border-bottom: none; }
