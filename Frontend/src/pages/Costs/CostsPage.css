@@ -174,6 +174,7 @@
 .badge-other       { background: #f1efe8; color: #444; }
 .badge-inbudget    { background: #27ae60; color: #fff; }
 .badge-outbudget   { background: #c0392b; color: #fff; }
+.badge-pending     { background: #95a5a6; color: #fff; display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
 .costs-total-row {
   display: flex;
   justify-content: space-between;

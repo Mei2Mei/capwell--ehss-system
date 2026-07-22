@@ -71,8 +71,8 @@ const emptyForm = {
   po_number: "",
   cost_excl_vat: "",
   cost_type: "",
-  refundable: "non_refundable",
-  budget_status: "in_budget",
+  refundable: "",
+  budget_status: "",
 };
 
 function CostsPage() {
@@ -109,7 +109,15 @@ function CostsPage() {
   const filtered = records
     .filter((r) => yearFilter === "all" || r.year === Number(yearFilter))
     .filter((r) => typeFilter === "all" || r.cost_type === typeFilter)
-    .filter((r) => budgetFilter === "all" || r.budget_status === budgetFilter)
+    .filter((r) => {
+      if (budgetFilter === "all") return true;
+
+      if (budgetFilter === "pending") {
+        return !r.budget_status; // matches null, undefined, or ""
+      }
+
+      return r.budget_status === budgetFilter;
+    })
     .filter(
       (r) =>
         r.item_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -369,6 +377,7 @@ function CostsPage() {
           <option value="all">All budget status</option>
           <option value="in_budget">In budget</option>
           <option value="outside_budget">Outside budget</option>
+          <option value="pending">Pending</option>
         </select>
         <input
           className="costs-search"
@@ -437,16 +446,26 @@ function CostsPage() {
                   <td>
                     {r.refundable === "refundable"
                       ? "Refundable"
-                      : "Non-refundable"}
+                      : r.refundable === "non_refundable"
+                        ? "Non-refundable"
+                        : "-"}
                   </td>
                   <td>
-                    <span
-                      className={`costs-badge ${r.budget_status === "in_budget" ? "badge-inbudget" : "badge-outbudget"}`}
-                    >
-                      {r.budget_status === "in_budget"
-                        ? "In budget"
-                        : "Outside budget"}
-                    </span>
+                    {r.budget_status ? (
+                      <span
+                        className={`costs-badge ${
+                          r.budget_status === "in_budget"
+                            ? "badge-inbudget"
+                            : "badge-outbudget"
+                        }`}
+                      >
+                        {r.budget_status === "in_budget"
+                          ? "In budget"
+                          : "Outside budget"}
+                      </span>
+                    ) : (
+                      <span className="badge-pending">Pending</span>
+                    )}
                   </td>
                   <td>
                     <button
@@ -598,6 +617,7 @@ function CostsPage() {
                   value={form.refundable}
                   onChange={handleFormChange}
                 >
+                  <option value="">Select type...</option>
                   <option value="non_refundable">Non-refundable</option>
                   <option value="refundable">Refundable</option>
                 </select>
@@ -611,6 +631,7 @@ function CostsPage() {
                   value={form.budget_status}
                   onChange={handleFormChange}
                 >
+                  <option value="">Select type...</option>
                   <option value="in_budget">In budget</option>
                   <option value="outside_budget">Outside budget</option>
                 </select>
