@@ -209,7 +209,7 @@ deleted_at TIMESTAMP
 CREATE TABLE equipment (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  category VARCHAR(50), -- Hoist, Truck, Lifting Gear, Crane
+  description VARCHAR(50), -- Mercedes KAA 422K, R33017A014, 21060276
   capacity VARCHAR(50),
   status VARCHAR(20) DEFAULT 'Available', -- Available, In Use, Maintenance
   location VARCHAR(100),

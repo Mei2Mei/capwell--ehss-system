@@ -148,17 +148,20 @@ function CostsPage() {
     if (!form.cost_excl_vat || Number(form.cost_excl_vat) <= 0)
       e.cost_excl_vat = "Cost must be a positive number.";
     if (!form.cost_type) e.cost_type = "Please select a cost type.";
-    // PO number uniqueness check
+    // PO Number + Item uniqueness check
     if (form.po_number.trim()) {
       const dup = records.find(
         (r) =>
-          r.po_number?.toLowerCase() === form.po_number.toLowerCase() &&
+          r.po_number?.trim().toLowerCase() ===
+            form.po_number.trim().toLowerCase() &&
+          r.item_description?.trim().toLowerCase() ===
+            form.item_description.trim().toLowerCase() &&
           r.id !== editingId,
       );
 
       if (dup)
-        e.po_number =
-          "This PO number already exists. PO numbers must be unique.";
+        e.item_description =
+          "This item already exists under the selected PO number.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;

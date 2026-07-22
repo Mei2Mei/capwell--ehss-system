@@ -159,7 +159,6 @@ function CalendarPage() {
     const e = {};
     if (!form.activity_name.trim())
       e.activity_name = "Activity name is required.";
-    if (!form.category) e.category = "Please select a category.";
     if (!form.target_audience.trim())
       e.target_audience = "Target audience is required.";
     if (!form.scheduled_month) e.scheduled_month = "Please select a month.";
@@ -511,9 +510,7 @@ function CalendarPage() {
               </div>
 
               <div className="cal-form-group">
-                <label className="cal-form-label">
-                  Category <span className="required">*</span>
-                </label>
+                <label className="cal-form-label">Category</label>
                 <select
                   className="cal-form-select"
                   name="category"

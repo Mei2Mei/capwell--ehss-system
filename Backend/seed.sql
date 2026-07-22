@@ -136,14 +136,14 @@ INSERT INTO action_tracker (concern, action, responsible, date_raised, target_da
 
 
 -- EQUIPMENT
-INSERT INTO equipment (name, category, capacity, status, location, last_inspection, next_inspection) VALUES
-('Track mounted chain hoist', 'Hoist', 'SWL: 3 TON', 'Available', 'Wheat Mill', '2026-01-12', '2026-12-31'),
-('Pallet truck', 'Truck', 'SWL: 2 TON', 'Available', 'Warehouse', '2026-01-12', '2026-06-15'),
-('Wire rope sling', 'Lifting Gear', 'SWL: 1 TON', 'Available', 'Boiler room', '2025-04-01', '2026-04-01'),
-('Chain block', 'Hoist', 'SWL: 5 TON', 'Available', 'Engineering', '2026-01-12', '2026-12-31'),
-('Forklift', 'Truck', 'SWL: 3 TON', 'In Use', 'Warehouse', '2025-06-01', '2026-06-01'),
-('Electric hoist', 'Hoist', 'SWL: 2 TON', 'In Use', 'Production', '2026-01-12', '2026-12-31'),
-('Overhead crane', 'Crane', 'SWL: 10 TON', 'Available', 'Mill', '2026-01-12', '2026-12-31'),
-('Hand pallet truck', 'Truck', 'SWL: 1 TON', 'Available', 'Store', '2025-12-01', '2026-12-01'),
-('Lifting beam', 'Lifting Gear', 'SWL: 5 TON', 'Maintenance', 'Engineering', '2025-03-01', '2026-03-01'),
-('Rope sling set', 'Lifting Gear', 'SWL: 2 TON', 'Available', 'Warehouse', '2026-01-12', '2026-12-31');
+INSERT INTO equipment (name, description, capacity, status, location, last_inspection, next_inspection) VALUES
+('Truck mounted chain hoist', 'Mercedes KAA 422K', 'SWL: 3 TON', 'Available', 'Wheat Mill', '2026-01-12', '2026-12-31'),
+('Pallet truck', '160051789', 'SWL: 2 TON', 'Available', 'Warehouse', '2026-01-12', '2026-06-15'),
+('Wire rope sling', '157959', 'SWL: 1 TON', 'Available', 'Boiler room', '2025-04-01', '2026-04-01'),
+('Chain block', '10100193', 'SWL: 5 TON', 'Available', 'Engineering', '2026-01-12', '2026-12-31'),
+('Forklift', 'A935B07495U', 'SWL: 3 TON', 'In Use', 'Warehouse', '2025-06-01', '2026-06-01'),
+('Electric Forklift Truck', 'A935B07495U', 'SWL: 2 TON', 'In Use', 'Production', '2026-01-12', '2026-12-31'),
+('Overhead crane', '', 'SWL: 10 TON', 'Available', 'Mill', '2026-01-12', '2026-12-31'),
+('Hand pallet truck', '02641-001', 'SWL: 1 TON', 'Available', 'Store', '2025-12-01', '2026-12-01'),
+('Lifting beam', '1', 'SWL: 5 TON', 'Maintenance', 'Engineering', '2025-03-01', '2026-03-01'),
+('Rope sling set', 'R33017A014', 'SWL: 2 TON', 'Available', 'Warehouse', '2026-01-12', '2026-12-31');

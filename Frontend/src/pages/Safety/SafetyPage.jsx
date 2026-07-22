@@ -70,6 +70,9 @@ function SafetyPage() {
   const [editingId, setEditingId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [yearFilter, setYearFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     apiFetch(API_URL)
@@ -132,6 +135,35 @@ function SafetyPage() {
   const avgTRIFR = records.length
     ? (records.reduce((sum, r) => sum + r.trifr, 0) / records.length).toFixed(2)
     : 0;
+
+  const filteredRecords = records
+    .filter(
+      (r) =>
+        yearFilter === "all" ||
+        String(new Date(r.period).getFullYear()) === yearFilter,
+    )
+    .filter((r) => {
+      if (statusFilter === "incident") {
+        return (
+          Number(r.fatalities) > 0 ||
+          Number(r.medical_treatment_incidents) > 0 ||
+          Number(r.lost_time_incidents) > 0
+        );
+      }
+
+      if (statusFilter === "zero") {
+        return (
+          Number(r.fatalities) === 0 &&
+          Number(r.medical_treatment_incidents) === 0 &&
+          Number(r.lost_time_incidents) === 0
+        );
+      }
+
+      return true;
+    })
+    .filter((r) =>
+      formatMonth(r.period).toLowerCase().includes(searchTerm.toLowerCase()),
+    );
 
   // ── Helpers ───────────────────────────────────────────────
   function showBanner(msg) {
@@ -306,7 +338,7 @@ function SafetyPage() {
       {/* Header */}
       <div className="safety-header">
         <div>
-          <h1 className="safety-title">Safety Metrics — 2026</h1>
+          <h1 className="safety-title">Safety Metrics</h1>
           <p className="safety-subtitle">
             TRIFR, LTIFR and Severity rate are calculated automatically — never
             entered manually.
@@ -352,6 +384,40 @@ function SafetyPage() {
         </div>
       </div>
 
+      {/*Filter row*/}
+      <div className="safety-filter-row">
+        <div className="safety-filter-right">
+          <select
+            className="safety-select"
+            value={yearFilter}
+            onChange={(e) => setYearFilter(e.target.value)}
+          >
+            <option value="all">All Years</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+
+          <select
+            className="safety-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Records</option>
+            <option value="incident">Incident Months</option>
+            <option value="zero">Zero Incident Months</option>
+          </select>
+
+          <input
+            className="safety-search"
+            type="text"
+            placeholder="Search month..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
       {/* Table */}
       <div className="safety-table-wrap">
         <table className="safety-table">
@@ -378,7 +444,7 @@ function SafetyPage() {
             </tr>
           </thead>
           <tbody>
-            {records.map((r) => (
+            {filteredRecords.map((r) => (
               <tr key={r.id} className={hasIncident(r) ? "row-incident" : ""}>
                 <td>
                   <strong>{formatMonth(r.period)}</strong>

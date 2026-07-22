@@ -110,6 +110,9 @@ function PPEPage() {
   const [matrixItems, setMatrixItems] = useState([]);
   const [newDepartment, setNewDepartment] = useState("");
   const [newPPEItem, setNewPPEItem] = useState("");
+  const [requestSearch, setRequestSearch] = useState("");
+  const [requestFilter, setRequestFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
 
   const [items, setItems] = useState([]);
 
@@ -165,11 +168,21 @@ function PPEPage() {
   });
 
   // ── Filtered items for search ─────────────────────────────
-  const filteredItems = items.filter(
-    (item) =>
+  const filteredItems = items.filter((item) => {
+    const matchesSearch =
       item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.size_spec.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      item.size_spec.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (stockFilter === "all") return true;
+
+    const status = getStockStatus(item);
+    if (stockFilter === "ok") return status === "ok";
+    if (stockFilter === "low") return status === "low";
+    if (stockFilter === "out") return status === "out";
+    return true;
+  });
 
   // ── Summary cards (based on filtered list) ────────────────
   const totalItems = filteredItems.length;
@@ -819,16 +832,37 @@ function PPEPage() {
 
       {activeTab === "inventory" && (
         <>
-          {/* Search */}
+          {/*Filter row*/}
           {isFullAccess && (
-            <div className="ppe-search-wrap">
-              <input
-                className="ppe-search-input"
-                type="text"
-                placeholder="Search by item name or size..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="ppe-filter-row">
+              {/* Status tabs */}
+              <div className="ppe-tabs" style={{ marginBottom: 12 }}>
+                {[
+                  { key: "all", label: "All" },
+                  { key: "ok", label: "✓ OK" },
+                  { key: "low", label: "⚠ Low Stock" },
+                  { key: "out", label: "✕ Out of Stock" },
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    className={`ppe-tab ${stockFilter === f.key ? "active" : ""}`}
+                    onClick={() => setStockFilter(f.key)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              {isFullAccess && (
+                <input
+                  className="ppe-search"
+                  type="text"
+                  placeholder="Search by item name or size..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              )}
             </div>
           )}
 
@@ -911,7 +945,7 @@ function PPEPage() {
 
           {/* Table */}
           {isFullAccess && (
-            <div className="ppe-table-wrap">
+            <div className="ppe-inventory-table-wrap">
               <table className="ppe-table">
                 <thead>
                   <tr>
@@ -1236,9 +1270,44 @@ function PPEPage() {
 
           {/* Requests List */}
           <div className="ppe-table-wrap" style={{ marginTop: "30px" }}>
-            <h2 className="ppe-title" style={{ fontSize: "20px" }}>
-              PPE Requests
-            </h2>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
+              <h2 className="ppe-title" style={{ fontSize: "20px", margin: 0 }}>
+                PPE Requests
+              </h2>
+              <input
+                className="ppe-form-input"
+                style={{ width: 240 }}
+                placeholder="Search worker, department..."
+                value={requestSearch}
+                onChange={(e) => setRequestSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Status filter tabs */}
+            <div className="ppe-tabs" style={{ marginBottom: 12 }}>
+              {["all", "pending", "approved", "fulfilled", "rejected"].map(
+                (s) => (
+                  <button
+                    key={s}
+                    className={`ppe-tab ${requestFilter === s ? "active" : ""}`}
+                    onClick={() => setRequestFilter(s)}
+                  >
+                    {s === "all"
+                      ? "All"
+                      : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ),
+              )}
+            </div>
 
             {requests.length === 0 ? (
               <p>No PPE requests submitted yet.</p>
@@ -1256,141 +1325,151 @@ function PPEPage() {
                     <th>Actions</th>
                   </tr>
                 </thead>
-
                 <tbody>
-                  {requests.map((request) => {
-                    const item = items.find(
-                      (i) => Number(i.id) === Number(request.item_id),
-                    );
-
-                    return (
-                      <tr key={request.id}>
-                        <td>{formatDate(request.date)}</td>
-                        <td>
-                          {item
-                            ? `${item.item_name} (${item.size_spec})`
-                            : "Unknown Item"}
-                        </td>
-                        <td>{request.quantity}</td>
-                        <td>{request.worker_name}</td>
-                        <td>{request.department}</td>
-                        <td>
-                          {request.requested_by_name ||
-                            request.requested_by ||
-                            "—"}
-                        </td>
-
-                        <td>
-                          <span
-                            className={`ppe-badge ${
-                              request.status === "fulfilled"
-                                ? "badge-ok"
-                                : request.status === "approved"
-                                  ? "badge-expiring"
-                                  : request.status === "rejected"
-                                    ? "badge-out"
-                                    : "badge-low"
-                            }`}
-                          >
-                            {request.status}
-                          </span>
-                        </td>
-
-                        <td>
-                          {request.status === "pending" && (
-                            <>
-                              {canApprove() && (
-                                <button
-                                  className="ppe-btn-sm"
-                                  onClick={() =>
-                                    handleApproveRequest(request.id)
-                                  }
-                                >
-                                  Approve
-                                </button>
-                              )}
-                              {canReject() && (
-                                <button
-                                  className="ppe-btn-sm"
-                                  onClick={() =>
-                                    handleRejectRequest(request.id)
-                                  }
-                                  style={{ marginLeft: "6px" }}
-                                >
-                                  Reject
-                                </button>
-                              )}
-                              {!canApprove() && !canReject() && (
-                                <span
-                                  style={{ color: "#888", fontSize: "11px" }}
-                                >
-                                  Awaiting approval
-                                </span>
-                              )}
-                            </>
-                          )}
-
-                          {request.status === "approved" && (
-                            <>
-                              {canFulfill() && (
-                                <button
-                                  className="ppe-btn-sm"
-                                  onClick={() =>
-                                    handleFulfillRequest(request.id)
-                                  }
-                                >
-                                  Fulfill
-                                </button>
-                              )}
-                              {!canFulfill() && (
-                                <span
-                                  style={{ color: "#27ae60", fontSize: "11px" }}
-                                >
-                                  ✓ Approved
-                                </span>
-                              )}
-                            </>
-                          )}
-
-                          {request.status === "fulfilled" && (
-                            <span>✓ Completed</span>
-                          )}
-
-                          {request.status === "rejected" && (
-                            <div>
-                              <span style={{ color: "#c0392b" }}>
-                                ✕ Rejected
-                              </span>
-                              {request.reject_reason && (
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#888",
-                                    marginTop: "3px",
-                                  }}
-                                >
-                                  Reason: {request.reject_reason}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {canAddItem() && (
-                            <button
-                              className="ppe-btn-sm"
-                              style={{
-                                color: "#c0392b",
-                                borderColor: "#c0392b",
-                                marginLeft: "6px",
-                              }}
-                              onClick={() => handleDeleteRequest(request.id)}
+                  {requests
+                    .filter((r) => {
+                      const matchSearch =
+                        requestSearch === "" ||
+                        r.worker_name
+                          ?.toLowerCase()
+                          .includes(requestSearch.toLowerCase()) ||
+                        r.department
+                          ?.toLowerCase()
+                          .includes(requestSearch.toLowerCase());
+                      const matchFilter =
+                        requestFilter === "all" || r.status === requestFilter;
+                      return matchSearch && matchFilter;
+                    })
+                    .map((request) => {
+                      const item = items.find(
+                        (i) => Number(i.id) === Number(request.item_id),
+                      );
+                      return (
+                        <tr key={request.id}>
+                          <td>{formatDate(request.date)}</td>
+                          <td>
+                            {item
+                              ? `${item.item_name} (${item.size_spec})`
+                              : "Unknown Item"}
+                          </td>
+                          <td>{request.quantity}</td>
+                          <td>{request.worker_name}</td>
+                          <td>{request.department}</td>
+                          <td>
+                            {request.requested_by_name ||
+                              request.requested_by ||
+                              "—"}
+                          </td>
+                          <td>
+                            <span
+                              className={`ppe-badge ${
+                                request.status === "fulfilled"
+                                  ? "badge-ok"
+                                  : request.status === "approved"
+                                    ? "badge-expiring"
+                                    : request.status === "rejected"
+                                      ? "badge-out"
+                                      : "badge-low"
+                              }`}
                             >
-                              🗑
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              {request.status}
+                            </span>
+                          </td>
+                          <td>
+                            {request.status === "pending" && (
+                              <>
+                                {canApprove() && (
+                                  <button
+                                    className="ppe-btn-sm"
+                                    onClick={() =>
+                                      handleApproveRequest(request.id)
+                                    }
+                                  >
+                                    Approve
+                                  </button>
+                                )}
+                                {canReject() && (
+                                  <button
+                                    className="ppe-btn-sm"
+                                    onClick={() =>
+                                      handleRejectRequest(request.id)
+                                    }
+                                    style={{ marginLeft: "6px" }}
+                                  >
+                                    Reject
+                                  </button>
+                                )}
+                                {!canApprove() && !canReject() && (
+                                  <span
+                                    style={{ color: "#888", fontSize: "11px" }}
+                                  >
+                                    Awaiting approval
+                                  </span>
+                                )}
+                              </>
+                            )}
+                            {request.status === "approved" && (
+                              <>
+                                {canFulfill() && (
+                                  <button
+                                    className="ppe-btn-sm"
+                                    onClick={() =>
+                                      handleFulfillRequest(request.id)
+                                    }
+                                  >
+                                    Fulfill
+                                  </button>
+                                )}
+                                {!canFulfill() && (
+                                  <span
+                                    style={{
+                                      color: "#27ae60",
+                                      fontSize: "11px",
+                                    }}
+                                  >
+                                    ✓ Approved
+                                  </span>
+                                )}
+                              </>
+                            )}
+                            {request.status === "fulfilled" && (
+                              <span>✓ Completed</span>
+                            )}
+                            {request.status === "rejected" && (
+                              <div>
+                                <span style={{ color: "#c0392b" }}>
+                                  ✕ Rejected
+                                </span>
+                                {request.reject_reason && (
+                                  <div
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "#888",
+                                      marginTop: "3px",
+                                    }}
+                                  >
+                                    Reason: {request.reject_reason}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {canAddItem() && (
+                              <button
+                                className="ppe-btn-sm"
+                                style={{
+                                  color: "#c0392b",
+                                  borderColor: "#c0392b",
+                                  marginLeft: "6px",
+                                }}
+                                onClick={() => handleDeleteRequest(request.id)}
+                              >
+                                🗑
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             )}

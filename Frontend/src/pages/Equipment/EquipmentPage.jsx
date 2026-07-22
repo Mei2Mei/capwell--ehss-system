@@ -68,7 +68,7 @@ export default function EquipmentPage() {
 
   const [form, setForm] = useState({
     name: "",
-    category: "",
+    description: "",
     location: "",
     capacity: "",
     status: "Available",
@@ -89,7 +89,7 @@ export default function EquipmentPage() {
     .filter(
       (e) =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
-        e.category.toLowerCase().includes(search.toLowerCase()) ||
+        e.description.toLowerCase().includes(search.toLowerCase()) ||
         e.status.toLowerCase().includes(search.toLowerCase()),
     );
 
@@ -97,14 +97,14 @@ export default function EquipmentPage() {
   // ADD EQUIPMENT
   // ─────────────────────────────
   const handleAdd = async () => {
-    if (!form.name.trim() || !form.category.trim() || !form.capacity.trim()) {
-      alert("Please fill in Equipment Name, Category, and Capacity.");
+    if (!form.name.trim() || !form.capacity.trim()) {
+      alert("Please fill in Equipment Name and Capacity.");
       return;
     }
 
     const payload = {
       name: form.name,
-      category: form.category,
+      description: form.description,
       location: form.location || "",
       capacity: form.capacity,
       status: form.status,
@@ -156,7 +156,7 @@ export default function EquipmentPage() {
 
       setForm({
         name: "",
-        category: "",
+        description: "",
         location: "",
         capacity: "",
         status: "Available",
@@ -175,7 +175,7 @@ export default function EquipmentPage() {
 
     setForm({
       name: item.name,
-      category: item.category,
+      description: item.description,
       location: item.location || "",
       capacity: item.capacity,
       status: item.status,
@@ -234,7 +234,7 @@ export default function EquipmentPage() {
               setEditingId(null);
               setForm({
                 name: "",
-                category: "",
+                description: "",
                 location: "",
                 capacity: "",
                 status: "Available",
@@ -323,7 +323,7 @@ export default function EquipmentPage() {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Category</th>
+              <th>Description</th>
               <th>Location</th>
               <th>Capacity</th>
               <th>Status</th>
@@ -342,7 +342,7 @@ export default function EquipmentPage() {
                 <tr key={e.id}>
                   <td>{e.id}</td>
                   <td>{e.name}</td>
-                  <td>{e.category}</td>
+                  <td>{e.description}</td>
                   <td>{e.location}</td>
                   <td>{e.capacity}</td>
                   <td>
@@ -405,26 +405,22 @@ export default function EquipmentPage() {
                 />
               </div>
 
-              {/* CATEGORY */}
+              {/* DESCRIPTION */}
               <div className="equipment-form-group">
-                <label className="equipment-form-label">
-                  Category <span className="required">*</span>
-                </label>
+                <label className="equipment-form-label">Description</label>
                 <input
                   className="equipment-form-input"
-                  name="category"
-                  value={form.category}
+                  name="description"
+                  value={form.description}
                   onChange={(e) =>
-                    setForm({ ...form, category: e.target.value })
+                    setForm({ ...form, description: e.target.value })
                   }
                 />
               </div>
 
               {/*LOCATION*/}
               <div className="equipment-form-group">
-                <label className="equipment-form-label">
-                  Location <span className="required">*</span>{" "}
-                </label>
+                <label className="equipment-form-label">Location </label>
                 <input
                   className="equipment-form-input"
                   name="location"

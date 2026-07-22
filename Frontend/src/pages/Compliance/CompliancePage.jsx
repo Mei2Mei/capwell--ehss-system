@@ -19,11 +19,9 @@ import { useAuth } from "../../context/AuthContext";
 const API_URL = `/compliance`;
 
 // ── Status calculation ────────────────────────────────────────
-// This is the core business rule from Phase 1 BR-06 to BR-09.
 // Status is determined automatically — never entered manually.
 function getStatus(item) {
-  // No reference number means data is incomplete — Pending
-  if (!item.reference_number || !item.date_of_expiry) return "pending";
+  if (!item.date_of_expiry) return "pending";
 
   const today = new Date();
   const expiry = new Date(item.date_of_expiry);
@@ -560,11 +558,6 @@ function CompliancePage() {
                   onChange={handleFormChange}
                   placeholder="e.g. 2026/SD/B9957554"
                 />
-                <div
-                  style={{ fontSize: "11px", color: "#888", marginTop: "3px" }}
-                >
-                  Leave blank if not yet issued — status will show as Pending.
-                </div>
               </div>
 
               <div className="comp-form-group full">
@@ -611,6 +604,7 @@ function CompliancePage() {
                   <option value="6 months">6 months</option>
                   <option value="Annual">Annual</option>
                   <option value="2 years">2 years</option>
+                  <option value="3 years">3 years</option>
                   <option value="5 years">5 years</option>
                   <option value="Permanent">Permanent</option>
                 </select>

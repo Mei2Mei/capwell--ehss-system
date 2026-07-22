@@ -962,7 +962,7 @@ export default function ReportsPage() {
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Category</th>
+                      <th>Description</th>
                       <th>Status</th>
                       <th>Next Inspection</th>
                     </tr>
@@ -991,7 +991,7 @@ export default function ReportsPage() {
                             className={daysLeft < 0 ? "row-incident" : ""}
                           >
                             <td>{e.name}</td>
-                            <td>{e.category}</td>
+                            <td>{e.description}</td>
                             <td>{e.status}</td>
                             <td>
                               {e.next_inspection}{" "}
@@ -1673,7 +1673,7 @@ export default function ReportsPage() {
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Category</th>
+                      <th>Description</th>
                       <th>Capacity</th>
                       <th>Status</th>
                       <th>Location</th>
@@ -1707,7 +1707,7 @@ export default function ReportsPage() {
                           }
                         >
                           <td>{e.name}</td>
-                          <td>{e.category}</td>
+                          <td>{e.description}</td>
                           <td>{e.capacity}</td>
                           <td>{e.status}</td>
                           <td>{e.location}</td>

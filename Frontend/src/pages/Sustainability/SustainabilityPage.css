@@ -135,8 +135,7 @@
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  height: calc(100vh - 280px);
-  overflow-x: auto;
+  overflow-x: scroll;
   margin-bottom: 12px;
 }
 .sust-table { 
@@ -151,9 +150,6 @@
     color: #fff; 
     font-size: 11px; 
     font-weight: 500; 
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 .sust-table td { 
     padding: 9px 10px; 
