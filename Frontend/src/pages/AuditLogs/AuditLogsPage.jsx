@@ -43,7 +43,7 @@ export default function AuditLogs() {
       if (v) params.append(k, v);
     });
     try {
-      const res = await api.get(`/audit-logs?${params}`);
+      const res = await api.get(`/audit-logs?${params}&_t=${Date.now()}`);
       setLogs(res.data);
     } catch (err) {
       console.error("Failed to load audit logs:", err);
