@@ -95,7 +95,7 @@
 .rep-card-value.red   { color: var(--color-danger); }
 .rep-card-value.amber { color: var(--color-warning); }
 .rep-card-value.green { color: var(--color-success); }
-.rep-table-wrap {overflow-x: auto; height: calc(100vh - 280px);}
+.rep-table-wrap {overflow-x: auto; }
 .rep-table {
   width: 100%;
   border-collapse: collapse;

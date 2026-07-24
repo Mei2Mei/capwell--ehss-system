@@ -128,14 +128,15 @@ function CompliancePage() {
   // ── Filtered items ────────────────────────────────────────
   const filteredItems = items
     .filter((i) => activeTab === "all" || getStatus(i) === activeTab)
-    .filter(
-      (i) =>
-        i.requirement.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.expert_organisation
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        i.reference_number.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    .filter((i) => {
+      const search = searchTerm.toLowerCase();
+
+      return (
+        (i.requirement || "").toLowerCase().includes(search) ||
+        (i.expert_organisation || "").toLowerCase().includes(search) ||
+        (i.reference_number || "").toLowerCase().includes(search)
+      );
+    });
 
   // ── Success banner ────────────────────────────────────────
   function showBanner(msg) {
@@ -385,6 +386,7 @@ function CompliancePage() {
               <th>Requirement</th>
               <th>Organisation</th>
               <th>Reference no.</th>
+              <th>Legal / Requirement Ref.</th>
               <th>Issued</th>
               <th>Expires</th>
               <th>Validity</th>
@@ -420,6 +422,7 @@ function CompliancePage() {
                     <td className="comp-req-name">{item.requirement}</td>
                     <td>{item.expert_organisation || "—"}</td>
                     <td className="comp-ref">{item.reference_number || "—"}</td>
+                    <td>{item.requirement_reference || "—"}</td>
                     <td>{formatDate(item.date_of_issuance)}</td>
                     <td>{formatDate(item.date_of_expiry)}</td>
                     <td>{item.validity_period}</td>

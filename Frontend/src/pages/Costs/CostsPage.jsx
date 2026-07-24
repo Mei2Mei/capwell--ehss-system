@@ -40,11 +40,11 @@ function friendlyCostType(type) {
     case "waste_management":
       return "Waste management";
     case "training_best_practice":
-      return "Training-Best practice";
+      return "Training - Best practice";
     case "training_standard_requirement":
-      return "Training-Standard requirement";
+      return "Training - Standard requirement";
     case "training_statutory_requirement":
-      return "Training-Statutory requirement";
+      return "Training - Statutory requirement";
     case "improvement_initiative":
       return "Improvement initiative";
     default:
@@ -56,10 +56,28 @@ function getCostTypeBadgeClass(type) {
   switch (type) {
     case "statutory_requirement":
       return "badge-statutory";
+
     case "staff_welfare":
       return "badge-welfare";
+
+    case "ppe_provision":
+      return "badge-ppe";
+
     case "improvement_initiative":
       return "badge-improvement";
+
+    case "waste_management":
+      return "badge-waste";
+
+    case "training_best_practice":
+      return "badge-training-best";
+
+    case "training_standard_requirement":
+      return "badge-training-standard";
+
+    case "training_statutory_requirement":
+      return "badge-training-statutory";
+
     default:
       return "badge-other";
   }
@@ -126,15 +144,28 @@ function CostsPage() {
 
   // ── Summary calculations ──────────────────────────────────
   const totalYTD = filtered.reduce((sum, r) => sum + r.cost_excl_vat, 0);
-  const statutoryTotal = filtered
-    .filter((r) => r.cost_type === "statutory_requirement")
-    .reduce((sum, r) => sum + r.cost_excl_vat, 0);
-  const welfareTotal = filtered
-    .filter((r) => r.cost_type === "staff_welfare")
-    .reduce((sum, r) => sum + r.cost_excl_vat, 0);
   const outsideBudget = filtered
     .filter((r) => r.budget_status === "outside_budget")
     .reduce((sum, r) => sum + r.cost_excl_vat, 0);
+  const totalRecords = filtered.length;
+
+  const costTotals = filtered.reduce((acc, r) => {
+    acc[r.cost_type] = (acc[r.cost_type] || 0) + r.cost_excl_vat;
+    return acc;
+  }, {});
+
+  const sortedCostTypes = Object.entries(costTotals).sort(
+    (a, b) => b[1] - a[1],
+  );
+
+  const [highestCostType, highestCostValue] = sortedCostTypes[0] || ["None", 0];
+
+  const [secondCostType, secondCostValue] = sortedCostTypes[1] || ["None", 0];
+
+  const formatCostType = (type) =>
+    type === "None"
+      ? "None"
+      : type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   // ── Helpers ───────────────────────────────────────────────
   function showBanner(msg) {
@@ -318,19 +349,40 @@ function CostsPage() {
       {/* Summary cards */}
       <div className="costs-cards">
         <div className="costs-card">
-          <div className="costs-card-label">Total spend (filtered)</div>
+          <div className="costs-card-label">Total Spend (Filtered)</div>
           <div className="costs-card-value">{formatKES(totalYTD)}</div>
         </div>
+
         <div className="costs-card">
-          <div className="costs-card-label">Statutory requirements</div>
-          <div className="costs-card-value">{formatKES(statutoryTotal)}</div>
+          <div className="costs-card-label">Highest Cost Type</div>
+
+          <div style={{ marginTop: "8px" }}>
+            <span
+              className={`costs-badge ${getCostTypeBadgeClass(highestCostType)}`}
+            >
+              {friendlyCostType(highestCostType)}
+            </span>
+          </div>
+
+          <div className="costs-card-sub">{formatKES(highestCostValue)}</div>
         </div>
+
         <div className="costs-card">
-          <div className="costs-card-label">Staff welfare</div>
-          <div className="costs-card-value">{formatKES(welfareTotal)}</div>
+          <div className="costs-card-label">2nd Highest Cost Type</div>
+
+          <div style={{ marginTop: "8px" }}>
+            <span
+              className={`costs-badge ${getCostTypeBadgeClass(secondCostType)}`}
+            >
+              {friendlyCostType(secondCostType)}
+            </span>
+          </div>
+
+          <div className="costs-card-sub">{formatKES(secondCostValue)}</div>
         </div>
+
         <div className={`costs-card ${outsideBudget > 0 ? "card-warn" : ""}`}>
-          <div className="costs-card-label">Outside budget</div>
+          <div className="costs-card-label">Outside Budget</div>
           <div
             className={`costs-card-value ${outsideBudget > 0 ? "red" : "green"}`}
           >

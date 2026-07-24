@@ -2,14 +2,6 @@
 // DashboardPage.jsx
 // The home dashboard — first thing every user sees after login.
 // Shows a real-time overview of the most critical EHSS data.
-//
-// Per Phase 2 FR-03 it shows:
-// 1. KPI summary cards — costs, compliance, safety, PPE
-// 2. Safety trend chart — monthly TRIFR/LTIFR
-// 3. PPE alerts — items at or below reorder level
-// 4. Upcoming calendar activities
-// 5. Compliance expiry alerts
-// ─────────────────────────────────────────────────────────────
 
 import { useState, useEffect } from "react";
 import {
@@ -33,12 +25,16 @@ const COST_COLORS = {
   staff_welfare: "#27ae60",
   ppe: "#e67e22",
   improvement: "#8e44ad",
+  waste: "#16a085",
+  training_best: "#f39c12",
+  training_standard: "#c0392b",
+  training_statutory: "#2c3e50",
 };
 
 // ── Helper ────────────────────────────────────────────────────
 function getComplianceBadge(daysLeft) {
   if (daysLeft < 0) return { text: "Expired", cls: "comp-badge expired" };
-  if (daysLeft <= 30)
+  if (daysLeft <= 60)
     return { text: `${daysLeft}d left`, cls: "comp-badge expiring" };
   return { text: "Valid", cls: "comp-badge valid" };
 }
@@ -185,26 +181,63 @@ function DashboardPage() {
       "Nov",
       "Dec",
     ];
+
     const months = {};
+
     costRecords.forEach((r) => {
       const month = new Date(r.date).toLocaleDateString("en-GB", {
         month: "short",
       });
-      if (!months[month])
+
+      if (!months[month]) {
         months[month] = {
           month,
           statutory: 0,
           staff_welfare: 0,
           ppe: 0,
           improvement: 0,
+          waste: 0,
+          training_best: 0,
+          training_standard: 0,
+          training_statutory: 0,
         };
-      if (r.cost_type === "statutory_requirement")
-        months[month].statutory += r.cost_excl_vat;
-      else if (r.cost_type === "staff_welfare")
-        months[month].staff_welfare += r.cost_excl_vat;
-      else if (r.cost_type === "improvement_initiative")
-        months[month].improvement += r.cost_excl_vat;
+      }
+
+      switch (r.cost_type) {
+        case "statutory_requirement":
+          months[month].statutory += r.cost_excl_vat;
+          break;
+
+        case "staff_welfare":
+          months[month].staff_welfare += r.cost_excl_vat;
+          break;
+
+        case "ppe_provision":
+          months[month].ppe += r.cost_excl_vat;
+          break;
+
+        case "improvement_initiative":
+          months[month].improvement += r.cost_excl_vat;
+          break;
+
+        case "waste_management":
+          months[month].waste += r.cost_excl_vat;
+          break;
+
+        case "training_best_practice":
+          months[month].training_best += r.cost_excl_vat;
+          break;
+
+        case "training_standard_requirement":
+          months[month].training_standard += r.cost_excl_vat;
+          break;
+
+        case "training_statutory_requirement":
+          months[month].training_statutory += r.cost_excl_vat;
+          break;
+      }
     });
+
     return monthOrder.filter((m) => months[m]).map((m) => months[m]);
   })();
 
@@ -223,7 +256,7 @@ function DashboardPage() {
 
   // Compliance calculations
   const expiringCount = complianceAlerts.filter(
-    (c) => c.daysLeft >= 0 && c.daysLeft <= 30,
+    (c) => c.daysLeft >= 0 && c.daysLeft <= 60,
   ).length;
   const expiredCount = complianceAlerts.filter((c) => c.daysLeft < 0).length;
 
@@ -420,10 +453,10 @@ function DashboardPage() {
           <div className="dash-panel-title">
             📊 Cost per month by type (KES)
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={costByMonth}
-              margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+              margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
 
@@ -433,32 +466,94 @@ function DashboardPage() {
               {/* Y-axis = AMOUNT */}
               <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
 
-              <Tooltip formatter={(v) => `KES ${Number(v).toLocaleString()}`} />
-              <Legend />
+              <Tooltip
+                formatter={(value) => `KES ${Number(value).toLocaleString()}`}
+                filterNull
+                content={({ active, payload, label }) => {
+                  if (!active || !payload) return null;
+
+                  const visible = payload.filter((item) => item.value > 0);
+
+                  return (
+                    <div
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #ccc",
+                        padding: "10px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <strong>{label}</strong>
+
+                      {visible.map((item) => (
+                        <div key={item.dataKey} style={{ color: item.color }}>
+                          {item.name}: KES {Number(item.value).toLocaleString()}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+              <Legend
+                verticalAlign="bottom"
+                height={60}
+                wrapperStyle={{ fontSize: "12px" }}
+              />
 
               <Bar
                 dataKey="statutory"
-                name="Statutory"
+                name="Statutory Requirement"
                 stackId="a"
                 fill={COST_COLORS.statutory}
               />
+
               <Bar
                 dataKey="staff_welfare"
-                name="Staff welfare"
+                name="Staff Welfare"
                 stackId="a"
                 fill={COST_COLORS.staff_welfare}
               />
+
               <Bar
                 dataKey="ppe"
-                name="PPE provision"
+                name="PPE Provision"
                 stackId="a"
                 fill={COST_COLORS.ppe}
               />
+
               <Bar
                 dataKey="improvement"
-                name="Improvement"
+                name="Improvement Initiative"
                 stackId="a"
                 fill={COST_COLORS.improvement}
+              />
+
+              <Bar
+                dataKey="waste"
+                name="Waste Management"
+                stackId="a"
+                fill={COST_COLORS.waste}
+              />
+
+              <Bar
+                dataKey="training_best"
+                name="Training Best Practice"
+                stackId="a"
+                fill={COST_COLORS.training_best}
+              />
+
+              <Bar
+                dataKey="training_standard"
+                name="Training Standard Requirement"
+                stackId="a"
+                fill={COST_COLORS.training_standard}
+              />
+
+              <Bar
+                dataKey="training_statutory"
+                name="Training Statutory Requirement"
+                stackId="a"
+                fill={COST_COLORS.training_statutory}
               />
             </BarChart>
           </ResponsiveContainer>

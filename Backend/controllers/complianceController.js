@@ -21,7 +21,9 @@ const createItem = async (req, res) => {
     const item = await complianceModel.createComplianceItem(req.body);
     await logAudit({ userId: req.user?.id, userName: req.user?.full_name, action: 'CREATE', tableName: 'compliance_matrix', recordId: item.id, newValue: item, ip: req.ip });
     res.status(201).json(item);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err){
+  console.error("Create compliance error:", err);
+   res.status(500).json({ error: err.message }); }
 };
 
 const updateItem = async (req, res) => {

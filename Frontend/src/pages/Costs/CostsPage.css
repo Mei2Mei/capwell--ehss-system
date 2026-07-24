@@ -171,6 +171,11 @@
 .badge-statutory   { background: #e6f1fb; color: #0c447c; }
 .badge-welfare     { background: #eaf3de; color: #27500a; }
 .badge-improvement { background: #eeedfe; color: #3c3489; }
+.badge-ppe         { background: #fff0e5; color: #c15b00; }
+.badge-waste       { background: #e4f7f3; color: #0f766e; }
+.badge-training-best { background: #fff7e6; color: #b7791f; }
+.badge-training-standard { background: #fdecec; color: #b42318; }
+.badge-training-statutory { background: #edf2f7; color: #2d3748; }
 .badge-other       { background: #f1efe8; color: #444; }
 .badge-inbudget    { background: #27ae60; color: #fff; }
 .badge-outbudget   { background: #c0392b; color: #fff; }
@@ -270,4 +275,9 @@
 .costs-delete-btn {
   color: var(--color-danger);
   border-color: var(--color-danger);
+}
+.costs-card-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
 }
